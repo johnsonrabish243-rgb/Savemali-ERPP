@@ -1,0 +1,331 @@
+import {
+  LayoutDashboard, Users, GraduationCap, BookOpen, ClipboardList, FileText,
+  Settings, Pill, ShoppingCart, Package, TrendingUp, UserCheck,
+  CreditCard, DollarSign, Receipt, Eye, Stethoscope, Calendar,
+  ClipboardCheck, AlertTriangle, Briefcase, Clock, Search, Shield, Target, Truck, BarChart3
+} from "lucide-react"
+import type { RoleKey } from "@/hooks/use-role"
+import type { WorkspaceType } from "@/lib/supabase"
+
+export interface NavItem {
+  id: string
+  label: { fr: string; en: string }
+  icon: typeof LayoutDashboard
+}
+
+export interface RoleConfig {
+  label: { fr: string; en: string }
+  accent: string
+  accentBg: string
+  menu: NavItem[]
+}
+
+export const ROLE_CONFIGS: Record<WorkspaceType, Record<RoleKey, RoleConfig>> = {
+  education: {
+    admin: {
+      label: { fr: "Administrateur", en: "Administrator" },
+      accent: "text-blue-600 dark:text-blue-400",
+      accentBg: "bg-blue-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+        { id: "habits", label: { fr: "Habitudes", en: "Habits" }, icon: Target },
+        { id: "members", label: { fr: "Équipe", en: "Team" }, icon: UserCheck },
+        { id: "security", label: { fr: "Sécurité", en: "Security" }, icon: Shield },
+        { id: "settings", label: { fr: "Paramètres", en: "Settings" }, icon: Settings },
+      ],
+    },
+    manager: {
+      label: { fr: "Directeur", en: "Director" },
+      accent: "text-blue-600 dark:text-blue-400",
+      accentBg: "bg-blue-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+      ],
+    },
+    teacher: {
+      label: { fr: "Enseignant", en: "Teacher" },
+      accent: "text-indigo-600 dark:text-indigo-400",
+      accentBg: "bg-indigo-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "students", label: { fr: "Élèves", en: "Students" }, icon: GraduationCap },
+        { id: "classes", label: { fr: "Classes", en: "Classes" }, icon: BookOpen },
+        { id: "attendance", label: { fr: "Présences", en: "Attendance" }, icon: ClipboardCheck },
+        { id: "grades", label: { fr: "Notes", en: "Grades" }, icon: ClipboardList },
+        { id: "schedule", label: { fr: "Emplois du temps", en: "Schedule" }, icon: Calendar },
+        { id: "reportCards", label: { fr: "Bulletins", en: "Report Cards" }, icon: FileText },
+      ],
+    },
+    supervisor: {
+      label: { fr: "Surveillant", en: "Supervisor" },
+      accent: "text-amber-600 dark:text-amber-400",
+      accentBg: "bg-amber-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "attendance", label: { fr: "Présences", en: "Attendance" }, icon: ClipboardCheck },
+        { id: "discipline", label: { fr: "Discipline", en: "Discipline" }, icon: Shield },
+        { id: "incidents", label: { fr: "Incidents", en: "Incidents" }, icon: AlertTriangle },
+        { id: "reportCards", label: { fr: "Bulletins", en: "Report Cards" }, icon: FileText },
+      ],
+    },
+    cashier: {
+      label: { fr: "Caissier", en: "Cashier" },
+      accent: "text-emerald-600 dark:text-emerald-400",
+      accentBg: "bg-emerald-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "payments", label: { fr: "Paiements", en: "Payments" }, icon: CreditCard },
+        { id: "history", label: { fr: "Historique", en: "History" }, icon: Clock },
+      ],
+    },
+    accountant: {
+      label: { fr: "Comptable", en: "Accountant" },
+      accent: "text-violet-600 dark:text-violet-400",
+      accentBg: "bg-violet-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "payments", label: { fr: "Paiements", en: "Payments" }, icon: CreditCard },
+        { id: "accounting", label: { fr: "Comptabilité", en: "Accounting" }, icon: DollarSign },
+        { id: "reportCards", label: { fr: "Bulletins", en: "Report Cards" }, icon: FileText },
+      ],
+    },
+    viewer: {
+      label: { fr: "Observateur", en: "Observer" },
+      accent: "text-slate-600 dark:text-slate-400",
+      accentBg: "bg-slate-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "students", label: { fr: "Élèves", en: "Students" }, icon: GraduationCap },
+        { id: "classes", label: { fr: "Classes", en: "Classes" }, icon: BookOpen },
+        { id: "reportCards", label: { fr: "Bulletins", en: "Report Cards" }, icon: FileText },
+      ],
+    },
+  },
+  pharmacy: {
+    admin: {
+      label: { fr: "Administrateur", en: "Administrator" },
+      accent: "text-emerald-600 dark:text-emerald-400",
+      accentBg: "bg-emerald-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+        { id: "habits", label: { fr: "Habitudes", en: "Habits" }, icon: Target },
+        { id: "members", label: { fr: "Équipe", en: "Team" }, icon: UserCheck },
+        { id: "security", label: { fr: "Sécurité", en: "Security" }, icon: Shield },
+        { id: "settings", label: { fr: "Paramètres", en: "Settings" }, icon: Settings },
+      ],
+    },
+    manager: {
+      label: { fr: "Manager", en: "Manager" },
+      accent: "text-emerald-600 dark:text-emerald-400",
+      accentBg: "bg-emerald-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+      ],
+    },
+    pharmacist: {
+      label: { fr: "Pharmacien", en: "Pharmacist" },
+      accent: "text-teal-600 dark:text-teal-400",
+      accentBg: "bg-teal-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "inventory", label: { fr: "Produits", en: "Products" }, icon: Pill },
+        { id: "stocks", label: { fr: "Stock", en: "Stock" }, icon: Package },
+        { id: "prescriptions", label: { fr: "Ordonnances", en: "Prescriptions" }, icon: Stethoscope },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: FileText },
+      ],
+    },
+    cashier: {
+      label: { fr: "Caissier", en: "Cashier" },
+      accent: "text-sky-600 dark:text-sky-400",
+      accentBg: "bg-sky-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "new_sale", label: { fr: "Nouvelle vente", en: "New sale" }, icon: ShoppingCart },
+        { id: "sales", label: { fr: "Ventes", en: "Sales" }, icon: TrendingUp },
+        { id: "inventory", label: { fr: "Vérifier stock", en: "Check stock" }, icon: Package },
+        { id: "prescriptions", label: { fr: "Ordonnances", en: "Prescriptions" }, icon: Stethoscope },
+        { id: "orders", label: { fr: "Commandes", en: "Orders" }, icon: Truck },
+      ],
+    },
+    accountant: {
+      label: { fr: "Comptable", en: "Accountant" },
+      accent: "text-violet-600 dark:text-violet-400",
+      accentBg: "bg-violet-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "accounting", label: { fr: "Comptabilité", en: "Accounting" }, icon: DollarSign },
+        { id: "expenses", label: { fr: "Dépenses", en: "Expenses" }, icon: TrendingUp },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: FileText },
+      ],
+    },
+    viewer: {
+      label: { fr: "Observateur", en: "Observer" },
+      accent: "text-slate-600 dark:text-slate-400",
+      accentBg: "bg-slate-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "inventory", label: { fr: "Produits", en: "Products" }, icon: Pill },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: FileText },
+      ],
+    },
+    teacher: { label: { fr: "Enseignant", en: "Teacher" }, accent: "text-indigo-600", accentBg: "bg-indigo-500", menu: [] },
+    supervisor: { label: { fr: "Surveillant", en: "Supervisor" }, accent: "text-amber-600", accentBg: "bg-amber-500", menu: [] },
+    payroll: { label: { fr: "Paie", en: "Payroll" }, accent: "text-pink-600", accentBg: "bg-pink-500", menu: [] },
+    hr: { label: { fr: "RH", en: "HR" }, accent: "text-cyan-600", accentBg: "bg-cyan-500", menu: [] },
+    stock_manager: { label: { fr: "Stock", en: "Stock" }, accent: "text-orange-600", accentBg: "bg-orange-500", menu: [] },
+    seller: { label: { fr: "Vendeur", en: "Seller" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [] },
+  },
+  commerce: {
+    admin: {
+      label: { fr: "Administrateur", en: "Administrator" },
+      accent: "text-orange-600 dark:text-orange-400",
+      accentBg: "bg-orange-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+        { id: "habits", label: { fr: "Habitudes", en: "Habits" }, icon: Target },
+        { id: "members", label: { fr: "Équipe", en: "Team" }, icon: UserCheck },
+        { id: "security", label: { fr: "Sécurité", en: "Security" }, icon: Shield },
+        { id: "settings", label: { fr: "Paramètres", en: "Settings" }, icon: Settings },
+      ],
+    },
+    manager: {
+      label: { fr: "Manager", en: "Manager" },
+      accent: "text-orange-600 dark:text-orange-400",
+      accentBg: "bg-orange-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+      ],
+    },
+    cashier: {
+      label: { fr: "Caissier", en: "Cashier" },
+      accent: "text-sky-600 dark:text-sky-400",
+      accentBg: "bg-sky-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "ventes", label: { fr: "Ventes", en: "Sales" }, icon: TrendingUp },
+        { id: "produits", label: { fr: "Produits", en: "Products" }, icon: Package },
+        { id: "history", label: { fr: "Historique", en: "History" }, icon: Clock },
+      ],
+    },
+    accountant: {
+      label: { fr: "Comptable", en: "Accountant" },
+      accent: "text-violet-600 dark:text-violet-400",
+      accentBg: "bg-violet-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "ventes", label: { fr: "Ventes", en: "Sales" }, icon: TrendingUp },
+        { id: "comptabilite", label: { fr: "Comptabilité", en: "Accounting" }, icon: DollarSign },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: FileText },
+      ],
+    },
+    viewer: {
+      label: { fr: "Observateur", en: "Observer" },
+      accent: "text-slate-600 dark:text-slate-400",
+      accentBg: "bg-slate-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "produits", label: { fr: "Produits", en: "Products" }, icon: Package },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: FileText },
+      ],
+    },
+    teacher: { label: { fr: "Enseignant", en: "Teacher" }, accent: "text-indigo-600", accentBg: "bg-indigo-500", menu: [] },
+    supervisor: { label: { fr: "Surveillant", en: "Supervisor" }, accent: "text-amber-600", accentBg: "bg-amber-500", menu: [] },
+    pharmacist: { label: { fr: "Pharmacien", en: "Pharmacist" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [] },
+    payroll: { label: { fr: "Paie", en: "Payroll" }, accent: "text-pink-600", accentBg: "bg-pink-500", menu: [] },
+    hr: { label: { fr: "RH", en: "HR" }, accent: "text-cyan-600", accentBg: "bg-cyan-500", menu: [] },
+    stock_manager: { label: { fr: "Stock", en: "Stock" }, accent: "text-orange-600", accentBg: "bg-orange-500", menu: [] },
+    seller: { label: { fr: "Vendeur", en: "Seller" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [] },
+  },
+  gestion: {
+    admin: {
+      label: { fr: "Administrateur", en: "Administrator" },
+      accent: "text-purple-600 dark:text-purple-400",
+      accentBg: "bg-purple-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+        { id: "habits", label: { fr: "Habitudes", en: "Habits" }, icon: Target },
+        { id: "members", label: { fr: "Équipe", en: "Team" }, icon: UserCheck },
+        { id: "security", label: { fr: "Sécurité", en: "Security" }, icon: Shield },
+        { id: "settings", label: { fr: "Paramètres", en: "Settings" }, icon: Settings },
+      ],
+    },
+    manager: {
+      label: { fr: "Manager", en: "Manager" },
+      accent: "text-purple-600 dark:text-purple-400",
+      accentBg: "bg-purple-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+      ],
+    },
+    accountant: {
+      label: { fr: "Comptable", en: "Accountant" },
+      accent: "text-violet-600 dark:text-violet-400",
+      accentBg: "bg-violet-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "accounting", label: { fr: "Comptabilité", en: "Accounting" }, icon: DollarSign },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: FileText },
+      ],
+    },
+    cashier: {
+      label: { fr: "Caissier", en: "Cashier" },
+      accent: "text-emerald-600 dark:text-emerald-400",
+      accentBg: "bg-emerald-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "payments", label: { fr: "Paiements", en: "Payments" }, icon: CreditCard },
+        { id: "history", label: { fr: "Historique", en: "History" }, icon: Clock },
+      ],
+    },
+    viewer: {
+      label: { fr: "Observateur", en: "Observer" },
+      accent: "text-slate-600 dark:text-slate-400",
+      accentBg: "bg-slate-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: FileText },
+      ],
+    },
+    teacher: { label: { fr: "Enseignant", en: "Teacher" }, accent: "text-indigo-600", accentBg: "bg-indigo-500", menu: [] },
+    supervisor: { label: { fr: "Surveillant", en: "Supervisor" }, accent: "text-amber-600", accentBg: "bg-amber-500", menu: [] },
+    pharmacist: { label: { fr: "Pharmacien", en: "Pharmacist" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [] },
+    payroll: {
+      label: { fr: "Paie", en: "Payroll" },
+      accent: "text-pink-600",
+      accentBg: "bg-pink-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "payments", label: { fr: "Paiements", en: "Payments" }, icon: CreditCard },
+        { id: "history", label: { fr: "Historique", en: "History" }, icon: Clock },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: FileText },
+      ],
+    },
+    hr: {
+      label: { fr: "RH", en: "HR" },
+      accent: "text-cyan-600",
+      accentBg: "bg-cyan-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: FileText },
+        { id: "history", label: { fr: "Historique", en: "History" }, icon: Clock },
+      ],
+    },
+    stock_manager: { label: { fr: "Stock", en: "Stock" }, accent: "text-orange-600", accentBg: "bg-orange-500", menu: [] },
+    seller: { label: { fr: "Vendeur", en: "Seller" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [] },
+  },
+}
+
+export const WORKSPACE_TYPE_LABELS: Record<WorkspaceType, { fr: string; en: string }> = {
+  education: { fr: "Éducation", en: "Education" },
+  pharmacy: { fr: "Pharmacie", en: "Pharmacy" },
+  commerce: { fr: "Commerce", en: "Commerce" },
+  gestion: { fr: "Gestion", en: "Management" },
+}

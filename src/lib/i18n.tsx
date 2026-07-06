@@ -1,0 +1,347 @@
+import * as React from "react"
+
+export type Language = "fr" | "en"
+
+export const translations = {
+  fr: {
+    nav: {
+      home: "Accueil",
+      education: "Éducation",
+      pharmacy: "Pharmacie",
+      commerce: "Commerce",
+      gestion: "Gestion",
+      login: "Connexion",
+      signup: "S'inscrire",
+    },
+    hero: {
+      tagline: "TOUT GÉRER, MIEUX PROGRESSER.",
+      subtitle: "Une plateforme intégrée pour gérer votre pharmacie, commerce, établissement scolaire et activités de gestion.",
+      cta: "Commencer gratuitement",
+      ctaSecondary: "Explorer les modules",
+      badge: "Plateforme ERP tout-en-un · RDC",
+    },
+    modules: {
+      title: "Une plateforme. Tous vos besoins.",
+      subtitle: "SaveMali regroupe quatre modules puissants pour répondre à tous les besoins de gestion modernes en Afrique centrale.",
+      education: {
+        title: "Éducation",
+        description: "Gérez vos établissements scolaires, inscriptions, notes, emplois du temps et communications avec les parents.",
+        features: ["Gestion des élèves", "Notes & bulletins", "Emploi du temps", "Communication parents", "Présences", "Paiements scolarité"],
+      },
+      pharmacy: {
+        title: "Pharmacie",
+        description: "Catalogue préchargé de médicaments — ajoutez en un clic à votre stock. Ordonnances, ventes et alertes péremption.",
+        features: ["Catalogue médicaments", "Ordonnances", "Point de vente", "Alertes péremption", "Fournisseurs", "Rapports financiers"],
+      },
+      commerce: {
+        title: "Commerce",
+        description: "Pilotez votre activité commerciale avec un système de caisse, gestion des produits et suivi des ventes.",
+        features: ["Caisse enregistreuse", "Gestion produits", "Suivi des ventes", "Inventaire", "Clients & fidélité", "Tableau de bord"],
+      },
+      gestion: {
+        title: "Gestion",
+        description: "Outils avancés de gestion d'entreprise : comptabilité, RH, reporting et analyses stratégiques.",
+        features: ["Comptabilité", "Gestion RH", "Paie", "Reporting", "Analyses", "Multi-sites"],
+      },
+    },
+    stats: {
+      schools: "Établissements",
+      pharmacies: "Pharmacies",
+      users: "Utilisateurs actifs",
+      uptime: "Disponibilité",
+    },
+    features: {
+      title: "Pourquoi choisir SaveMali ?",
+      subtitle: "Conçu pour les réalités des entreprises en République Démocratique du Congo et d'Afrique centrale.",
+      items: [
+        { title: "Interface intuitive", description: "Prise en main rapide, même sans formation technique préalable." },
+        { title: "Hors ligne disponible", description: "Continuez à travailler même sans connexion internet stable." },
+        { title: "Sécurisé", description: "Vos données sont chiffrées et sauvegardées en temps réel." },
+        { title: "Support local", description: "Une équipe dédiée en RDC pour vous accompagner." },
+        { title: "Multi-langues", description: "Interface disponible en français et en anglais." },
+      ],
+    },
+    cta: {
+      title: "Prêt à transformer votre gestion ?",
+      subtitle: "Rejoignez des centaines d'entreprises en RDC et Afrique centrale qui font confiance à SaveMali.",
+      button: "Démarrer maintenant",
+      buttonSecondary: "Parler à un expert",
+    },
+    footer: {
+      tagline: "Tout gérer, mieux progresser.",
+      modules: "Modules",
+      company: "Entreprise",
+      about: "À propos",
+      contact: "Contact",
+      legal: "Légal",
+      privacy: "Confidentialité",
+      terms: "Conditions d'utilisation",
+      rights: "Tous droits réservés.",
+      madeIn: "Fait en RDC 🇨🇩",
+    },
+    auth: {
+      signIn: "Se connecter",
+      signUp: "Créer un compte",
+      email: "Adresse e-mail",
+      password: "Mot de passe",
+      confirmPassword: "Confirmer le mot de passe",
+      forgotPassword: "Mot de passe oublié ?",
+      noAccount: "Pas encore de compte ?",
+      hasAccount: "Déjà un compte ?",
+      workspaceName: "Nom de votre espace de travail",
+      workspaceType: "Type d'activité",
+      workspaceNamePlaceholder: "Ex : Pharmacie Centrale Kinshasa",
+      workspaceTypes: {
+        pharmacy: "Pharmacie",
+        commerce: "Commerce / Boutique",
+        education: "Établissement scolaire",
+        gestion: "Gestion d'entreprise",
+      },
+      selectMedicines: "Sélectionnez vos médicaments",
+      selectMedicinesDesc: "Choisissez dans le catalogue préchargé les médicaments de votre pharmacie. Vous pourrez en ajouter/supprimer à tout moment.",
+      searchMedicines: "Rechercher un médicament...",
+      selectedCount: "sélectionné(s)",
+      next: "Suivant",
+      back: "Retour",
+      finish: "Créer mon espace",
+      step1: "Compte",
+      step2: "Espace de travail",
+      step3: "Catalogue",
+      loading: "Chargement...",
+      error: "Une erreur s'est produite",
+      success: "Compte créé avec succès !",
+    },
+    dashboard: {
+      title: "Tableau de bord",
+      welcome: "Bienvenue sur SaveMali",
+      overview: "Vue d'ensemble",
+    },
+    settings: {
+      title: "Paramètres",
+      display: "Affichage",
+      displayDesc: "Personnalisez l'apparence de votre interface",
+      fontSize: "Taille de police",
+      fontSizeSmall: "Petite",
+      fontSizeMedium: "Moyenne",
+      fontSizeLarge: "Grande",
+      theme: "Thème",
+      themeLight: "Clair",
+      themeDark: "Sombre",
+      themeSystem: "Système",
+      clearCache: "Vider le cache",
+      clearCacheDesc: "Supprime les données mises en cache localement",
+      clearCacheDone: "Cache vidé avec succès",
+      security: "Sécurité",
+      securityDesc: "Gérez la sécurité de votre compte",
+      email: "Email",
+      workspace: "Espace de travail",
+      changePassword: "Changer le mot de passe",
+      changePasswordDesc: "Recevez un lien de réinitialisation par email",
+      passwordSent: "Email de réinitialisation envoyé",
+      backups: "Sauvegardes",
+      backupsDesc: "Gérez les sauvegardes de vos données",
+      lastBackup: "Dernière sauvegarde",
+      never: "Jamais",
+      triggerBackup: "Lancer une sauvegarde",
+      backupStarted: "Sauvegarde démarrée",
+      backupInProgress: "Sauvegarde en cours...",
+      notifications: "Notifications",
+      notificationsDesc: "Gérez vos préférences de notification",
+      emailNotif: "Notifications par email",
+      emailNotifDesc: "Recevez des notifications par email",
+      whatsappNotif: "Notifications WhatsApp",
+      whatsappNotifDesc: "Recevez des alertes sur WhatsApp",
+      productUpdates: "Mises à jour produit",
+      productUpdatesDesc: "Informations sur les nouvelles fonctionnalités",
+      securityAlerts: "Alertes de sécurité",
+      securityAlertsDesc: "Alertes importantes concernant votre compte",
+      settings: "Paramètres",
+    },
+  },
+  en: {
+    nav: {
+      home: "Home",
+      education: "Education",
+      pharmacy: "Pharmacy",
+      commerce: "Commerce",
+      gestion: "Management",
+      login: "Login",
+      signup: "Sign Up",
+    },
+    hero: {
+      tagline: "MANAGE EVERYTHING, PROGRESS BETTER.",
+      subtitle: "An integrated platform to manage your pharmacy, business, school and company operations.",
+      cta: "Get started free",
+      ctaSecondary: "Explore modules",
+      badge: "All-in-one ERP platform · DRC",
+    },
+    modules: {
+      title: "One platform. All your needs.",
+      subtitle: "SaveMali brings together four powerful modules to address all modern management needs in Central Africa.",
+      education: {
+        title: "Education",
+        description: "Manage your schools, enrollments, grades, schedules and parent communications.",
+        features: ["Student management", "Grades & report cards", "Timetable", "Parent communication", "Attendance", "Tuition payments"],
+      },
+      pharmacy: {
+        title: "Pharmacy",
+        description: "Pre-loaded medicine catalog — add to your stock with one click. Prescriptions, sales and expiry alerts.",
+        features: ["Medicine catalog", "Prescriptions", "Point of sale", "Expiry alerts", "Suppliers", "Financial reports"],
+      },
+      commerce: {
+        title: "Commerce",
+        description: "Run your business with a cash register system, product management and sales tracking.",
+        features: ["Cash register", "Product management", "Sales tracking", "Inventory", "Customers & loyalty", "Dashboard"],
+      },
+      gestion: {
+        title: "Management",
+        description: "Advanced business management tools: accounting, HR, reporting and strategic analytics.",
+        features: ["Accounting", "HR management", "Payroll", "Reporting", "Analytics", "Multi-site"],
+      },
+    },
+    stats: {
+      schools: "Schools",
+      pharmacies: "Pharmacies",
+      users: "Active users",
+      uptime: "Uptime",
+    },
+    features: {
+      title: "Why choose SaveMali?",
+      subtitle: "Built for the realities of businesses in the Democratic Republic of Congo and Central Africa.",
+      items: [
+        { title: "Intuitive interface", description: "Quick to learn, even without prior technical training." },
+        { title: "Offline available", description: "Keep working even without a stable internet connection." },
+        { title: "Secure", description: "Your data is encrypted and backed up in real time." },
+        { title: "Local support", description: "A dedicated team in the DRC to support you." },
+        { title: "Multilingual", description: "Interface available in French and English." },
+      ],
+    },
+    cta: {
+      title: "Ready to transform your management?",
+      subtitle: "Join hundreds of businesses in the DRC and Central Africa that trust SaveMali.",
+      button: "Start now",
+      buttonSecondary: "Talk to an expert",
+    },
+    footer: {
+      tagline: "Manage everything, progress better.",
+      modules: "Modules",
+      company: "Company",
+      about: "About",
+      contact: "Contact",
+      legal: "Legal",
+      privacy: "Privacy",
+      terms: "Terms of use",
+      rights: "All rights reserved.",
+      madeIn: "Made in DRC 🇨🇩",
+    },
+    auth: {
+      signIn: "Sign in",
+      signUp: "Create account",
+      email: "Email address",
+      password: "Password",
+      confirmPassword: "Confirm password",
+      forgotPassword: "Forgot password?",
+      noAccount: "Don't have an account?",
+      hasAccount: "Already have an account?",
+      workspaceName: "Workspace name",
+      workspaceType: "Business type",
+      workspaceNamePlaceholder: "E.g. Central Pharmacy Kinshasa",
+      workspaceTypes: {
+        pharmacy: "Pharmacy",
+        commerce: "Commerce / Shop",
+        education: "School / Education",
+        gestion: "Business Management",
+      },
+      selectMedicines: "Select your medicines",
+      selectMedicinesDesc: "Choose from the pre-loaded catalog the medicines for your pharmacy. You can add/remove them at any time.",
+      searchMedicines: "Search medicine...",
+      selectedCount: "selected",
+      next: "Next",
+      back: "Back",
+      finish: "Create my workspace",
+      step1: "Account",
+      step2: "Workspace",
+      step3: "Catalog",
+      loading: "Loading...",
+      error: "An error occurred",
+      success: "Account created successfully!",
+    },
+    dashboard: {
+      title: "Dashboard",
+      welcome: "Welcome to SaveMali",
+      overview: "Overview",
+    },
+    settings: {
+      title: "Settings",
+      display: "Display",
+      displayDesc: "Customize your interface appearance",
+      fontSize: "Font size",
+      fontSizeSmall: "Small",
+      fontSizeMedium: "Medium",
+      fontSizeLarge: "Large",
+      theme: "Theme",
+      themeLight: "Light",
+      themeDark: "Dark",
+      themeSystem: "System",
+      clearCache: "Clear cache",
+      clearCacheDesc: "Delete locally cached data",
+      clearCacheDone: "Cache cleared successfully",
+      security: "Security",
+      securityDesc: "Manage your account security",
+      email: "Email",
+      workspace: "Workspace",
+      changePassword: "Change password",
+      changePasswordDesc: "Receive a reset link by email",
+      passwordSent: "Reset email sent",
+      backups: "Backups",
+      backupsDesc: "Manage your data backups",
+      lastBackup: "Last backup",
+      never: "Never",
+      triggerBackup: "Run backup",
+      backupStarted: "Backup started",
+      backupInProgress: "Backup in progress...",
+      notifications: "Notifications",
+      notificationsDesc: "Manage your notification preferences",
+      emailNotif: "Email notifications",
+      emailNotifDesc: "Receive notifications by email",
+      whatsappNotif: "WhatsApp notifications",
+      whatsappNotifDesc: "Receive alerts on WhatsApp",
+      productUpdates: "Product updates",
+      productUpdatesDesc: "News about new features",
+      securityAlerts: "Security alerts",
+      securityAlertsDesc: "Important alerts about your account",
+      settings: "Settings",
+    },
+  },
+}
+
+type LanguageContextType = {
+  lang: Language
+  setLang: (lang: Language) => void
+  t: typeof translations["fr"]
+}
+
+const LanguageContext = React.createContext<LanguageContextType | undefined>(undefined)
+
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const [lang, setLang] = React.useState<Language>(() => {
+    return (localStorage.getItem("savemali-lang") as Language) || "fr"
+  })
+
+  const handleSetLang = (newLang: Language) => {
+    localStorage.setItem("savemali-lang", newLang)
+    setLang(newLang)
+  }
+
+  return (
+    <LanguageContext.Provider value={{ lang, setLang: handleSetLang, t: translations[lang] }}>
+      {children}
+    </LanguageContext.Provider>
+  )
+}
+
+export function useLanguage() {
+  const ctx = React.useContext(LanguageContext)
+  if (!ctx) throw new Error("useLanguage must be used within LanguageProvider")
+  return ctx
+}
