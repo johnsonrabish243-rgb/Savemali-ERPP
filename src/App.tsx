@@ -10,6 +10,8 @@ import { Toaster } from "@/components/ui/sonner"
 import { fetchExchangeRate } from "@/lib/currency"
 import { LoadingScreen } from "@/components/LoadingScreen"
 import { isUserLockedOut } from "@/hooks/use-security"
+import { useAbuseProtection, useRequestTracking } from "@/hooks/use-abuse-protection"
+import { SecurityBlockPage } from "@/pages/SecurityBlockPage"
 
 const HomePage = React.lazy(() => import("@/pages/HomePage").then(m => ({ default: m.HomePage })))
 const EducationPage = React.lazy(() => import("@/pages/EducationPage").then(m => ({ default: m.EducationPage })))
@@ -71,6 +73,8 @@ function AppContent() {
     return !sessionStorage.getItem("savemali_loaded")
   })
   const [lockedOut, setLockedOut] = React.useState(() => isUserLockedOut())
+  const { isBlocked, remainingMs, status, resetProtection } = useAbuseProtection()
+  useRequestTracking()
 
   // Check lockout periodically (every 30s) for auto-reactivation
   React.useEffect(() => {
@@ -130,6 +134,18 @@ function AppContent() {
           remainingHours={Math.ceil(((Number(localStorage.getItem("savemali_lockout_until")) || Date.now()) - Date.now()) / 3600000)}
         />
       </React.Suspense>
+    )
+  }
+
+  // Abuse protection screen
+  if (isBlocked) {
+    return (
+      <SecurityBlockPage
+        remainingMs={remainingMs}
+        reason={status.reason}
+        lockoutLevel={status.lockoutLevel}
+        onBack={resetProtection}
+      />
     )
   }
 
