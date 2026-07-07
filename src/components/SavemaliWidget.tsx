@@ -134,13 +134,23 @@ async function sendMessage(messages: Message[], agent: Agent): Promise<string> {
       signal: controller.signal,
     })
 
+    const rawText = await res.text()
+
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.message || `HTTP ${res.status}`)
+      console.error("[AI] HTTP error", res.status, rawText)
+      let detail = ""
+      try { detail = JSON.parse(rawText).message || "" } catch {}
+      throw new Error(detail || `HTTP ${res.status}`)
     }
 
-    const data = await res.json()
+    let data: any
+    try { data = JSON.parse(rawText) } catch { data = { text: rawText } }
+
+    console.log("[AI] response:", data)
     return data.text ?? data.choices?.[0]?.message?.content ?? ""
+  } catch (err) {
+    console.error("[AI] sendMessage error:", err)
+    throw err
   } finally {
     clearTimeout(timer)
   }
@@ -258,6 +268,7 @@ export function SavemaliWidget() {
       const reply = await sendMessage(updated, agent)
       setMessages((prev) => [...prev, { role: "assistant", content: reply }])
     } catch (err: any) {
+      console.error("[AI] catch block:", err)
       let msg: string
       if (err?.name === "AbortError") {
         msg = fr
@@ -268,7 +279,7 @@ export function SavemaliWidget() {
           ? "Erreur réseau. Vérifiez votre connexion et réessayez."
           : "Network error. Check your connection and try again."
       } else {
-        msg = fr ? "Désolé, une erreur est survenue. Réessayez." : "Sorry, an error occurred. Please try again."
+        msg = fr ? `Erreur: ${err?.message || "inconnue"}` : `Error: ${err?.message || "unknown"}`
       }
       setMessages((prev) => [
         ...prev,
