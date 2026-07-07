@@ -2,7 +2,7 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")
 const LOGO_URL = "https://www.savemali.online/SaveMali_Logo.png"
 const SITE_URL = "https://www.savemali.online"
 const SUPPORT_EMAIL = "support@savemali.online"
-const FOOTER_COPY = "&copy; 2026 SaveMali SARL &mdash; Developpe par John Mocket (The Eye Masters)."
+const FOOTER_COPY = "2026 SaveMali SARL - Developpe par John Mocket"
 const FOOTER_ADDRESS = "Quartier Abbatoir, Avenue Cadastre No 321, Kalemie, Tanganyika, RDC"
 
 const ALLOWED_ORIGINS = [

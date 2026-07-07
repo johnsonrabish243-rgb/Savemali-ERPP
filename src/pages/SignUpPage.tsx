@@ -2,7 +2,7 @@ import * as React from "react"
 import {
   Mail, Lock, Eye, EyeOff, AlertCircle, Building2,
   Check, ChevronRight, ChevronLeft, Loader2,
-  FlaskConical, ShoppingCart, BookOpen, BarChart3, ArrowLeft, PartyPopper,
+  FlaskConical, ShoppingCart, BookOpen, BarChart3, ArrowLeft,
   RefreshCw, Copy, CheckCheck, Wand2, MailCheck, ShieldCheck
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -97,8 +97,9 @@ export function SignUpPage({ onNavigate }: Props) {
   const [workspaceName, setWorkspaceName] = React.useState("")
   const [workspaceType, setWorkspaceType] = React.useState<WorkspaceType>("pharmacy")
 
-  const [showWelcome, setShowWelcome] = React.useState(false)
+  const [showTransition, setShowTransition] = React.useState(false)
   const [createdWsType, setCreatedWsType] = React.useState<WorkspaceType>("pharmacy")
+  const [redirectCountdown, setRedirectCountdown] = React.useState(4)
 
   // Email verification (code-based)
   const [emailVerificationSent, setEmailVerificationSent] = React.useState(false)
@@ -106,6 +107,23 @@ export function SignUpPage({ onNavigate }: Props) {
   const [verifyCode, setVerifyCode] = React.useState(["", "", "", "", "", ""])
   const verifyCodeRefs = React.useRef<(HTMLInputElement | null)[]>([])
   const [verifying, setVerifying] = React.useState(false)
+
+  // Auto-redirect after transition
+  React.useEffect(() => {
+    if (!showTransition) return
+    const interval = setInterval(() => {
+      setRedirectCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval)
+          const target = createdWsType === "pharmacy" ? "pharmacy" : "dashboard"
+          checkAuth().then(() => onNavigate(target))
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [showTransition, createdWsType])
 
   // Invite flow
   const [inviteToken, setInviteToken] = React.useState<string | null>(null)
@@ -227,9 +245,9 @@ export function SignUpPage({ onNavigate }: Props) {
         if (wsError) console.error("Workspace creation error:", wsError)
       }
       await checkAuth()
-      // Redirect based on workspace type
-      const redirectPage = workspaceType === "pharmacy" ? "pharmacy" : "dashboard"
-      onNavigate(redirectPage)
+      // Show transition page with auto-redirect
+      setCreatedWsType(workspaceType)
+      setShowTransition(true)
     } catch (err: any) {
       setError(err.message || (fr ? "Erreur de vérification" : "Verification error"))
     } finally {
@@ -337,7 +355,7 @@ export function SignUpPage({ onNavigate }: Props) {
       import("@/lib/stats").then(({ invalidateStatsCache }) => invalidateStatsCache()).catch(() => {})
 
       setCreatedWsType(workspaceType)
-      setShowWelcome(true)
+      setShowTransition(true)
     } catch (err: any) {
       setError(err.message || t.auth.error)
     } finally {
@@ -575,34 +593,41 @@ export function SignUpPage({ onNavigate }: Props) {
         </Card>
       )}
 
-      {/* WELCOME */}
-      {showWelcome && (
+      {/* TRANSITION - Auto-redirect after signup */}
+      {showTransition && (
         <Card className="w-full max-w-sm shadow-lg">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-3 flex size-16 items-center justify-center rounded-full bg-accent/10">
-              <PartyPopper className="size-8 text-accent" />
+            <div className="mx-auto mb-3 flex size-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+              <Check className="size-8 text-green-600 dark:text-green-400" />
             </div>
-            <CardTitle className="text-2xl font-bold text-foreground">
-              {fr ? "Bienvenue sur SaveMali !" : "Welcome to SaveMali!"}
+            <CardTitle className="text-xl font-bold text-foreground">
+              {fr ? "Merci pour votre inscription !" : "Thank you for signing up!"}
             </CardTitle>
             <CardDescription className="text-muted-foreground">
               {fr
-                ? "Votre compte a été créé avec succès. Que souhaitez-vous faire ?"
-                : "Your account has been created successfully. What would you like to do?"}
+                ? "Votre compte a été créé avec succès. Vous allez être redirigé vers votre espace personnel dans quelques secondes..."
+                : "Your account has been created successfully. You will be redirected to your workspace in a few seconds..."}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {createdWsType === "pharmacy" && (
-              <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2" onClick={() => onNavigate("pharmacy")}>
-                <FlaskConical className="size-4" /> {fr ? "Ajouter mon stock maintenant" : "Add my stock now"}
-              </Button>
-            )}
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-center gap-2">
+              <Loader2 className="size-4 animate-spin text-accent" />
+              <p className="text-sm text-muted-foreground">
+                {fr ? "Redirection dans" : "Redirecting in"} <span className="font-bold text-foreground">{redirectCountdown}</span> {fr ? "secondes..." : "seconds..."}
+              </p>
+            </div>
+            <div className="rounded-lg bg-muted/50 p-3 text-center">
+              <p className="text-xs text-muted-foreground">
+                {fr ? "Espace :" : "Workspace :"} <span className="font-medium text-foreground capitalize">{workspaceName}</span>
+                <span className="mx-1.5 text-border">|</span>
+                {fr ? "Type :" : "Type :"} <span className="font-medium text-foreground capitalize">{createdWsType}</span>
+              </p>
+            </div>
             <Button
-              variant={createdWsType === "pharmacy" ? "outline" : "default"}
-              className={cn("w-full gap-2", createdWsType !== "pharmacy" && "bg-accent text-accent-foreground hover:bg-accent/90")}
-              onClick={async () => { await checkAuth(); onNavigate("dashboard") }}
+              className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
+              onClick={async () => { await checkAuth(); onNavigate(createdWsType === "pharmacy" ? "pharmacy" : "dashboard") }}
             >
-              {fr ? "Aller au tableau de bord" : "Go to dashboard"}
+              {fr ? "Aller maintenant" : "Go now"} <ChevronRight className="size-4" />
             </Button>
           </CardContent>
         </Card>
