@@ -258,7 +258,7 @@ export function SignUpPage({ onNavigate }: Props) {
   const handleResendCode = async () => {
     try {
       // Use InsForge SDK to resend verification email
-      const { error } = await insforge.auth.resendVerificationEmail({ email: verificationEmail })
+      const { error } = await insforge.auth.resendVerificationEmail({ email: verificationEmail, redirectTo: `${window.location.origin}/signin` })
       if (error) {
         // Check if it's a rate limit error
         const msg = (error.message || "").toLowerCase()
@@ -281,7 +281,7 @@ export function SignUpPage({ onNavigate }: Props) {
   const handleInviteFinish = async () => {
     setLoading(true); setError(null)
     try {
-      const { data: authData, error: signUpError } = await insforge.auth.signUp({ email, password })
+      const { data: authData, error: signUpError } = await insforge.auth.signUp({ email, password, redirectTo: `${window.location.origin}/signin` })
       if (signUpError) throw signUpError
 
       if (authData?.requireEmailVerification) {
@@ -324,7 +324,7 @@ export function SignUpPage({ onNavigate }: Props) {
   const handleFinish = async () => {
     setLoading(true); setError(null)
     try {
-      const { data: authData, error: signUpError } = await insforge.auth.signUp({ email, password })
+      const { data: authData, error: signUpError } = await insforge.auth.signUp({ email, password, redirectTo: `${window.location.origin}/signin` })
       if (signUpError) {
         const msg = (signUpError.message || "").toLowerCase()
         if (msg.includes("already") || msg.includes("existe") || msg.includes("exist")) {
@@ -339,7 +339,6 @@ export function SignUpPage({ onNavigate }: Props) {
       }
 
       if (authData?.requireEmailVerification) {
-        // Store workspace data in localStorage for creation after email verification
         localStorage.setItem("savemali_pending_workspace", JSON.stringify({
           name: workspaceName.trim(),
           type: workspaceType,
