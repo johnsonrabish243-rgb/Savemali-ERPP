@@ -41,7 +41,7 @@ export function SignInPage({ onNavigate }: Props) {
   const [verifying, setVerifying] = React.useState(false)
   const [verifyError, setVerifyError] = React.useState<string | null>(null)
 
-  // Redirect after email verification
+  // Redirect after email verification (for link-based fallback)
   const [showTransition, setShowTransition] = React.useState(false)
   const [redirectCountdown, setRedirectCountdown] = React.useState(4)
   const [redirectTarget, setRedirectTarget] = React.useState<string>("dashboard")
@@ -52,31 +52,7 @@ export function SignInPage({ onNavigate }: Props) {
     const type = params.get("insforge_type")
     if (status === "success" && type === "verify_email") {
       window.history.replaceState({}, "", window.location.pathname)
-      // Create workspace from pending data
-      const pending = localStorage.getItem("savemali_pending_workspace")
-      if (pending) {
-        try {
-          const ws = JSON.parse(pending)
-          localStorage.removeItem("savemali_pending_workspace")
-          // Create workspace after user is authenticated
-          insforge.auth.getCurrentUser().then(({ data: user }) => {
-            if (user?.id) {
-              insforge.database.from("workspaces").insert([{
-                owner_id: user.id,
-                name: ws.name,
-                type: ws.type,
-              }]).then(() => {
-                setRedirectTarget(ws.type === "pharmacy" ? "pharmacy" : "dashboard")
-                setShowTransition(true)
-              })
-            }
-          })
-        } catch {
-          setEmailVerified(true)
-        }
-      } else {
-        setEmailVerified(true)
-      }
+      setEmailVerified(true)
     }
   }, [])
 

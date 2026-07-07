@@ -162,12 +162,12 @@ function AppContent() {
           <h1 className="text-xl font-bold text-foreground">{lang === "fr" ? "Vérifiez votre email" : "Verify your email"}</h1>
           <p className="text-sm text-muted-foreground">
             {lang === "fr"
-              ? `Un email de vérification a été envoyé à ${user.email}. Veuillez cliquer sur le lien pour activer votre compte.`
-              : `A verification email was sent to ${user.email}. Click the link to activate your account.`}
+              ? `Un code de vérification a été envoyé à ${user.email}. Veuillez vérifier votre boîte de réception et entrer le code pour activer votre compte.`
+              : `A verification code was sent to ${user.email}. Please check your inbox and enter the code to activate your account.`}
           </p>
           <Button onClick={() => resendVerification()} variant="outline" className="gap-2">
             <Mail className="size-4" />
-            {lang === "fr" ? "Renvoyer l'email" : "Resend email"}
+            {lang === "fr" ? "Renvoyer le code" : "Resend code"}
           </Button>
           <Button onClick={() => signOut()} variant="ghost" className="text-sm">
             {lang === "fr" ? "Se déconnecter" : "Sign out"}

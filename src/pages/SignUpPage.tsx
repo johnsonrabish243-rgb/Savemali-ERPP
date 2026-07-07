@@ -339,11 +339,6 @@ export function SignUpPage({ onNavigate }: Props) {
       }
 
       if (authData?.requireEmailVerification) {
-        localStorage.setItem("savemali_pending_workspace", JSON.stringify({
-          name: workspaceName.trim(),
-          type: workspaceType,
-          email: email,
-        }))
         setVerificationEmail(email)
         setEmailVerificationSent(true)
         setStep(3)
@@ -532,44 +527,68 @@ export function SignUpPage({ onNavigate }: Props) {
         </Card>
       )}
 
-      {/* STEP 3: CHECK YOUR EMAIL (link-based verification) */}
+      {/* STEP 3: EMAIL VERIFICATION CODE */}
       {step === 3 && emailVerificationSent && (
         <Card className="w-full max-w-sm shadow-lg">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-3 flex size-16 items-center justify-center rounded-full bg-accent/10">
-              <MailCheck className="size-8 text-accent" />
+            <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-accent/10">
+              <ShieldCheck className="size-6 text-accent" />
             </div>
-            <CardTitle className="text-xl font-bold text-foreground">
+            <CardTitle className="text-lg font-bold text-foreground">
               {fr ? "Vérifiez votre email" : "Verify your email"}
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              {fr
-                ? `Un email de vérification a été envoyé à ${verificationEmail}. Cliquez sur le lien pour activer votre compte.`
-                : `A verification email was sent to ${verificationEmail}. Click the link to activate your account.`}
+              {fr ? `Code envoyé à ${verificationEmail}` : `Code sent to ${verificationEmail}`}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-lg bg-muted/50 p-4 text-center">
-              <p className="text-xs text-muted-foreground">
-                {fr ? "Après vérification, vous serez automatiquement redirigé vers votre espace." : "After verification, you will be automatically redirected to your workspace."}
-              </p>
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="size-4" />
+                <AlertDescription className="text-sm">{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex justify-center gap-2">
+              {verifyCode.map((digit, i) => (
+                <input
+                  key={i}
+                  ref={(el) => { verifyCodeRefs.current[i] = el }}
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleCodeChange(i, e.target.value)}
+                  onKeyDown={(e) => handleCodeKeyDown(i, e)}
+                  onPaste={i === 0 ? handleCodePaste : undefined}
+                  className="size-12 rounded-lg border border-input bg-background text-center text-lg font-bold text-foreground focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
+                  autoFocus={i === 0}
+                />
+              ))}
             </div>
+
+            <p className="text-center text-xs text-muted-foreground">
+              {fr ? "Le code expire dans 1 minute 30 secondes" : "The code expires in 1 minute 30 seconds"}
+            </p>
+
             <Button
-              variant="outline"
-              className="w-full gap-2"
-              onClick={handleResendCode}
+              onClick={() => handleVerifyCode()}
+              disabled={verifyCode.join("").length !== 6 || verifying}
+              className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
             >
-              <MailCheck className="size-4" />
-              {fr ? "Renvoyer l'email" : "Resend email"}
+              {verifying ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
+              {fr ? "Vérifier" : "Verify"}
             </Button>
-            <Button
-              variant="ghost"
-              className="w-full"
-              onClick={() => { setStep(1); setEmailVerificationSent(false); setError(null); localStorage.removeItem("savemali_pending_workspace") }}
-            >
-              <ArrowLeft className="mr-2 size-4" />
-              {fr ? "Changer d'email" : "Change email"}
-            </Button>
+
+            <div className="flex flex-col gap-2">
+              <Button variant="ghost" onClick={handleResendCode} className="w-full text-accent">
+                {fr ? "Renvoyer le code" : "Resend code"}
+              </Button>
+              <Button variant="ghost" onClick={() => { setStep(1); setVerifyCode(["", "", "", "", "", ""]); setEmailVerificationSent(false); setError(null) }} className="w-full">
+                <ArrowLeft className="mr-2 size-4" />
+                {fr ? "Changer d'email" : "Change email"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
