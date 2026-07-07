@@ -19,7 +19,6 @@ import { useOTP } from "@/hooks/use-otp"
 import { formatDRCPhone, isValidPhoneNumber } from "@/lib/textbee"
 import { ModeToggle } from "@/components/mode-toggle"
 import { cn } from "@/lib/utils"
-import { generateCsrfToken, validateCsrfToken } from "@/lib/security"
 import type { Page } from "@/App"
 
 interface Props {
@@ -40,7 +39,6 @@ export function SignUpPage({ onNavigate }: Props) {
   const [step, setStep] = React.useState(1)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
-  const [blockedUntil, setBlockedUntil] = React.useState<number | null>(null)
 
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
@@ -246,17 +244,13 @@ export function SignUpPage({ onNavigate }: Props) {
   }
 
   const handleInviteFinish = async () => {
-    if (blockedUntil && Date.now() < blockedUntil) {
-      setError(fr ? "Trop de tentatives. Réessayez plus tard." : "Too many attempts. Try again later.")
-      return
-    }
     setLoading(true); setError(null)
-    const csrfToken = generateCsrfToken()
     try {
       const { data: authData, error: signUpError } = await insforge.auth.signUp({ email, password })
       if (signUpError) throw signUpError
 
-      if (!authData?.user) throw new Error("No user returned")
+      const uid = authData?.user?.id || (authData as any)?.id || ""
+      if (!uid) throw new Error(fr ? "Erreur de création du compte" : "Account creation error")
 
       // Verify the invite still exists and email matches
       const { data: memberData } = await insforge.database
@@ -266,14 +260,14 @@ export function SignUpPage({ onNavigate }: Props) {
         .eq("status", "pending")
         .maybeSingle()
       if (!memberData) throw new Error(fr ? "Invitation expirée ou invalide." : "Invite expired or invalid.")
-      if (memberData.email.toLowerCase() !== email.toLowerCase()) {
+      if ((memberData as any).email.toLowerCase() !== email.toLowerCase()) {
         throw new Error(fr ? "Cet email ne correspond pas à l'invitation." : "This email doesn't match the invitation.")
       }
 
       // Link the member to this user account
       const { error: linkError } = await insforge.database.from("workspace_members")
         .update({
-          user_id: authData.user.id,
+          user_id: uid,
           status: "active",
           accepted_at: new Date().toISOString(),
         })
@@ -282,11 +276,6 @@ export function SignUpPage({ onNavigate }: Props) {
 
       if (linkError) throw linkError
 
-      if (!validateCsrfToken(csrfToken)) {
-        setError(fr ? "Erreur de sécurité CSRF" : "CSRF security error")
-        setLoading(false)
-        return
-      }
       await checkAuth()
       onNavigate("dashboard")
     } catch (err: any) {
@@ -297,12 +286,7 @@ export function SignUpPage({ onNavigate }: Props) {
   }
 
   const handleFinish = async () => {
-    if (blockedUntil && Date.now() < blockedUntil) {
-      setError(fr ? "Trop de tentatives. Réessayez plus tard." : "Too many attempts. Try again later.")
-      return
-    }
     setLoading(true); setError(null)
-    const csrfToken = generateCsrfToken()
     try {
       const { data: authData, error: signUpError } = await insforge.auth.signUp({ email, password })
       if (signUpError) {
@@ -319,21 +303,14 @@ export function SignUpPage({ onNavigate }: Props) {
         return
       }
 
-      const uid = authData?.user?.id || authData?.id || ""
+      const uid = authData?.user?.id || (authData as any)?.id || ""
       if (!uid) throw new Error(fr ? "Erreur de création du compte" : "Account creation error")
 
       const { data: wsData, error: wsError } = await insforge.database.from("workspaces").insert([{ owner_id: uid, name: workspaceName.trim(), type: workspaceType }]).select().single()
       if (wsError) throw wsError
 
-      import("@/lib/stats").then(({ invalidateStatsCache }) => invalidateStatsCache())
+      import("@/lib/stats").then(({ invalidateStatsCache }) => invalidateStatsCache()).catch(() => {})
 
-      if (!validateCsrfToken(csrfToken)) {
-        setError(fr ? "Erreur de sécurité CSRF" : "CSRF security error")
-        setLoading(false)
-        setShowOTP(false)
-        setOtpVerified(false)
-        return
-      }
       setCreatedWsType(workspaceType)
       setShowWelcome(true)
     } catch (err: any) {

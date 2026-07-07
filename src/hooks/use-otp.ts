@@ -58,7 +58,7 @@ export function useOTP(): UseOTPReturn {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [secondsLeft > 0])
+  }, [secondsLeft])
 
   const clearError = React.useCallback(() => setError(null), [])
 

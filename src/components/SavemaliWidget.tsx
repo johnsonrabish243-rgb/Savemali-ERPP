@@ -117,8 +117,12 @@ async function sendMessage(messages: Message[], agent: Agent): Promise<string> {
       { role: "system", content: SYSTEM_PROMPTS[agent] },
       ...history,
     ],
-    max_completion_tokens: 800,
+    max_tokens: 800,
   })
+
+  if ((res as any).error) {
+    throw new Error((res as any).error.message || "AI API error")
+  }
 
   return res.choices?.[0]?.message?.content ?? ""
 }
@@ -247,6 +251,7 @@ export function SavemaliWidget() {
   const switchAgent = (a: Agent) => {
     setAgent(a)
     setMessages([])
+    setLoading(false)
   }
 
   const chatEmpty = messages.length === 0 && !loading

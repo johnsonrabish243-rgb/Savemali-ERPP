@@ -110,16 +110,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         initSession()
 
-        try {
-          const { device, browser } = getDeviceInfo()
-          await logAudit({
-            action: "login",
-            workspace_id: result.workspace?.id,
-            actor_id: user.id,
-            actor_email: user.email,
-            metadata: { device, browser },
-          })
-        } catch {}
+        const wasJustLoggedIn = sessionStorage.getItem("savemali_just_logged_in")
+        if (wasJustLoggedIn) {
+          sessionStorage.removeItem("savemali_just_logged_in")
+          try {
+            const { device, browser } = getDeviceInfo()
+            await logAudit({
+              action: "login",
+              workspace_id: result.workspace?.id,
+              actor_id: user.id,
+              actor_email: user.email,
+              metadata: { device, browser },
+            })
+          } catch {}
+        }
       } catch (err) {
         if (!cancelled) {
           setState({ user: null, workspace: null, loading: false, isOwner: false })

@@ -82,6 +82,7 @@ export function SignInPage({ onNavigate }: Props) {
         }
       }
       trackLoginAttempt(true)
+      sessionStorage.setItem("savemali_just_logged_in", "1")
       await logAudit({ action: "login", actor_email: email, metadata: { success: true } })
       await checkAuth()
       onNavigate("dashboard")
