@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils"
 import { useLanguage } from "@/lib/i18n"
 import { checkMessageSafety, checkAiRateLimit, sanitizeAiInput, getRejectionMessage } from "@/lib/ai-security"
 
-const AI_URL = `${import.meta.env.VITE_INSFORGE_URL}/api/ai/chat/completion`
-const AI_KEY = import.meta.env.VITE_INSFORGE_ANON_KEY
+const AI_URL = `${import.meta.env.VITE_INSFORGE_URL || ""}/api/ai/chat/completion`
+const AI_KEY = import.meta.env.VITE_INSFORGE_ANON_KEY || ""
 
 type Agent = "support" | "dpo"
 
@@ -108,6 +108,10 @@ interface Message {
 const MAX_HISTORY = 20
 
 async function sendMessage(messages: Message[], agent: Agent): Promise<string> {
+  if (!AI_URL.startsWith("http")) {
+    throw new Error("AI configuration missing. Please set VITE_INSFORGE_URL in Vercel.")
+  }
+
   const history = messages.map((m) => ({
     role: m.role as "user" | "assistant" | "system",
     content: m.content,
@@ -137,7 +141,6 @@ async function sendMessage(messages: Message[], agent: Agent): Promise<string> {
     const rawText = await res.text()
 
     if (!res.ok) {
-      console.error("[AI] HTTP error", res.status, rawText)
       let detail = ""
       try { detail = JSON.parse(rawText).message || "" } catch {}
       throw new Error(detail || `HTTP ${res.status}`)
@@ -146,10 +149,8 @@ async function sendMessage(messages: Message[], agent: Agent): Promise<string> {
     let data: any
     try { data = JSON.parse(rawText) } catch { data = { text: rawText } }
 
-    console.log("[AI] response:", data)
     return data.text ?? data.choices?.[0]?.message?.content ?? ""
   } catch (err) {
-    console.error("[AI] sendMessage error:", err)
     throw err
   } finally {
     clearTimeout(timer)
@@ -268,7 +269,6 @@ export function SavemaliWidget() {
       const reply = await sendMessage(updated, agent)
       setMessages((prev) => [...prev, { role: "assistant", content: reply }])
     } catch (err: any) {
-      console.error("[AI] catch block:", err)
       let msg: string
       if (err?.name === "AbortError") {
         msg = fr
