@@ -8,11 +8,23 @@
  *   { "phone": "+243XXXXXXXXX", "code": "123456", "purpose": "login" }
  */
 
-const corsHeaders: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
-};
+const ALLOWED_ORIGINS = [
+  "https://savemali.vercel.app",
+  "https://savemali.com",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin");
+  const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
+    "Access-Control-Allow-Credentials": "true",
+  };
+}
 
 const DB_URL = "https://55h7r6yk.us-east.insforge.app/api/database/records";
 const API_KEY = Deno.env.get("API_KEY")!;
@@ -58,14 +70,14 @@ async function dbDelete(table: string, match: string) {
 
 export default async function (req: Request): Promise<Response> {
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return new Response(null, { status: 204, headers: getCorsHeaders(req) });
   }
 
   try {
     if (req.method !== "POST") {
       return new Response(
         JSON.stringify({ error: "Method not allowed" }),
-        { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 405, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -74,14 +86,14 @@ export default async function (req: Request): Promise<Response> {
     if (!phone || !code) {
       return new Response(
         JSON.stringify({ error: "Phone number and code are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     if (!/^\d{6}$/.test(code)) {
       return new Response(
         JSON.stringify({ error: "Invalid code format. Must be 6 digits." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -95,7 +107,7 @@ export default async function (req: Request): Promise<Response> {
     if (!otpRecord) {
       return new Response(
         JSON.stringify({ error: "No verification code found. Request a new one." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -104,7 +116,7 @@ export default async function (req: Request): Promise<Response> {
       await dbUpdate("otp_codes", `id=eq.${otpRecord.id}`, { used: true });
       return new Response(
         JSON.stringify({ error: "Code expired. Request a new one." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -113,7 +125,7 @@ export default async function (req: Request): Promise<Response> {
       await dbUpdate("otp_codes", `id=eq.${otpRecord.id}`, { used: true });
       return new Response(
         JSON.stringify({ error: "Max attempts exceeded. Request a new code." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -130,7 +142,7 @@ export default async function (req: Request): Promise<Response> {
       const remaining = otpRecord.max_attempts - (otpRecord.attempts + 1);
       return new Response(
         JSON.stringify({ error: "Invalid code", attemptsRemaining: Math.max(0, remaining) }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -143,7 +155,7 @@ export default async function (req: Request): Promise<Response> {
       const remaining = otpRecord.max_attempts - (otpRecord.attempts + 1);
       return new Response(
         JSON.stringify({ error: "Invalid code", attemptsRemaining: Math.max(0, remaining) }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -155,13 +167,13 @@ export default async function (req: Request): Promise<Response> {
 
     return new Response(
       JSON.stringify({ success: true, message: "Verification successful", purpose }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("Verify OTP error:", err);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 }

@@ -14,11 +14,23 @@
  * purposes: "login" | "register" | "password_reset" | "2fa"
  */
 
-const corsHeaders: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
-};
+const ALLOWED_ORIGINS = [
+  "https://savemali.vercel.app",
+  "https://savemali.com",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin");
+  const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
+    "Access-Control-Allow-Credentials": "true",
+  };
+}
 
 function generateOTP(): string {
   const array = new Uint8Array(6);
@@ -124,14 +136,14 @@ async function dbUpsert(table: string, row: Record<string, unknown>, matchCol: s
 
 export default async function (req: Request): Promise<Response> {
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return new Response(null, { status: 204, headers: getCorsHeaders(req) });
   }
 
   try {
     if (req.method !== "POST") {
       return new Response(
         JSON.stringify({ error: "Method not allowed" }),
-        { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 405, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -140,14 +152,14 @@ export default async function (req: Request): Promise<Response> {
     if (!phone) {
       return new Response(
         JSON.stringify({ error: "Phone number is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     if (!isValidE164(phone)) {
       return new Response(
         JSON.stringify({ error: "Invalid phone number format. Use E.164: +243XXXXXXXXX" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -155,7 +167,7 @@ export default async function (req: Request): Promise<Response> {
     if (!validPurposes.includes(purpose)) {
       return new Response(
         JSON.stringify({ error: `Invalid purpose. Must be: ${validPurposes.join(", ")}` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -166,7 +178,7 @@ export default async function (req: Request): Promise<Response> {
       console.error("TEXTBEE_API_KEY or TEXTBEE_DEVICE_ID not set");
       return new Response(
         JSON.stringify({ error: "SMS service not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -185,7 +197,7 @@ export default async function (req: Request): Promise<Response> {
       );
       return new Response(
         JSON.stringify({ error: `Too many attempts. Try again in ${remainingMin} min.` }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -195,7 +207,7 @@ export default async function (req: Request): Promise<Response> {
         const wait = Math.ceil((RESEND_WINDOW_MS - elapsed) / 1000);
         return new Response(
           JSON.stringify({ error: `Wait ${wait}s before requesting a new code.` }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
     }
@@ -209,7 +221,7 @@ export default async function (req: Request): Promise<Response> {
       );
       return new Response(
         JSON.stringify({ error: "Max resend limit reached. Blocked for 1 hour." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -281,24 +293,24 @@ export default async function (req: Request): Promise<Response> {
       if (errMsg.toLowerCase().includes("invalid recipients")) {
         return new Response(
           JSON.stringify({ error: "Numéro de téléphone invalide ou appareil hors ligne. Vérifiez le numéro et réessayez." }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
       if (textbeeRes.status === 401) {
         return new Response(
           JSON.stringify({ error: "SMS service authentication failed" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
       if (textbeeRes.status === 404) {
         return new Response(
           JSON.stringify({ error: "SMS device not found or offline" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
       return new Response(
         JSON.stringify({ error: "Failed to send SMS. Try again." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -308,13 +320,13 @@ export default async function (req: Request): Promise<Response> {
         message: "Verification code sent",
         expiresIn: OTP_EXPIRY_MS / 1000,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("Send OTP error:", err);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 }
