@@ -151,28 +151,38 @@ function AppContent() {
 
   if (loading) {
     return (
-      <div className="flex min-h-svh flex-col items-center justify-center bg-background gap-6">
-        <img
-          src="/SaveMali_Logo.png"
-          alt="SaveMali"
-          className="size-16 rounded-xl object-cover shadow-lg"
-          onError={(e) => {
-            e.currentTarget.style.display = "none"
-          }}
-        />
-        <div className="w-48 flex flex-col items-center gap-3">
-          <div className="relative w-full h-[3px] overflow-hidden rounded-full bg-muted">
-            <div className="absolute top-0 left-0 h-full w-[40%] rounded-full bg-gradient-to-r from-transparent via-brand to-transparent" style={{ animation: "loading-sweep-auth 1.4s ease-in-out infinite" }} />
+      <div
+        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
+        style={{ background: "linear-gradient(160deg, #0a0a0a 0%, #1a1025 50%, #0a0a0a 100%)" }}
+      >
+        <div className="absolute w-[300px] h-[300px] rounded-full blur-[120px] opacity-20" style={{ background: "radial-gradient(circle, #c8399c 0%, transparent 70%)" }} />
+        <div className="relative z-10 flex flex-col items-center">
+          <img
+            src="/SaveMali_Logo.png"
+            alt="SaveMali"
+            className="w-20 h-20 rounded-2xl object-cover shadow-2xl mb-6"
+            style={{ animation: "splash-logo-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
+            onError={(e) => {
+              const img = e.currentTarget
+              img.style.display = "none"
+              const fallback = document.createElement("div")
+              fallback.className = "w-20 h-20 rounded-2xl bg-gradient-to-br from-[#c8399c] to-[#7c3aed] flex items-center justify-center shadow-2xl mb-6"
+              fallback.innerHTML = '<span class="text-3xl font-bold text-white">S</span>'
+              img.parentNode?.insertBefore(fallback, img)
+            }}
+          />
+          <div className="w-48 flex flex-col items-center gap-3">
+            <div className="relative w-full h-[2px] overflow-hidden rounded-full bg-white/10">
+              <div className="absolute top-0 left-0 h-full w-[40%] rounded-full bg-gradient-to-r from-[#c8399c] to-[#7c3aed]" style={{ animation: "loading-sweep-auth 1.4s ease-in-out infinite" }} />
+            </div>
+            <p className="text-[11px] text-white/30" style={{ animation: "pulse 2s ease-in-out infinite" }}>
+              {lang === "fr" ? "Connexion..." : "Connecting..."}
+            </p>
           </div>
-          <p className="text-[11px] text-muted-foreground/70" style={{ animation: "pulse 2s ease-in-out infinite" }}>
-            {lang === "fr" ? "Connexion..." : "Connecting..."}
-          </p>
         </div>
         <style>{`
-          @keyframes loading-sweep-auth {
-            0% { left: -40%; }
-            100% { left: 100%; }
-          }
+          @keyframes splash-logo-in { 0% { opacity: 0; transform: scale(0.8) translateY(12px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+          @keyframes loading-sweep-auth { 0% { left: -40%; } 100% { left: 100%; } }
         `}</style>
       </div>
     )
