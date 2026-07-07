@@ -98,7 +98,7 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
       const compressed = await compressImage(file)
       setProgress(50)
 
-      const path = `avatars/${workspaceId}/${userId}.jpg`
+      const path = `${workspaceId}/${userId}.jpg`
 
       // Remove old file if exists
       try { await insforge.storage.from(BUCKET).remove(path) } catch {}
@@ -131,7 +131,7 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
   const remove = React.useCallback(async (): Promise<boolean> => {
     if (!userId || !workspaceId) return false
     try {
-      const path = `avatars/${workspaceId}/${userId}.jpg`
+      const path = `${workspaceId}/${userId}.jpg`
       await insforge.storage.from(BUCKET).remove(path).catch(() => {})
       await insforge.database
         .from("workspace_members")

@@ -1,7 +1,7 @@
 import * as React from "react"
 import {
   Users, Plus, Mail, Edit2, Trash2, Loader2, RefreshCw,
-  UserCheck, UserX, Crown, Shield, Eye, ShieldCheck, User, Lock, Briefcase, Copy, Check
+  UserCheck, UserX, Crown, Shield, Eye, ShieldCheck, User, Lock, Briefcase, Copy, Check, Camera
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { UserAvatar } from "@/components/UserAvatar"
+import { AvatarUpload } from "@/components/AvatarUpload"
 import { DialogFooterBrand } from "@/components/DialogFooterBrand"
 import { PageFooter } from "@/components/PageFooter"
 import { EmptyState } from "@/components/EmptyState"
@@ -97,6 +98,7 @@ export function WorkspaceMembersPage({ onNavigate }: Props) {
   const [memberErrors, setMemberErrors] = React.useState<Record<string, string>>({})
   const [createdCredentials, setCreatedCredentials] = React.useState<{ email: string; password: string; name: string } | null>(null)
   const [copied, setCopied] = React.useState(false)
+  const [avatarMember, setAvatarMember] = React.useState<Member | null>(null)
 
   const workspaceType = workspace?.type ?? "gestion"
   const roles = WORKSPACE_ROLES[workspaceType] ?? WORKSPACE_ROLES.gestion
@@ -366,14 +368,23 @@ export function WorkspaceMembersPage({ onNavigate }: Props) {
               const isCurrentUser = m.email.toLowerCase() === user.email?.toLowerCase()
               return (
                 <div key={m.id} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 shadow-sm">
-                    <UserAvatar
-                      avatarUrl={m.avatar_url}
-                      name={m.display_name}
-                      email={m.email}
-                      size="default"
-                      className="size-10"
-                      roleColor={cn("text-sm font-semibold", roleInfo?.color)}
-                    />
+                    <div className="relative group">
+                      <UserAvatar
+                        avatarUrl={m.avatar_url}
+                        name={m.display_name}
+                        email={m.email}
+                        size="default"
+                        className="size-10"
+                        roleColor={cn("text-sm font-semibold", roleInfo?.color)}
+                      />
+                      <button
+                        onClick={() => setAvatarMember(m)}
+                        className="absolute inset-0 flex items-center justify-center rounded-full bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title={fr ? "Changer la photo" : "Change photo"}
+                      >
+                        <Camera className="size-4 text-foreground" />
+                      </button>
+                    </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-semibold text-foreground truncate">{m.display_name}</p>
@@ -546,6 +557,24 @@ export function WorkspaceMembersPage({ onNavigate }: Props) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Avatar upload dialog */}
+      {avatarMember && (
+        <AvatarUpload
+          userId={avatarMember.user_id || ""}
+          workspaceId={workspaceId}
+          name={avatarMember.display_name}
+          email={avatarMember.email}
+          currentAvatarUrl={avatarMember.avatar_url}
+          open={!!avatarMember}
+          onOpenChange={(o) => { if (!o) setAvatarMember(null) }}
+          onAvatarChange={(newUrl) => {
+            setMembers((prev) => prev.map((m) => m.id === avatarMember.id ? { ...m, avatar_url: newUrl } : m))
+            setAvatarMember(null)
+          }}
+        />
+      )}
+
       <PageFooter onNavigate={onNavigate} />
     </div>
   )
