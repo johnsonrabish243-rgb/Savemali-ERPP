@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Logo } from "@/components/Logo"
 import { SavemaliCaptcha } from "@/components/SavemaliCaptcha"
 import { PasswordStrengthMeter, evaluateStrength } from "@/components/PasswordStrength"
+import { validatePasswordStrict } from "@/lib/security"
 import { useLanguage } from "@/lib/i18n"
 import { insforge, type WorkspaceType } from "@/lib/supabase"
 import { useAuth } from "@/hooks/use-auth"
@@ -170,11 +171,8 @@ export function SignUpPage({ onNavigate }: Props) {
       return
     }
     if (password !== confirmPassword) { setError(fr ? "Les mots de passe ne correspondent pas" : "Passwords don't match"); return }
-    const { level } = evaluateStrength(password)
-    if (level === "weak" || level === "medium") {
-      setError(fr ? "Mot de passe trop faible. Minimum requis : Fort" : "Password too weak. Minimum required: Strong")
-      return
-    }
+    const pwError = validatePasswordStrict(password)
+    if (pwError) { setError(fr ? pwError : "Password too weak"); return }
     setError(null)
     if (inviteToken) {
       handleInviteFinish()

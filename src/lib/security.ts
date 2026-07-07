@@ -182,19 +182,41 @@ export function getLoginAttempts(): { count: number; locked: boolean; remainingT
 }
 
 // ── Password Strength ──
+const COMMON_PASSWORDS = new Set([
+  "password", "password1", "password12", "password123", "123456", "12345678", "123456789",
+  "qwerty", "abc123", "letmein", "admin", "welcome", "monkey", "master", "dragon",
+  "login", "princess", "football", "shadow", "sunshine", "trustno1", "iloveyou",
+  "batman", "access", "hello", "charlie", "donald", "passw0rd", "1234567890",
+  "savemali", "motdepasse", "secret", "aazerty", "azerty123", "motdepasse1",
+])
+
 export interface PasswordStrength {
   score: number // 0-4
   label: string
   color: string
 }
 
+export function validatePasswordStrict(password: string): string | null {
+  if (password.length < 10) return "Minimum 10 caractères requis"
+  if (!/[A-Z]/.test(password)) return "Au moins 1 majuscule requise"
+  if (!/[a-z]/.test(password)) return "Au moins 1 minuscule requise"
+  if (!/\d/.test(password)) return "Au moins 1 chiffre requis"
+  if (!/[^A-Za-z0-9]/.test(password)) return "Au moins 1 symbole requis"
+  if (COMMON_PASSWORDS.has(password.toLowerCase())) return "Mot de passe trop commun"
+  return null
+}
+
 export function getPasswordStrength(password: string): PasswordStrength {
   let score = 0
-  if (password.length >= 8) score++
-  if (password.length >= 12) score++
+
+  if (password.length >= 10) score++
+  if (password.length >= 14) score++
   if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++
   if (/\d/.test(password)) score++
   if (/[^A-Za-z0-9]/.test(password)) score++
+  if (!COMMON_PASSWORDS.has(password.toLowerCase())) score++
+
+  if (password.length < 10) score = Math.min(score, 1)
 
   if (score <= 1) return { score: 1, label: "Faible", color: "text-red-500" }
   if (score <= 2) return { score: 2, label: "Moyen", color: "text-orange-500" }
