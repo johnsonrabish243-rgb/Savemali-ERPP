@@ -460,27 +460,27 @@ export function SavemaliWidget() {
         type="button"
         onClick={() => setOpen((p) => !p)}
         className={cn(
-          "group relative flex size-16 items-center justify-center rounded-full shadow-[0_4px_24px_rgba(200,57,156,0.45)] transition-all duration-300 hover:shadow-[0_6px_32px_rgba(200,57,156,0.6)] hover:scale-110 active:scale-95 cursor-pointer",
+          "group relative flex size-16 items-center justify-center rounded-full shadow-[0_4px_24px_rgba(200,57,156,0.4)] transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-[0_8px_32px_rgba(200,57,156,0.55)] hover:scale-[1.06] active:scale-95 cursor-pointer",
           open
             ? "bg-muted-foreground/80 text-white shadow-none"
             : "bg-gradient-to-br from-[#c8399c] to-[#d94fb0] text-white"
         )}
         aria-label={open ? (fr ? "Fermer" : "Close") : (fr ? "Ouvrir l'assistant" : "Open assistant")}
         style={{
-          animation: !open ? "widget-float 3s ease-in-out infinite" : "none",
+          animation: !open ? "widget-float 5s cubic-bezier(0.4,0,0.2,1) infinite" : "none",
           willChange: "transform",
         }}
       >
         {!open && (
-          <span className="absolute inset-0 rounded-full border-2 border-[#c8399c]/40 animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]" />
+          <span className="absolute inset-0 rounded-full border-[1.5px] border-[#c8399c]/30 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]" />
         )}
         {open ? <X className="size-6" /> : <MessageCircle className="size-6" />}
       </button>
 
       <style>{`
         @keyframes widget-float {
-          0%, 100% { transform: translateY(0); box-shadow: 0 4px 24px rgba(200,57,156,0.45); }
-          50% { transform: translateY(-6px); box-shadow: 0 8px 32px rgba(200,57,156,0.55); }
+          0%, 100% { transform: translateY(0); box-shadow: 0 4px 24px rgba(200,57,156,0.4); }
+          50% { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(200,57,156,0.5); }
         }
       `}</style>
     </div>
