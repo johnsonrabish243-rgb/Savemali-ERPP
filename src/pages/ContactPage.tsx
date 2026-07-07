@@ -61,9 +61,12 @@ function recordClientRateLimit(): void {
   }
 }
 
-// Client-side sanitization
 function sanitizeClient(input: string, max: number): string {
-  return input.trim().slice(0, max).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").replace(/<[^>]*>/g, "")
+  return input.slice(0, max).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").replace(/<[^>]*>/g, "")
+}
+
+function trimMessage(input: string): string {
+  return input.replace(/^\s+/, "").replace(/\s+$/, "")
 }
 
 export function ContactPage({ onNavigate }: Props) {
@@ -126,7 +129,7 @@ export function ContactPage({ onNavigate }: Props) {
           email: form.email.trim().toLowerCase(),
           phone: form.phone.trim() || undefined,
           address: form.address.trim() || undefined,
-          message: form.message.trim(),
+          message: form.message,
         }),
       })
 
@@ -204,7 +207,7 @@ export function ContactPage({ onNavigate }: Props) {
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="message" className="text-sm font-medium text-foreground">{fr ? "Message" : "Message"} *</label>
-                    <textarea id="message" rows={5} required maxLength={2000} value={form.message} onChange={(e) => handleChange("message", e.target.value)} className="w-full rounded-sm border border-input bg-background px-4 py-3 text-sm leading-relaxed text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" style={{ whiteSpace: "pre-wrap", letterSpacing: "0.02em" }} />
+                    <textarea id="message" rows={5} required maxLength={2000} value={form.message} onChange={(e) => handleChange("message", e.target.value)} className="w-full rounded-sm border border-input bg-background px-4 py-3 text-sm leading-relaxed text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" style={{ whiteSpace: "pre-wrap", wordWrap: "break-word", overflowWrap: "break-word" }} />
                   </div>
                   {error && (
                     <div className="flex items-center gap-2 rounded-sm bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-400">
