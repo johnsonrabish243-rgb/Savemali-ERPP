@@ -18,6 +18,26 @@ function getCorsHeaders(req: Request): Record<string, string> {
   };
 }
 
+// ── Logo cache (loaded once at cold start) ──
+
+const LOGO_URL = "https://55h7r6yk.us-east.insforge.app/api/storage/buckets/avatars/objects/avatars%2Fsave-mali-logo%2Flogo.png?v=3a37ba1efd147a36099514335c3f374a";
+let logoBuffer: Buffer | null = null;
+let logoLoaded = false;
+
+async function loadLogo(): Promise<Buffer | null> {
+  if (logoLoaded) return logoBuffer;
+  logoLoaded = true;
+  try {
+    const res = await fetch(LOGO_URL);
+    if (!res.ok) return null;
+    const arrayBuf = await res.arrayBuffer();
+    logoBuffer = Buffer.from(arrayBuf);
+    return logoBuffer;
+  } catch {
+    return null;
+  }
+}
+
 // ── Input Validation ──
 
 const MAX_NAME = 100;
@@ -77,7 +97,7 @@ function checkRateLimit(key: string): { allowed: boolean; remaining: number } {
   return { allowed: true, remaining: RATE_LIMIT_MAX - record.count };
 }
 
-// ── Email HTML ──
+// ── Email HTML (logo via CID for inbox preview) ──
 
 function generateContactEmailHtml(data: {
   name: string;
@@ -87,20 +107,24 @@ function generateContactEmailHtml(data: {
   message: string;
   date: string;
   time: string;
+  hasLogo: boolean;
 }): string {
-  const { name, email, phone, address, message, date, time } = data;
-
+  const { name, email, phone, address, message, date, time, hasLogo } = data;
   const messageHtml = nl2br(message);
+
+  const logoImg = hasLogo
+    ? `<img src="cid:save-mali-logo" alt="SaveMali" width="56" height="56" style="border-radius:12px;box-shadow:0 4px 12px rgba(200,57,156,0.12);display:block;">`
+    : `<img src="${LOGO_URL}" alt="SaveMali" width="56" height="56" style="border-radius:12px;box-shadow:0 4px 12px rgba(200,57,156,0.12);display:block;">`;
 
   return `<!DOCTYPE html>
 <html lang="fr">
-<head><meta charset="utf-8"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f0f2f5;">
 <tr><td align="center" style="padding:40px 20px;">
 <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;width:100%;">
   <tr><td align="center" style="padding-bottom:24px;">
-    <img src="https://55h7r6yk.us-east.insforge.app/api/storage/buckets/avatars/objects/avatars%2Fsave-mali-logo%2Flogo.png?v=3a37ba1efd147a36099514335c3f374a" alt="SaveMali" width="56" height="56" style="border-radius:12px;box-shadow:0 4px 12px rgba(200,57,156,0.12);">
+    ${logoImg}
   </td></tr>
   <tr><td style="background:#ffffff;border-radius:16px;border:1px solid #e5e7eb;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
     <div style="height:4px;background:linear-gradient(90deg,#c8399c,#d94fb0,#e87bc4);"></div>
@@ -154,9 +178,41 @@ function generateContactEmailHtml(data: {
 </html>`;
 }
 
+// ── Plain text fallback ──
+
+function generatePlainText(data: {
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  message: string;
+  date: string;
+  time: string;
+}): string {
+  const { name, email, phone, address, message, date, time } = data;
+  let text = `NOUVELLE DEMANDE DE RENDEZ-VOUS\n`;
+  text += `${"=".repeat(40)}\n\n`;
+  text += `Nom complet : ${name}\n`;
+  text += `Email : ${email}\n`;
+  if (phone) text += `WhatsApp : ${phone}\n`;
+  if (address) text += `Adresse : ${address}\n`;
+  text += `\nMessage :\n${message}\n`;
+  text += `\n${"─".repeat(40)}\n`;
+  text += `Reçue le ${date} à ${time} (heure de Kalemie)\n`;
+  text += `\nSaveMali SARL — Kalemie, Tanganyika, RDC\n`;
+  text += `Email automatique — ne pas répondre directement\n`;
+  return text;
+}
+
 // ── SMTP ──
 
-async function sendEmail(to: string, subject: string, html: string): Promise<{ success: boolean; error?: string }> {
+async function sendEmail(
+  to: string,
+  subject: string,
+  html: string,
+  text: string,
+  logo: Buffer | null,
+): Promise<{ success: boolean; error?: string }> {
   const smtpHost = Deno.env.get("SMTP_HOST") || "smtp.zoho.com";
   const smtpPort = parseInt(Deno.env.get("SMTP_PORT") || "587");
   const smtpUser = Deno.env.get("SMTP_USER") || "";
@@ -174,11 +230,29 @@ async function sendEmail(to: string, subject: string, html: string): Promise<{ s
     auth: { user: smtpUser, pass: smtpPass },
   });
 
+  const attachments = logo
+    ? [{
+        filename: "save-mali-logo.png",
+        content: logo,
+        contentType: "image/png",
+        cid: "save-mali-logo",
+      }]
+    : [];
+
   await transporter.sendMail({
     from: `"${senderName}" <${smtpUser}>`,
     to,
+    replyTo: `"${senderName}" <${smtpUser}>`,
     subject,
     html,
+    text,
+    attachments,
+    headers: {
+      "X-Mailer": "SaveMali-ContactForm/1.0",
+      "Precedence": "bulk",
+      "List-Unsubscribe": `<mailto:${smtpUser}?subject=Désabonnement>`,
+      "X-Auto-Response-Suppress": "All",
+    },
   });
 
   return { success: true };
@@ -262,12 +336,13 @@ export default async function (req: Request): Promise<Response> {
       });
     }
 
+    const logo = await loadLogo();
+
     const now = new Date();
     const dateStr = now.toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
     const timeStr = now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
-    const subject = `Nouvelle demande de rendez-vous — ${cleanName}`;
-    const html = generateContactEmailHtml({
+    const emailData = {
       name: cleanName,
       email: cleanEmail,
       phone: cleanPhone || undefined,
@@ -275,9 +350,13 @@ export default async function (req: Request): Promise<Response> {
       message: cleanMessage,
       date: dateStr,
       time: timeStr,
-    });
+    };
 
-    const result = await sendEmail("savemali243@gmail.com", subject, html);
+    const subject = `Nouvelle demande de rendez-vous — ${cleanName}`;
+    const html = generateContactEmailHtml({ ...emailData, hasLogo: !!logo });
+    const text = generatePlainText(emailData);
+
+    const result = await sendEmail("savemali243@gmail.com", subject, html, text, logo);
 
     if (!result.success) {
       console.error("Contact email send failed:", result.error);
