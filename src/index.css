@@ -187,6 +187,9 @@ body {
   box-shadow: var(--shadow-xl);
   overflow: hidden;
   color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
 }
 
 .ag-dialog [data-slot="dialog-content"] {
@@ -194,6 +197,9 @@ body {
   border: 1px solid var(--border);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
 }
 
 .ag-dialog [data-slot="dialog-header"] {
@@ -201,6 +207,7 @@ body {
   background: var(--surface-alt);
   padding: 16px 24px;
   margin: 0;
+  flex-shrink: 0;
 }
 
 .ag-dialog [data-slot="dialog-title"] {
@@ -214,9 +221,7 @@ body {
   background: var(--surface-alt);
   padding: 12px 24px;
   margin: 0;
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
+  flex-shrink: 0;
 }
 
 /* ── Agentic Dialog Form Fields ── */

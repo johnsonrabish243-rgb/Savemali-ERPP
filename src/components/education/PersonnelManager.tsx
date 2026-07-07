@@ -736,11 +736,11 @@ export default function PersonnelManager({ workspace }: Props) {
 
       {/* ═══ Employee Dialog ═══ */}
       <Dialog open={empDialog} onOpenChange={setEmpDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto ag-dialog p-0">
+        <DialogContent className="max-w-2xl ag-dialog p-0">
           <DialogHeader className="px-6 pt-5 pb-0">
             <DialogTitle className="text-foreground">{editingEmp.id ? t("Edit employee", "Modifier employé") : t("Add employee", "Ajouter employé")}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 px-6 py-4">
+          <div className="space-y-4 px-6 py-4 flex-1 overflow-y-auto">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium text-foreground">{t("First name*", "Prénom*")}</Label>

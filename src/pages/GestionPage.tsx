@@ -886,11 +886,11 @@ export function GestionPage({ onNavigate, initialTab }: Props) {
       </div>
 
       <Dialog open={showEmpDlg} onOpenChange={(o) => { setShowEmpDlg(o); if (!o) setEditEmp(null) }}>
-        <DialogContent className="ag-dialog max-w-lg max-h-[90vh] overflow-y-auto p-0">
+        <DialogContent className="ag-dialog max-w-lg p-0">
           <DialogHeader className="px-6 pt-5 pb-0">
             <DialogTitle className="text-foreground">{editEmp ? (fr ? "Modifier l'employé" : "Edit employee") : (fr ? "Ajouter un employé" : "Add employee")}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 px-6 py-4">
+          <div className="space-y-4 px-6 py-4 flex-1 overflow-y-auto">
             {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
