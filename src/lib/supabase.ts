@@ -8,14 +8,7 @@ function getClient() {
   return createClient({ baseUrl, anonKey })
 }
 
-function getAiClient() {
-  const baseUrl = import.meta.env.VITE_INSFORGE_URL
-  const anonKey = import.meta.env.VITE_INSFORGE_ANON_KEY
-  return createClient({ baseUrl, anonKey, timeout: 90000 })
-}
-
 export const insforge = getClient()
-export const insforgeAi = getAiClient()
 
 export type WorkspaceType = "pharmacy" | "commerce" | "education" | "gestion"
 
