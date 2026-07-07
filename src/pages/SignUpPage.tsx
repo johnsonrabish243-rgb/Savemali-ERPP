@@ -128,7 +128,7 @@ export function SignUpPage({ onNavigate }: Props) {
         .eq("status", "pending")
         .maybeSingle()
       if (error || !data) {
-        setInviteError(fr ? "Lien d'invitation invalide ou expir\u00e9." : "Invalid or expired invite link.")
+        setInviteError(fr ? "Lien d'invitation invalide ou expiré." : "Invalid or expired invite link.")
         setInviteLoading(false)
         return
       }
@@ -216,7 +216,7 @@ export function SignUpPage({ onNavigate }: Props) {
     try {
       const { data, error: verifyError } = await insforge.auth.verifyEmail({ email: verificationEmail, otp: code })
       if (verifyError) {
-        setError(verifyError.message || (fr ? "Code invalide ou expir\u00e9" : "Invalid or expired code"))
+        setError(verifyError.message || (fr ? "Code invalide ou expiré" : "Invalid or expired code"))
         setVerifying(false)
         return
       }
@@ -231,7 +231,7 @@ export function SignUpPage({ onNavigate }: Props) {
       const redirectPage = workspaceType === "pharmacy" ? "pharmacy" : "dashboard"
       onNavigate(redirectPage)
     } catch (err: any) {
-      setError(err.message || (fr ? "Erreur de v\u00e9rification" : "Verification error"))
+      setError(err.message || (fr ? "Erreur de vérification" : "Verification error"))
     } finally {
       setVerifying(false)
     }
@@ -246,7 +246,7 @@ export function SignUpPage({ onNavigate }: Props) {
         const msg = (error.message || "").toLowerCase()
         if (msg.includes("too many") || msg.includes("rate") || msg.includes("block")) {
           setError(fr
-            ? "Trop de demandes. Vous avez d\u00e9pass\u00e9 la limite de 4 tentatives. Veuillez r\u00e9essayer demain."
+            ? "Trop de demandes. Vous avez dépassé la limite de 4 tentatives. Veuillez réessayer demain."
             : "Too many requests. You have exceeded the 4 attempt limit. Please try again tomorrow.")
         }
       }
@@ -254,7 +254,7 @@ export function SignUpPage({ onNavigate }: Props) {
       // Check if it's a rate limit error from the edge function
       if (err?.blocked) {
         setError(fr
-          ? `Trop de demandes. Votre session est bloqu\u00e9e jusqu'au lendemain. Temps restant: ${err.remainingTime || 1440} min.`
+          ? `Trop de demandes. Votre session est bloquée jusqu'au lendemain. Temps restant: ${err.remainingTime || 1440} min.`
           : `Too many requests. Your session is blocked until tomorrow. Remaining time: ${err.remainingTime || 1440} min.`)
       }
     }
@@ -275,7 +275,7 @@ export function SignUpPage({ onNavigate }: Props) {
       }
 
       const uid = authData?.user?.id || (authData as any)?.id || ""
-      if (!uid) throw new Error(fr ? "Erreur de cr\u00e9ation du compte" : "Account creation error")
+      if (!uid) throw new Error(fr ? "Erreur de création du compte" : "Account creation error")
 
       const { data: memberData } = await insforge.database
         .from("workspace_members")
@@ -283,9 +283,9 @@ export function SignUpPage({ onNavigate }: Props) {
         .eq("invite_token", inviteToken!)
         .eq("status", "pending")
         .maybeSingle()
-      if (!memberData) throw new Error(fr ? "Invitation expir\u00e9e ou invalide." : "Invite expired or invalid.")
+      if (!memberData) throw new Error(fr ? "Invitation expirée ou invalide." : "Invite expired or invalid.")
       if ((memberData as any).email.toLowerCase() !== email.toLowerCase()) {
-        throw new Error(fr ? "Cet email ne correspond pas \u00e0 l'invitation." : "This email doesn't match the invitation.")
+        throw new Error(fr ? "Cet email ne correspond pas à l'invitation." : "This email doesn't match the invitation.")
       }
 
       const { error: linkError } = await insforge.database.from("workspace_members")
@@ -311,7 +311,7 @@ export function SignUpPage({ onNavigate }: Props) {
         const msg = (signUpError.message || "").toLowerCase()
         if (msg.includes("already") || msg.includes("existe") || msg.includes("exist")) {
           setError(fr
-            ? "Cet email est d\u00e9j\u00e0 utilis\u00e9. Cr\u00e9ation bloqu\u00e9e."
+            ? "Cet email est déjà utilisé. Création bloquée."
             : "This email is already taken. Registration blocked.")
         } else {
           setError(signUpError.message || t.auth.error)
@@ -329,7 +329,7 @@ export function SignUpPage({ onNavigate }: Props) {
       }
 
       const uid = authData?.user?.id || (authData as any)?.id || ""
-      if (!uid) throw new Error(fr ? "Erreur de cr\u00e9ation du compte" : "Account creation error")
+      if (!uid) throw new Error(fr ? "Erreur de création du compte" : "Account creation error")
 
       const { error: wsError } = await insforge.database.from("workspaces").insert([{ owner_id: uid, name: workspaceName.trim(), type: workspaceType }])
       if (wsError) throw wsError
@@ -355,7 +355,7 @@ export function SignUpPage({ onNavigate }: Props) {
       <div className="mb-6"><Logo size="lg" /></div>
       <div className="flex flex-col items-center gap-3">
         <Loader2 className="size-8 animate-spin text-accent" />
-        <p className="text-sm text-muted-foreground">{fr ? "V\u00e9rification de l'invitation..." : "Verifying invite..."}</p>
+        <p className="text-sm text-muted-foreground">{fr ? "Vérification de l'invitation..." : "Verifying invite..."}</p>
       </div>
     </div>
   )
@@ -374,7 +374,7 @@ export function SignUpPage({ onNavigate }: Props) {
           <CardDescription className="text-muted-foreground">{inviteError}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button className="w-full" variant="outline" onClick={() => onNavigate("home")}><ArrowLeft className="size-4 mr-2" />{fr ? "Retour \u00e0 l'accueil" : "Back to home"}</Button>
+          <Button className="w-full" variant="outline" onClick={() => onNavigate("home")}><ArrowLeft className="size-4 mr-2" />{fr ? "Retour à l'accueil" : "Back to home"}</Button>
         </CardContent>
       </Card>
     </div>
@@ -410,7 +410,7 @@ export function SignUpPage({ onNavigate }: Props) {
             <CardDescription className="text-muted-foreground">
               {inviteToken && inviteData ? (
                 <span className="block">
-                  {fr ? "Vous \u00eates invit\u00e9 par" : "You were invited by"} <span className="font-semibold text-foreground">{inviteData.workspace_name}</span>
+                  {fr ? "Vous êtes invité par" : "You were invited by"} <span className="font-semibold text-foreground">{inviteData.workspace_name}</span>
                   <br />
                   {fr ? "en tant que" : "as"} <span className="font-semibold text-foreground capitalize">{inviteData.role}</span>
                 </span>
@@ -456,7 +456,7 @@ export function SignUpPage({ onNavigate }: Props) {
                 )}
                 {pwApplied && (
                   <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                    <CheckCheck className="size-3" /> {fr ? "Mot de passe appliqu\u00e9" : "Password applied"}
+                    <CheckCheck className="size-3" /> {fr ? "Mot de passe appliqué" : "Password applied"}
                   </p>
                 )}
               </div>
@@ -466,7 +466,7 @@ export function SignUpPage({ onNavigate }: Props) {
               </div>
               <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2" disabled={loading}>
                 {loading ? <Loader2 className="size-4 animate-spin" /> : null}
-                {inviteToken ? (loading ? t.auth.loading : (fr ? "Rejoindre l'\u00e9quipe" : "Join team")) : <>{t.auth.next} <ChevronRight className="size-4" /></>}
+                {inviteToken ? (loading ? t.auth.loading : (fr ? "Rejoindre l'équipe" : "Join team")) : <>{t.auth.next} <ChevronRight className="size-4" /></>}
               </Button>
             </form>
           </CardContent>
@@ -517,10 +517,10 @@ export function SignUpPage({ onNavigate }: Props) {
               <ShieldCheck className="size-6 text-accent" />
             </div>
             <CardTitle className="text-lg font-bold text-foreground">
-              {fr ? "V\u00e9rifiez votre email" : "Verify your email"}
+              {fr ? "Vérifiez votre email" : "Verify your email"}
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              {fr ? `Code envoy\u00e9 \u00e0 ${verificationEmail}` : `Code sent to ${verificationEmail}`}
+              {fr ? `Code envoyé à ${verificationEmail}` : `Code sent to ${verificationEmail}`}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -559,7 +559,7 @@ export function SignUpPage({ onNavigate }: Props) {
               className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
             >
               {verifying ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
-              {fr ? "V\u00e9rifier" : "Verify"}
+              {fr ? "Vérifier" : "Verify"}
             </Button>
 
             <div className="flex flex-col gap-2">
@@ -587,7 +587,7 @@ export function SignUpPage({ onNavigate }: Props) {
             </CardTitle>
             <CardDescription className="text-muted-foreground">
               {fr
-                ? "Votre compte a \u00e9t\u00e9 cr\u00e9\u00e9 avec succ\u00e8s. Que souhaitez-vous faire ?"
+                ? "Votre compte a été créé avec succès. Que souhaitez-vous faire ?"
                 : "Your account has been created successfully. What would you like to do?"}
             </CardDescription>
           </CardHeader>
@@ -608,7 +608,7 @@ export function SignUpPage({ onNavigate }: Props) {
         </Card>
       )}
 
-      <p className="mt-4 text-xs text-muted-foreground text-center">&copy; {new Date().getFullYear()} SaveMali SARL &mdash; D\u00e9velopp\u00e9 par John Mocket</p>
+      <p className="mt-4 text-xs text-muted-foreground text-center">&copy; {new Date().getFullYear()} SaveMali SARL &mdash; Développé par John Mocket</p>
     </div>
   )
 }
