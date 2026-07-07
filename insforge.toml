@@ -1,6 +1,6 @@
 [auth]
-require_email_verification = false
-verify_email_method = "code"
+require_email_verification = true
+verify_email_method = "link"
 reset_password_method = "code"
 disable_signup = false
 
@@ -13,11 +13,11 @@ require_special_char = false
 
 [auth.smtp]
 enabled = true
-host = "smtp.zoho.com"
-port = 587
-username = "243-857599332.627@zohomail.com"
-password = "env(SMTP_PASSWORD)"
-sender_email = "243-857599332.627@zohomail.com"
+host = "smtp.resend.com"
+port = 465
+username = "resend"
+password = "env(RESEND_API_KEY)"
+sender_email = "noreply@savemali.online"
 sender_name = "SaveMali"
 min_interval_seconds = 60
 

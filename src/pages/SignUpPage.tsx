@@ -3,7 +3,7 @@ import {
   Mail, Lock, Eye, EyeOff, AlertCircle, Building2,
   Check, ChevronRight, ChevronLeft, Loader2,
   FlaskConical, ShoppingCart, BookOpen, BarChart3, ArrowLeft, PartyPopper,
-  RefreshCw, Copy, CheckCheck, Wand2
+  RefreshCw, Copy, CheckCheck, Wand2, MailCheck
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -102,6 +102,8 @@ export function SignUpPage({ onNavigate }: Props) {
 
   const [showWelcome, setShowWelcome] = React.useState(false)
   const [createdWsType, setCreatedWsType] = React.useState<WorkspaceType>("pharmacy")
+  const [emailVerificationSent, setEmailVerificationSent] = React.useState(false)
+  const [verificationEmail, setVerificationEmail] = React.useState("")
 
   const [inviteToken, setInviteToken] = React.useState<string | null>(null)
   const [inviteData, setInviteData] = React.useState<{ email: string; display_name: string; role: string; workspace_name: string; workspace_type: WorkspaceType } | null>(null)
@@ -177,6 +179,13 @@ export function SignUpPage({ onNavigate }: Props) {
       const { data: authData, error: signUpError } = await insforge.auth.signUp({ email, password })
       if (signUpError) throw signUpError
 
+      if (authData?.requireEmailVerification) {
+        setVerificationEmail(email)
+        setEmailVerificationSent(true)
+        setLoading(false)
+        return
+      }
+
       const uid = authData?.user?.id || (authData as any)?.id || ""
       if (!uid) throw new Error(fr ? "Erreur de création du compte" : "Account creation error")
 
@@ -216,7 +225,7 @@ export function SignUpPage({ onNavigate }: Props) {
   const handleFinish = async () => {
     setLoading(true); setError(null)
     try {
-      const { data: authData, error: signUpError } = await insforge.auth.signUp({ email, password })
+      const { data: authData, error: signUpError } = await insforge.auth.signUp({ email, password, redirectTo: `${window.location.origin}/signin` })
       if (signUpError) {
         const msg = (signUpError.message || "").toLowerCase()
         if (msg.includes("already") || msg.includes("existe") || msg.includes("exist")) {
@@ -227,6 +236,13 @@ export function SignUpPage({ onNavigate }: Props) {
         } else {
           setError(signUpError.message || t.auth.error)
         }
+        setLoading(false)
+        return
+      }
+
+      if (authData?.requireEmailVerification) {
+        setVerificationEmail(email)
+        setEmailVerificationSent(true)
         setLoading(false)
         return
       }
@@ -430,6 +446,37 @@ export function SignUpPage({ onNavigate }: Props) {
                 </Button>
               </div>
             </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* EMAIL VERIFICATION SENT */}
+      {emailVerificationSent && (
+        <Card className="w-full max-w-sm shadow-lg">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-3 flex size-16 items-center justify-center rounded-full bg-accent/10">
+              <MailCheck className="size-8 text-accent" />
+            </div>
+            <CardTitle className="text-xl font-bold text-foreground">
+              {fr ? "Vérifiez votre email" : "Check your email"}
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              {fr
+                ? `Un lien de vérification a été envoyé à ${verificationEmail}. Cliquez sur le lien pour activer votre compte.`
+                : `A verification link has been sent to ${verificationEmail}. Click the link to activate your account.`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button
+              className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
+              onClick={() => onNavigate("signin")}
+            >
+              <ArrowLeft className="size-4" />
+              {fr ? "Retour à la connexion" : "Back to sign in"}
+            </Button>
+            <p className="text-xs text-muted-foreground text-center">
+              {fr ? "Vous n'avez pas reçu l'email ? Vérifiez vos spams." : "Didn't receive the email? Check your spam folder."}
+            </p>
           </CardContent>
         </Card>
       )}

@@ -1,6 +1,6 @@
 import * as React from "react"
 import { gsap } from "gsap"
-import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound, MailCheck, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,6 +29,20 @@ export function SignInPage({ onNavigate }: Props) {
   const [showPw, setShowPw] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [emailNotVerified, setEmailNotVerified] = React.useState(false)
+  const [resendLoading, setResendLoading] = React.useState(false)
+  const [resendSuccess, setResendSuccess] = React.useState(false)
+  const [emailVerified, setEmailVerified] = React.useState(false)
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const status = params.get("insforge_status")
+    const type = params.get("insforge_type")
+    if (status === "success" && type === "verify_email") {
+      setEmailVerified(true)
+      window.history.replaceState({}, "", window.location.pathname)
+    }
+  }, [])
 
   const containerRef = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
@@ -84,18 +98,40 @@ export function SignInPage({ onNavigate }: Props) {
       await checkAuth()
       onNavigate("dashboard")
     } catch (err: any) {
-      const result = trackLoginAttempt(false)
-      if (result.blocked) {
-        setError(fr ? "Trop de tentatives. Réessayez dans 15 min." : "Too many attempts. Retry in 15 min.")
+      if (err?.statusCode === 403 || (err?.message || "").toLowerCase().includes("email not confirmed") || (err?.message || "").toLowerCase().includes("email not verified")) {
+        setEmailNotVerified(true)
+        setError(fr ? "Email non vérifié. Vérifiez votre boîte de réception." : "Email not verified. Check your inbox.")
       } else {
-        const remaining = result.remainingAttempts
-        const hint = remaining > 0
-          ? (fr ? ` (${remaining} tentative${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""})` : ` (${remaining} attempt${remaining > 1 ? "s" : ""} remaining)`)
-          : ""
-        setError((err.message || t.auth.error) + hint)
+        const result = trackLoginAttempt(false)
+        if (result.blocked) {
+          setError(fr ? "Trop de tentatives. Réessayez dans 15 min." : "Too many attempts. Retry in 15 min.")
+        } else {
+          const remaining = result.remainingAttempts
+          const hint = remaining > 0
+            ? (fr ? ` (${remaining} tentative${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""})` : ` (${remaining} attempt${remaining > 1 ? "s" : ""} remaining)`)
+            : ""
+          setError((err.message || t.auth.error) + hint)
+        }
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleResendVerification = async () => {
+    if (!email) return
+    setResendLoading(true)
+    setResendSuccess(false)
+    try {
+      await insforge.auth.resendVerificationEmail({
+        email,
+        redirectTo: `${window.location.origin}/signin`,
+      })
+      setResendSuccess(true)
+    } catch {
+      setError(fr ? "Erreur lors de l'envoi. Réessayez." : "Failed to resend. Try again.")
+    } finally {
+      setResendLoading(false)
     }
   }
 
@@ -116,12 +152,53 @@ export function SignInPage({ onNavigate }: Props) {
           <CardTitle className="text-xl font-bold text-foreground">{t.auth.signIn}</CardTitle>
         </CardHeader>
         <CardContent>
+          {emailVerified ? (
+            <div className="space-y-4 text-center">
+              <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                <MailCheck className="size-6 text-green-600 dark:text-green-400" />
+              </div>
+              <p className="text-sm text-foreground">
+                {fr ? "Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter." : "Your email has been verified successfully! You can now sign in."}
+              </p>
+              <Button
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                onClick={() => setEmailVerified(false)}
+              >
+                {fr ? "Se connecter" : "Sign in"}
+              </Button>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="size-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
+            )}
+            {emailNotVerified && (
+              <div className="rounded-lg border border-accent/30 bg-accent/5 p-4 space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-accent">
+                  <MailCheck className="size-4" />
+                  {fr ? "Email non vérifié" : "Email not verified"}
+                </div>
+                {resendSuccess ? (
+                  <p className="text-xs text-green-600 dark:text-green-400">
+                    {fr ? "Email de vérification renvoyé ! Vérifiez votre boîte." : "Verification email resent! Check your inbox."}
+                  </p>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full gap-2"
+                    onClick={handleResendVerification}
+                    disabled={resendLoading || !email}
+                  >
+                    {resendLoading ? <Loader2 className="size-3 animate-spin" /> : <MailCheck className="size-3" />}
+                    {fr ? "Renvoyer l'email de vérification" : "Resend verification email"}
+                  </Button>
+                )}
+              </div>
             )}
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-foreground">{t.auth.email}</Label>
@@ -157,6 +234,7 @@ export function SignInPage({ onNavigate }: Props) {
               </button>
             </div>
           </form>
+          )}
         </CardContent>
       </Card>
 
