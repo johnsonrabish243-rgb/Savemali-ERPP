@@ -1,4 +1,5 @@
 import * as React from "react"
+import * as ReactDOM from "react-dom"
 import { MessageCircle, X, Shield, Send, Bot, User, Sparkles, Loader2, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLanguage } from "@/lib/i18n"
@@ -252,7 +253,7 @@ export function SavemaliWidget() {
   const support = AGENT_INFO.support
   const dpo = AGENT_INFO.dpo
 
-  return (
+  const content = (
     <div className="fixed bottom-5 right-5 z-[9999] flex flex-col items-end gap-3 sm:bottom-8 sm:right-8">
       {/* Panel */}
       <div
@@ -484,4 +485,6 @@ export function SavemaliWidget() {
       `}</style>
     </div>
   )
+
+  return ReactDOM.createPortal(content, document.body)
 }
