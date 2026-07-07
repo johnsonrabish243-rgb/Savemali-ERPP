@@ -60,7 +60,7 @@ const sections: Record<string, { title: string; content: string }[]> = {
     },
     {
       title: "13. Loi Applicable et Juridiction",
-      content: "13.1. Les presentes conditions sont regies par le droit de la Republique Democratique du Congo et, le cas echeant, par le droit OHADA.\n13.2. Tout litige relatif aux presentes conditions sera soumis a la competence exclusive des tribunaux de Lubumbashi, Republique Democratique du Congo.\n13.3. Avant tout recours judiciaire, les parties s'efforceront de resoudre le differend a l'amiable dans un delai de 30 jours a compter de la notification ecrite du litige.",
+      content: "13.1. Les presentes conditions sont regies par le droit de la Republique Democratique du Congo et, le cas echeant, par le droit OHADA.\n13.2. Tout litige relatif aux presentes conditions sera soumis a la competence exclusive des tribunaux de Kalemie, Republique Democratique du Congo.\n13.3. Avant tout recours judiciaire, les parties s'efforceront de resoudre le differend a l'amiable dans un delai de 30 jours a compter de la notification ecrite du litige.",
     },
     {
       title: "14. Dispositions Generales",
@@ -72,7 +72,7 @@ const sections: Record<string, { title: string; content: string }[]> = {
     },
     {
       title: "16. Contact et Support",
-      content: "Pour toute question, reclame ou assistance relative a ces conditions ou a nos services :\n\n- Support technique : support@savemali.com\n- WhatsApp : +243 857 599 332\n- Adresse : SaveMali SARL, Kalemie, Province du Tanganyika, Republique Democratique du Congo\n\nNotre equipe de support est disponible du lundi au vendredi de 8h a 18h (heure de Lubumbashi).",
+      content: "Pour toute question, reclame ou assistance relative a ces conditions ou a nos services :\n\n- Support technique : support@savemali.com\n- WhatsApp : +243 857 599 332\n- Adresse : SaveMali SARL, Quartier Abbatoir, Avenue Cadastre N°321, Kalemie, Province du Tanganyika, Republique Democratique du Congo\n\nNotre equipe de support est disponible du lundi au vendredi de 8h a 18h (heure de Kalemie).",
     },
   ],
   en: [
@@ -126,7 +126,7 @@ const sections: Record<string, { title: string; content: string }[]> = {
     },
     {
       title: "13. Governing Law and Jurisdiction",
-      content: "13.1. These terms are governed by the laws of the Democratic Republic of Congo and, where applicable, by OHADA law.\n13.2. Any dispute relating to these terms shall be subject to the exclusive jurisdiction of the courts of Lubumbashi, Democratic Republic of Congo.\n13.3. Before any legal proceedings, the parties shall attempt to resolve the dispute amicably within 30 days of written notice of the dispute.",
+      content: "13.1. These terms are governed by the laws of the Democratic Republic of Congo and, where applicable, by OHADA law.\n13.2. Any dispute relating to these terms shall be subject to the exclusive jurisdiction of the courts of Kalemie, Democratic Republic of Congo.\n13.3. Before any legal proceedings, the parties shall attempt to resolve the dispute amicably within 30 days of written notice of the dispute.",
     },
     {
       title: "14. General Provisions",
@@ -138,7 +138,7 @@ const sections: Record<string, { title: string; content: string }[]> = {
     },
     {
       title: "16. Contact and Support",
-      content: "For any questions, complaints or assistance regarding these terms or our services:\n\n- Technical support: support@savemali.com\n- WhatsApp: +243 857 599 332\n- Address: SaveMali SARL, Kalemie, Tanganyika Province, Democratic Republic of Congo\n\nOur support team is available Monday through Friday from 8:00 AM to 6:00 PM (Lubumbashi time).",
+      content: "For any questions, complaints or assistance regarding these terms or our services:\n\n- Technical support: support@savemali.com\n- WhatsApp: +243 857 599 332\n- Address: SaveMali SARL, Abbatoir Quarter, Cadastre Avenue N°321, Kalemie, Tanganyika Province, Democratic Republic of Congo\n\nOur support team is available Monday through Friday from 8:00 AM to 6:00 PM (Kalemie time).",
     },
   ],
 }

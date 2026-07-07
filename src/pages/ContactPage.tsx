@@ -24,7 +24,7 @@ export function ContactPage({ onNavigate }: Props) {
 
   const info = [
     { icon: Mail, label: "Email", value: "support@savemali.com" },
-    { icon: MapPin, label: fr ? "Adresse" : "Address", value: fr ? "Lubumbashi, Haut-Katanga, RDC" : "Lubumbashi, Haut-Katanga, DRC" },
+    { icon: MapPin, label: fr ? "Adresse" : "Address", value: fr ? "Quartier Abbatoir, Avenue Cadastre N°321, Kalemie, Tanganyika, RDC" : "Abbatoir Quarter, Cadastre Avenue N°321, Kalemie, Tanganyika, DRC" },
     { icon: MessageSquare, label: "WhatsApp", value: "+243 857 599 332" },
   ]
 

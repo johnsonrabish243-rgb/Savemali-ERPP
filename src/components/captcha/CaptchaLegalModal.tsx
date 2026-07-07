@@ -6,7 +6,7 @@ import type { Language } from "@/lib/captcha/types"
 
 const DATA_CONTROLLER = {
   name: "SaveMali SARL",
-  address: "Kalemie, Province du Tanganyika, Republique Democratique du Congo",
+  address: "Quartier Abbatoir, Avenue Cadastre N°321, Kalemie, Province du Tanganyika, Republique Democratique du Congo",
   email: "support@savemali.com",
   phone: "+243 857 599 332",
 }
@@ -14,14 +14,14 @@ const DATA_CONTROLLER = {
 const privacySections: Record<string, { title: string; content: string }[]> = {
   fr: [
     { title: "1. Introduction", content: "SaveMali SARL (« SaveMali », « nous », « notre ») s'engage a proteger la confidentialite et la securite des donnees personnelles de ses utilisateurs. La presente Politique de Confidentialite decrit comment nous collectons, utilisons, stockons, partageons et protegeons vos informations lorsque vous utilisez notre plateforme ERP (https://savemali.com) et nos services associes." },
-    { title: "2. Responsable du Traitement", content: "Le responsable du traitement de vos donnees personnelles est :\n\nSaveMali SARL\nKalemie, Province du Tanganyika, Republique Democratique du Congo\nEmail : support@savemali.com\nTelephone : +243 857 599 332\n\nPour toute question, contactez notre DPO a l'adresse dpo@savemali.com." },
+    { title: "2. Responsable du Traitement", content: "Le responsable du traitement de vos donnees personnelles est :\n\nSaveMali SARL\nQuartier Abbatoir, Avenue Cadastre N°321, Kalemie, Province du Tanganyika, Republique Democratique du Congo\nEmail : support@savemali.com\nTelephone : +243 857 599 332\n\nPour toute question, contactez notre DPO a l'adresse dpo@savemali.com." },
     { title: "3. Donnees Collectees", content: "(a) Donnees d'identification : nom, prenom, adresse email, numero de telephone.\n\n(b) Donnees de compte : identifiants de connexion, historique, preferences.\n\n(c) Donnees professionnelles : nom de l'entreprise, type d'activite.\n\n(d) Donnees de gestion : informations clients, produits, stocks, ventes.\n\n(e) Donnees financieres : paiements, transactions, factures.\n\n(f) Donnees techniques : adresse IP, navigateur, cookies." },
     { title: "4. Utilisation des Donnees", content: "- Fournir et ameliorer nos services ERP\n- Gerer votre compte et abonnement\n- Traiter les transactions et factures\n- Communiquer avec vous (support, notifications)\n- Assurer la securite de la plateforme\n- Se conformer aux obligations legales" },
     { title: "5. Vos Droits", content: "Conformement a la Loi n° 23-010 relative a la protection des donnees en RDC :\n\n- Droit d'acces a vos donnees\n- Droit de rectification\n- Droit a l'effacement\n- Droit a la limitation du traitement\n- Droit d'opposition\n- Droit a la portabilite\n\nContact : dpo@savemali.com" },
   ],
   en: [
     { title: "1. Introduction", content: "SaveMali SARL is committed to protecting the confidentiality and security of its users' personal data. This Privacy Policy describes how we collect, use, store, share, and protect your information when you use our ERP platform." },
-    { title: "2. Data Controller", content: "SaveMali SARL\nKalemie, Tanganyika Province, DRC\nEmail: support@savemali.com\nPhone: +243 857 599 332\n\nContact our DPO at dpo@savemali.com." },
+    { title: "2. Data Controller", content: "SaveMali SARL\nAbbatoir Quarter, Cadastre Avenue N°321, Kalemie, Tanganyika Province, DRC\nEmail: support@savemali.com\nPhone: +243 857 599 332\n\nContact our DPO at dpo@savemali.com." },
     { title: "3. Data Collected", content: "(a) Identity: name, email, phone.\n(b) Account: login, history, preferences.\n(c) Professional: company name, business type.\n(d) Management: customers, products, inventory.\n(e) Financial: payments, transactions.\n(f) Technical: IP, browser, cookies." },
     { title: "4. Use of Data", content: "- Provide and improve ERP services\n- Manage account and subscription\n- Process transactions and invoices\n- Communicate (support, notifications)\n- Ensure platform security\n- Comply with legal obligations" },
     { title: "5. Your Rights", content: "Under DRC Law No. 23-010:\n- Right of access\n- Right to rectification\n- Right to erasure\n- Right to restriction\n- Right to object\n- Right to portability\n\nContact: dpo@savemali.com" },

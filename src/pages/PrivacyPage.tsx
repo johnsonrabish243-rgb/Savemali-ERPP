@@ -10,7 +10,7 @@ interface Props { onNavigate: (p: Page) => void }
 
 const DATA_CONTROLLER = {
   name: "SaveMali SARL",
-  address: "Kalemie, Province du Tanganyika, Republique Democratique du Congo",
+  address: "Quartier Abbatoir, Avenue Cadastre N°321, Kalemie, Province du Tanganyika, Republique Democratique du Congo",
   email: "support@savemali.com",
   phone: "+243 857 599 332",
 }
