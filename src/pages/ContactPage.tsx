@@ -5,7 +5,17 @@ import { Logo } from "@/components/Logo"
 import { useLanguage } from "@/lib/i18n"
 import type { Page } from "@/App"
 
-const FUNCTIONS_URL = `${import.meta.env.VITE_INSFORGE_URL}/functions/v1`
+function getFunctionsUrl(): string {
+  try {
+    const { hostname } = new URL(import.meta.env.VITE_INSFORGE_URL)
+    if (!hostname.endsWith(".insforge.app")) return `${import.meta.env.VITE_INSFORGE_URL}/functions`
+    const appKey = hostname.split(".")[0]
+    return `https://${appKey}.function2.insforge.app`
+  } catch {
+    return `${import.meta.env.VITE_INSFORGE_URL}/functions`
+  }
+}
+const FUNCTIONS_URL = getFunctionsUrl()
 
 interface Props { onNavigate: (page: Page) => void }
 
@@ -194,7 +204,7 @@ export function ContactPage({ onNavigate }: Props) {
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="message" className="text-sm font-medium text-foreground">{fr ? "Message" : "Message"} *</label>
-                    <textarea id="message" rows={5} required maxLength={2000} value={form.message} onChange={(e) => handleChange("message", e.target.value)} className="w-full rounded-sm border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" />
+                    <textarea id="message" rows={5} required maxLength={2000} value={form.message} onChange={(e) => handleChange("message", e.target.value)} className="w-full rounded-sm border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 whitespace-pre-wrap" style={{ whiteSpace: "pre-wrap" }} />
                   </div>
                   {error && (
                     <div className="flex items-center gap-2 rounded-sm bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-400">
