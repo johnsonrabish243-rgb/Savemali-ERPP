@@ -61,6 +61,15 @@ export function LoadingScreen({ onDone }: Props) {
         </div>
       </div>
 
+      <div className="absolute bottom-8 left-0 right-0 text-center">
+        <p className="text-[11px] text-muted-foreground/60">
+          © {new Date().getFullYear()} SaveMali SARL
+        </p>
+        <p className="text-[10px] text-muted-foreground/40 mt-1">
+          Développé par John Mocket
+        </p>
+      </div>
+
       <style>{`
         @keyframes loading-sweep {
           0% { left: -40%; }
