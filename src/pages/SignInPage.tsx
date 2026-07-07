@@ -1,6 +1,6 @@
 ﻿import * as React from "react"
 import { gsap } from "gsap"
-import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound, MailCheck, Loader2, ShieldCheck } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound, MailCheck, Loader2, ShieldCheck, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -41,15 +41,60 @@ export function SignInPage({ onNavigate }: Props) {
   const [verifying, setVerifying] = React.useState(false)
   const [verifyError, setVerifyError] = React.useState<string | null>(null)
 
+  // Redirect after email verification
+  const [showTransition, setShowTransition] = React.useState(false)
+  const [redirectCountdown, setRedirectCountdown] = React.useState(4)
+  const [redirectTarget, setRedirectTarget] = React.useState<string>("dashboard")
+
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const status = params.get("insforge_status")
     const type = params.get("insforge_type")
     if (status === "success" && type === "verify_email") {
-      setEmailVerified(true)
       window.history.replaceState({}, "", window.location.pathname)
+      // Create workspace from pending data
+      const pending = localStorage.getItem("savemali_pending_workspace")
+      if (pending) {
+        try {
+          const ws = JSON.parse(pending)
+          localStorage.removeItem("savemali_pending_workspace")
+          // Create workspace after user is authenticated
+          insforge.auth.getCurrentUser().then(({ data: user }) => {
+            if (user?.id) {
+              insforge.database.from("workspaces").insert([{
+                owner_id: user.id,
+                name: ws.name,
+                type: ws.type,
+              }]).then(() => {
+                setRedirectTarget(ws.type === "pharmacy" ? "pharmacy" : "dashboard")
+                setShowTransition(true)
+              })
+            }
+          })
+        } catch {
+          setEmailVerified(true)
+        }
+      } else {
+        setEmailVerified(true)
+      }
     }
   }, [])
+
+  // Auto-redirect countdown
+  React.useEffect(() => {
+    if (!showTransition) return
+    const interval = setInterval(() => {
+      setRedirectCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval)
+          checkAuth().then(() => onNavigate(redirectTarget as Page))
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [showTransition, redirectTarget])
 
   const containerRef = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
@@ -260,7 +305,33 @@ export function SignInPage({ onNavigate }: Props) {
           <CardTitle className="text-xl font-bold text-foreground">{t.auth.signIn}</CardTitle>
         </CardHeader>
         <CardContent>
-          {emailVerified ? (
+          {showTransition ? (
+            <div className="space-y-4 text-center">
+              <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                <MailCheck className="size-8 text-green-600 dark:text-green-400" />
+              </div>
+              <p className="text-sm font-medium text-foreground">
+                {fr ? "Merci pour votre inscription !" : "Thank you for signing up!"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {fr
+                  ? "Votre compte a été créé avec succès. Vous allez être redirigé vers votre espace personnel dans quelques secondes..."
+                  : "Your account has been created successfully. You will be redirected to your workspace in a few seconds..."}
+              </p>
+              <div className="flex items-center justify-center gap-2">
+                <Loader2 className="size-4 animate-spin text-accent" />
+                <p className="text-xs text-muted-foreground">
+                  {fr ? "Redirection dans" : "Redirecting in"} <span className="font-bold text-foreground">{redirectCountdown}</span> {fr ? "secondes..." : "seconds..."}
+                </p>
+              </div>
+              <Button
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
+                onClick={async () => { await checkAuth(); onNavigate(redirectTarget as Page) }}
+              >
+                {fr ? "Aller maintenant" : "Go now"} <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          ) : emailVerified ? (
             <div className="space-y-4 text-center">
               <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
                 <MailCheck className="size-6 text-green-600 dark:text-green-400" />

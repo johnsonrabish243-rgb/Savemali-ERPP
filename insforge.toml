@@ -1,8 +1,9 @@
 [auth]
 require_email_verification = true
-verify_email_method = "code"
+verify_email_method = "link"
 reset_password_method = "code"
 disable_signup = false
+allowed_redirect_urls = ["https://www.savemali.online", "https://savemali.online", "http://localhost:5173"]
 
 [auth.password]
 min_length = 6
