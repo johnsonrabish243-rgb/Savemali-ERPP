@@ -1,87 +1,20 @@
 import * as React from "react"
 import { gsap } from "gsap"
-import { Mail, MapPin, MessageSquare, ArrowRight, Send, Loader2, AlertCircle } from "lucide-react"
+import { Mail, MapPin, MessageSquare, ArrowRight } from "lucide-react"
 import { Logo } from "@/components/Logo"
 import { useLanguage } from "@/lib/i18n"
 import type { Page } from "@/App"
 
-function getFunctionsUrl(): string {
-  try {
-    const { hostname } = new URL(import.meta.env.VITE_INSFORGE_URL)
-    if (!hostname.endsWith(".insforge.app")) return `${import.meta.env.VITE_INSFORGE_URL}/functions`
-    const appKey = hostname.split(".")[0]
-    return `https://${appKey}.function2.insforge.app`
-  } catch {
-    return `${import.meta.env.VITE_INSFORGE_URL}/functions`
-  }
-}
-const FUNCTIONS_URL = getFunctionsUrl()
-
 interface Props { onNavigate: (page: Page) => void }
-
-interface FormData {
-  name: string
-  email: string
-  phone: string
-  address: string
-  message: string
-}
-
-const INITIAL_FORM: FormData = { name: "", email: "", phone: "", address: "", message: "" }
-
-// Client-side rate limit: max 3 submissions per 10 minutes
-const RATE_KEY = "savemali_contact_rate"
-const RATE_MAX = 3
-const RATE_WINDOW = 10 * 60 * 1000
-
-function checkClientRateLimit(): boolean {
-  const raw = localStorage.getItem(RATE_KEY)
-  if (!raw) return true
-  try {
-    const { count, resetAt } = JSON.parse(raw)
-    if (Date.now() > resetAt) return true
-    return count < RATE_MAX
-  } catch {
-    return true
-  }
-}
-
-function recordClientRateLimit(): void {
-  const raw = localStorage.getItem(RATE_KEY)
-  try {
-    const record = raw ? JSON.parse(raw) : { count: 0, resetAt: Date.now() + RATE_WINDOW }
-    if (Date.now() > record.resetAt) {
-      localStorage.setItem(RATE_KEY, JSON.stringify({ count: 1, resetAt: Date.now() + RATE_WINDOW }))
-    } else {
-      record.count++
-      localStorage.setItem(RATE_KEY, JSON.stringify(record))
-    }
-  } catch {
-    localStorage.setItem(RATE_KEY, JSON.stringify({ count: 1, resetAt: Date.now() + RATE_WINDOW }))
-  }
-}
-
-function sanitizeClient(input: string, max: number): string {
-  return input.slice(0, max).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").replace(/<[^>]*>/g, "")
-}
-
-function trimMessage(input: string): string {
-  return input.replace(/^\s+/, "").replace(/\s+$/, "")
-}
 
 export function ContactPage({ onNavigate }: Props) {
   const { lang } = useLanguage()
   const fr = lang === "fr"
   const ref = React.useRef<HTMLDivElement>(null)
-  const [sent, setSent] = React.useState(false)
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
-  const [form, setForm] = React.useState<FormData>(INITIAL_FORM)
 
   React.useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       gsap.from(".contact-hero", { opacity: 0, y: 30, duration: 0.6, ease: "power3.out" })
-      gsap.from(".contact-form", { opacity: 0, x: -30, duration: 0.5, ease: "power2.out", scrollTrigger: { trigger: ".contact-form", start: "top 85%" } })
       gsap.from(".contact-info", { opacity: 0, x: 30, duration: 0.5, ease: "power2.out", scrollTrigger: { trigger: ".contact-info", start: "top 85%" } })
     }, ref)
     return () => ctx.revert()
@@ -92,66 +25,6 @@ export function ContactPage({ onNavigate }: Props) {
     { icon: MapPin, label: fr ? "Adresse" : "Address", value: fr ? "Quartier Abbatoir, Avenue Cadastre N°321, Kalemie, Tanganyika, RDC" : "Abbatoir Quarter, Cadastre Avenue N°321, Kalemie, Tanganyika, DRC" },
     { icon: MessageSquare, label: "WhatsApp", value: "+243 857 599 332" },
   ]
-
-  const handleChange = (field: keyof FormData, value: string) => {
-    const limits: Record<keyof FormData, number> = { name: 100, email: 254, phone: 20, address: 200, message: 2000 }
-    setForm((prev) => ({ ...prev, [field]: sanitizeClient(value, limits[field]) }))
-    setError(null)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-
-    if (!checkClientRateLimit()) {
-      setError(fr ? "Trop de demandes. Veuillez patienter quelques instants." : "Too many requests. Please wait a moment.")
-      return
-    }
-
-    const { name, email, message } = form
-    if (!name.trim() || !email.trim() || !message.trim()) {
-      setError(fr ? "Veuillez remplir tous les champs obligatoires." : "Please fill in all required fields.")
-      return
-    }
-
-    if (message.trim().length < 10) {
-      setError(fr ? "Le message doit contenir au moins 10 caractères." : "Message must be at least 10 characters.")
-      return
-    }
-
-    setLoading(true)
-    try {
-      const res = await fetch(`${FUNCTIONS_URL}/send-contact-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          email: form.email.trim().toLowerCase(),
-          phone: form.phone.trim() || undefined,
-          address: form.address.trim() || undefined,
-          message: form.message,
-        }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || `HTTP ${res.status}`)
-      }
-
-      recordClientRateLimit()
-      setSent(true)
-    } catch (err: any) {
-      console.error("[Contact] Submit error:", err)
-      setError(
-        err?.message?.includes("Too many")
-          ? (fr ? "Trop de demandes. Veuillez patienter." : "Too many requests. Please wait.")
-          : (fr ? "Erreur lors de l'envoi. Réessayez." : "Failed to send. Please try again.")
-      )
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <div ref={ref} className="flex flex-col">
@@ -171,59 +44,10 @@ export function ContactPage({ onNavigate }: Props) {
         </div>
       </section>
 
-      {/* ═══════════ FORM + INFO ═══════════ */}
+      {/* ═══════════ INFO ═══════════ */}
       <section className="bg-surface py-16 sm:py-24 lg:py-[96px]">
         <div className="ag-container">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-            {/* Form */}
-            <div className="contact-form space-y-6">
-              <h2 className="text-2xl font-bold tracking-[-0.8px] text-text-heading sm:text-3xl">
-                {fr ? "Envoyez-nous un message" : "Send us a message"}
-              </h2>
-              {sent ? (
-                <div className="ag-card-static p-8 text-center">
-                  <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-muted">
-                    <Send className="size-7 text-success" />
-                  </div>
-                  <p className="font-medium text-text-heading">{fr ? "Message envoyé ! Nous vous répondrons rapidement." : "Message sent! We'll get back to you soon."}</p>
-                </div>
-              ) : (
-                <form className="space-y-4" onSubmit={handleSubmit}>
-                  <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-medium text-foreground">{fr ? "Nom complet" : "Full name"} *</label>
-                    <input id="name" required maxLength={100} value={form.name} onChange={(e) => handleChange("name", e.target.value)} className="w-full rounded-sm border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium text-foreground">Email *</label>
-                    <input id="email" type="email" required maxLength={254} value={form.email} onChange={(e) => handleChange("email", e.target.value)} className="w-full rounded-sm border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="phone" className="text-sm font-medium text-foreground">{fr ? "Numéro WhatsApp (optionnel)" : "WhatsApp number (optional)"}</label>
-                    <input id="phone" type="tel" maxLength={20} value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} placeholder="+243 ..." className="w-full rounded-sm border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="address" className="text-sm font-medium text-foreground">{fr ? "Adresse (optionnel)" : "Address (optional)"}</label>
-                    <input id="address" maxLength={200} value={form.address} onChange={(e) => handleChange("address", e.target.value)} className="w-full rounded-sm border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="message" className="text-sm font-medium text-foreground">{fr ? "Message" : "Message"} *</label>
-                    <textarea id="message" rows={5} required maxLength={2000} value={form.message} onChange={(e) => handleChange("message", e.target.value)} className="w-full rounded-sm border border-input bg-background px-4 py-3 text-sm leading-relaxed text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" style={{ whiteSpace: "pre-wrap", wordWrap: "break-word", overflowWrap: "break-word" }} />
-                  </div>
-                  {error && (
-                    <div className="flex items-center gap-2 rounded-sm bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-400">
-                      <AlertCircle className="size-4 shrink-0" />
-                      {error}
-                    </div>
-                  )}
-                  <button type="submit" disabled={loading} className="ag-btn-brand w-full gap-2" style={{ opacity: loading ? 0.7 : 1 }}>
-                    {loading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-                    {loading ? (fr ? "Envoi en cours..." : "Sending...") : (fr ? "Envoyer" : "Send")}
-                  </button>
-                </form>
-              )}
-            </div>
-
-            {/* Info */}
+          <div className="mx-auto max-w-xl">
             <div className="contact-info space-y-8">
               <h2 className="text-2xl font-bold tracking-[-0.8px] text-text-heading sm:text-3xl">
                 {fr ? "Nos coordonnées" : "Our details"}

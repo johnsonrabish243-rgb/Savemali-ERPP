@@ -2,8 +2,8 @@ import * as React from "react"
 import {
   Mail, Lock, Eye, EyeOff, AlertCircle, Building2,
   Check, ChevronRight, ChevronLeft, Loader2,
-  FlaskConical, ShoppingCart, BookOpen, BarChart3, ArrowLeft, PartyPopper, Sparkles,
-  Smartphone, ShieldCheck, RefreshCw, Copy, CheckCheck, Wand2
+  FlaskConical, ShoppingCart, BookOpen, BarChart3, ArrowLeft, PartyPopper,
+  RefreshCw, Copy, CheckCheck, Wand2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,14 +11,11 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Logo } from "@/components/Logo"
-import { SavemaliCaptcha } from "@/components/SavemaliCaptcha"
-import { PasswordStrengthMeter, evaluateStrength } from "@/components/PasswordStrength"
+import { PasswordStrengthMeter } from "@/components/PasswordStrength"
 import { validatePasswordStrict } from "@/lib/security"
 import { useLanguage } from "@/lib/i18n"
 import { insforge, type WorkspaceType } from "@/lib/supabase"
 import { useAuth } from "@/hooks/use-auth"
-import { useOTP } from "@/hooks/use-otp"
-import { formatDRCPhone, isValidPhoneNumber } from "@/lib/textbee"
 import { ModeToggle } from "@/components/mode-toggle"
 import { cn } from "@/lib/utils"
 import type { Page } from "@/App"
@@ -106,20 +103,6 @@ export function SignUpPage({ onNavigate }: Props) {
   const [showWelcome, setShowWelcome] = React.useState(false)
   const [createdWsType, setCreatedWsType] = React.useState<WorkspaceType>("pharmacy")
 
-  // OTP verification (replaces captcha)
-  const [showOTP, setShowOTP] = React.useState(false)
-  const [otpVerified, setOtpVerified] = React.useState(false)
-  const [otpPhone, setOtpPhone] = React.useState("")
-  const [otpStep, setOtpStep] = React.useState<"phone" | "code">("phone")
-  const [otpCode, setOtpCode] = React.useState(["", "", "", "", "", ""])
-  const otpCodeRefs = React.useRef<(HTMLInputElement | null)[]>([])
-  const { sendCode, verifyCode, resendCode, loading: otpLoading, error: otpError, success: otpSuccess, secondsLeft, clearError: clearOtpError, reset: resetOtp } = useOTP()
-  const [captchaOk, setCaptchaOk] = React.useState(false)
-
-  const fullOtpPhone = React.useMemo(() => formatDRCPhone(otpPhone), [otpPhone])
-  const isOtpPhoneValid = React.useMemo(() => isValidPhoneNumber(fullOtpPhone), [fullOtpPhone])
-  const fullOtpCode = otpCode.join("")
-
   const [inviteToken, setInviteToken] = React.useState<string | null>(null)
   const [inviteData, setInviteData] = React.useState<{ email: string; display_name: string; role: string; workspace_name: string; workspace_type: WorkspaceType } | null>(null)
   const [inviteLoading, setInviteLoading] = React.useState(false)
@@ -185,62 +168,7 @@ export function SignUpPage({ onNavigate }: Props) {
     e.preventDefault()
     if (!workspaceName.trim()) return
     setError(null)
-    setStep(3)
-    setShowOTP(true)
-  }
-
-  const handleOTPSendCode = async () => {
-    if (!isOtpPhoneValid) return
-    const ok = await sendCode(fullOtpPhone, "register")
-    if (ok) setOtpStep("code")
-  }
-
-  const handleOTPCodeChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return
-    const newCode = [...otpCode]
-    newCode[index] = value.slice(-1)
-    setOtpCode(newCode)
-    clearOtpError()
-    if (value && index < 5) {
-      otpCodeRefs.current[index + 1]?.focus()
-    }
-    if (newCode.every((d) => d !== "") && index === 5) {
-      handleOTPVerify(newCode.join(""))
-    }
-  }
-
-  const handleOTPKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otpCode[index] && index > 0) {
-      otpCodeRefs.current[index - 1]?.focus()
-    }
-  }
-
-  const handleOTPPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault()
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6)
-    if (pasted.length === 6) {
-      const newCode = pasted.split("")
-      setOtpCode(newCode)
-      otpCodeRefs.current[5]?.focus()
-      setTimeout(() => handleOTPVerify(pasted), 100)
-    }
-  }
-
-  const handleOTPVerify = async (codeStr?: string) => {
-    const verifyCodeStr = codeStr || fullOtpCode
-    if (verifyCodeStr.length !== 6) return
-    const ok = await verifyCode(fullOtpPhone, verifyCodeStr, "register")
-    if (ok) {
-      setOtpVerified(true)
-      setOtpPhone(fullOtpPhone)
-      setTimeout(() => handleFinish(), 500)
-    }
-  }
-
-  const handleOTPResend = async () => {
-    setOtpCode(["", "", "", "", "", ""])
-    await resendCode(fullOtpPhone, "register")
-    otpCodeRefs.current[0]?.focus()
+    handleFinish()
   }
 
   const handleInviteFinish = async () => {
@@ -315,14 +243,12 @@ export function SignUpPage({ onNavigate }: Props) {
       setShowWelcome(true)
     } catch (err: any) {
       setError(err.message || t.auth.error)
-      setShowOTP(false)
-      setOtpVerified(false)
     } finally {
       setLoading(false)
     }
   }
 
-  const steps = [{ num: 1, label: t.auth.step1 }, { num: 2, label: t.auth.step2 }, { num: 3, label: fr ? "Téléphone" : "Phone" }]
+  const steps = [{ num: 1, label: t.auth.step1 }, { num: 2, label: t.auth.step2 }]
   const visibleSteps = inviteToken ? [{ num: 1, label: fr ? "Compte" : "Account" }] : steps
 
   // Invite loading state
@@ -462,12 +388,8 @@ export function SignUpPage({ onNavigate }: Props) {
                 <Label htmlFor="su-cpw" className="text-foreground">{t.auth.confirmPassword}</Label>
                 <div className="relative"><Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input id="su-cpw" type={showPw ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="pl-9 text-foreground" required /></div>
               </div>
-              {!inviteToken && (
-                <div className="flex justify-center">
-                  <SavemaliCaptcha onVerify={() => setCaptchaOk(true)} />
-                </div>
-              )}
-              <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2" disabled={loading || (!inviteToken && !captchaOk)}>
+              {!inviteToken && <div />}
+              <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2" disabled={loading}>
                 {loading ? <Loader2 className="size-4 animate-spin" /> : null}
                 {inviteToken ? (loading ? t.auth.loading : (fr ? "Rejoindre l'équipe" : "Join team")) : <>{t.auth.next} <ChevronRight className="size-4" /></>}
               </Button>
@@ -508,126 +430,6 @@ export function SignUpPage({ onNavigate }: Props) {
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* OTP VERIFICATION — gates account creation */}
-      {step === 3 && showOTP && !showWelcome && (
-        <Card className="w-full max-w-sm shadow-lg">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-brand/10">
-              {otpStep === "phone" ? (
-                <Smartphone className="size-6 text-brand" />
-              ) : (
-                <ShieldCheck className="size-6 text-brand" />
-              )}
-            </div>
-            <CardTitle className="text-lg font-bold text-foreground">
-              {otpStep === "phone"
-                ? (fr ? "Vérification par SMS" : "SMS Verification")
-                : (fr ? "Entrez le code" : "Enter the code")}
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              {otpStep === "phone"
-                ? (fr ? "Un code de vérification sera envoyé à votre téléphone" : "A verification code will be sent to your phone")
-                : (fr ? `Code envoyé au ${fullOtpPhone}` : `Code sent to ${fullOtpPhone}`)}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {otpError && (
-              <Alert variant="destructive">
-                <AlertCircle className="size-4" />
-                <AlertDescription className="text-sm">{otpError}</AlertDescription>
-              </Alert>
-            )}
-
-            {otpStep === "phone" && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="otp-phone" className="text-foreground">{fr ? "Numéro de téléphone" : "Phone number"}</Label>
-                  <div className="flex gap-2">
-                    <div className="flex items-center rounded-lg border border-input bg-muted px-3 text-sm font-medium text-muted-foreground">+243</div>
-                    <Input
-                      id="otp-phone"
-                      type="tel"
-                      placeholder="XXXXXXXXX"
-                      value={otpPhone}
-                      onChange={(e) => { setOtpPhone(e.target.value.replace(/\D/g, "")); clearOtpError() }}
-                      className="flex-1 text-foreground"
-                      maxLength={10}
-                      autoFocus
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">{fr ? "Ex: 812345678" : "Ex: 812345678"}</p>
-                </div>
-                <Button
-                  onClick={handleOTPSendCode}
-                  disabled={!isOtpPhoneValid || otpLoading}
-                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
-                >
-                  {otpLoading ? <Loader2 className="size-4 animate-spin" /> : <Smartphone className="size-4" />}
-                  {fr ? "Envoyer le code" : "Send code"}
-                </Button>
-              </div>
-            )}
-
-            {otpStep === "code" && (
-              <div className="space-y-4">
-                <div className="flex justify-center gap-2">
-                  {otpCode.map((digit, i) => (
-                    <input
-                      key={i}
-                      ref={(el) => { otpCodeRefs.current[i] = el }}
-                      type="tel"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOTPCodeChange(i, e.target.value)}
-                      onKeyDown={(e) => handleOTPKeyDown(i, e)}
-                      onPaste={i === 0 ? handleOTPPaste : undefined}
-                      className="size-12 rounded-lg border border-input bg-background text-center text-lg font-bold text-foreground focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
-                      autoFocus={i === 0}
-                    />
-                  ))}
-                </div>
-
-                {secondsLeft > 0 && (
-                  <p className="text-center text-sm text-muted-foreground">
-                    {fr ? "Renvoyer dans" : "Resend in"}{" "}
-                    <span className="font-mono font-medium text-foreground">
-                      {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
-                    </span>
-                  </p>
-                )}
-
-                {secondsLeft === 0 && (
-                  <div className="text-center">
-                    <Button variant="link" onClick={handleOTPResend} disabled={otpLoading} className="text-accent p-0 h-auto">
-                      {fr ? "Renvoyer le code" : "Resend code"}
-                    </Button>
-                  </div>
-                )}
-
-                <Button
-                  onClick={() => handleOTPVerify()}
-                  disabled={fullOtpCode.length !== 6 || otpLoading || otpSuccess}
-                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
-                >
-                  {otpLoading ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
-                  {fr ? "Vérifier" : "Verify"}
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  onClick={() => { setOtpStep("phone"); setOtpCode(["", "", "", "", "", ""]); resetOtp() }}
-                  className="w-full"
-                >
-                  <ArrowLeft className="mr-2 size-4" />
-                  {fr ? "Changer de numéro" : "Change number"}
-                </Button>
-              </div>
-            )}
           </CardContent>
         </Card>
       )}

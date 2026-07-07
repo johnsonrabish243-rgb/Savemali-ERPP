@@ -14,7 +14,6 @@ import { trackLoginAttempt, getLoginAttempts, detectInjection, logSecurityEvent 
 import { isUserLockedOut } from "@/hooks/use-security"
 import { logAudit } from "@/lib/audit"
 import { ModeToggle } from "@/components/mode-toggle"
-import { SavemaliCaptcha } from "@/components/SavemaliCaptcha"
 import type { Page } from "@/App"
 
 interface Props {
@@ -39,8 +38,6 @@ export function SignInPage({ onNavigate }: Props) {
     }, containerRef)
     return () => ctx.revert()
   }, [])
-
-  const [captchaOk, setCaptchaOk] = React.useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,7 +96,6 @@ export function SignInPage({ onNavigate }: Props) {
       }
     } finally {
       setLoading(false)
-      setCaptchaOk(false)
     }
   }
 
@@ -144,8 +140,7 @@ export function SignInPage({ onNavigate }: Props) {
                 </button>
               </div>
             </div>
-            <SavemaliCaptcha onVerify={() => setCaptchaOk(true)} />
-            <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading || !captchaOk}>
+            <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
               {loading ? t.auth.loading : t.auth.signIn}
             </Button>
             <div className="flex items-center justify-between text-sm">
