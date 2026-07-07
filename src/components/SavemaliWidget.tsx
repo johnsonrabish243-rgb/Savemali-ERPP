@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom"
 import { MessageCircle, X, Shield, Send, Bot, User, Sparkles, Loader2, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLanguage } from "@/lib/i18n"
-import { insforge } from "@/lib/supabase"
+import { insforgeAi } from "@/lib/supabase"
 import { checkMessageSafety, checkAiRateLimit, sanitizeAiInput, getRejectionMessage } from "@/lib/ai-security"
 
 type Agent = "support" | "dpo"
@@ -111,18 +111,14 @@ async function sendMessage(messages: Message[], agent: Agent): Promise<string> {
     content: m.content,
   }))
 
-  const res = await insforge.ai.chat.completions.create({
+  const res = await insforgeAi.ai.chat.completions.create({
     model: "openai/gpt-4o",
     messages: [
       { role: "system", content: SYSTEM_PROMPTS[agent] },
       ...history,
     ],
-    max_tokens: 800,
+    maxTokens: 800,
   })
-
-  if ((res as any).error) {
-    throw new Error((res as any).error.message || "AI API error")
-  }
 
   return res.choices?.[0]?.message?.content ?? ""
 }
@@ -238,10 +234,22 @@ export function SavemaliWidget() {
     try {
       const reply = await sendMessage(updated, agent)
       setMessages((prev) => [...prev, { role: "assistant", content: reply }])
-    } catch {
+    } catch (err: any) {
+      let msg: string
+      if (err?.statusCode === 408 || err?.code === "REQUEST_TIMEOUT" || err?.message?.includes("timed out")) {
+        msg = fr
+          ? "La requête a pris trop de temps. Réessayez avec une question plus courte."
+          : "Request timed out. Try again with a shorter question."
+      } else if (err?.code === "NETWORK_ERROR" || err?.message?.includes("Network")) {
+        msg = fr
+          ? "Erreur réseau. Vérifiez votre connexion et réessayez."
+          : "Network error. Check your connection and try again."
+      } else {
+        msg = fr ? "Désolé, une erreur est survenue. Réessayez." : "Sorry, an error occurred. Please try again."
+      }
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: fr ? "Désolé, une erreur est survenue. Réessayez." : "Sorry, an error occurred. Please try again." },
+        { role: "assistant", content: msg },
       ])
     } finally {
       setLoading(false)
