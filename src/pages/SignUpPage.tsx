@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Logo } from "@/components/Logo"
+import { SavemaliCaptcha } from "@/components/SavemaliCaptcha"
 import { PasswordStrengthMeter, evaluateStrength } from "@/components/PasswordStrength"
 import { useLanguage } from "@/lib/i18n"
 import { insforge, type WorkspaceType } from "@/lib/supabase"
@@ -112,6 +113,7 @@ export function SignUpPage({ onNavigate }: Props) {
   const [otpCode, setOtpCode] = React.useState(["", "", "", "", "", ""])
   const otpCodeRefs = React.useRef<(HTMLInputElement | null)[]>([])
   const { sendCode, verifyCode, resendCode, loading: otpLoading, error: otpError, success: otpSuccess, secondsLeft, clearError: clearOtpError, reset: resetOtp } = useOTP()
+  const [captchaOk, setCaptchaOk] = React.useState(false)
 
   const fullOtpPhone = React.useMemo(() => formatDRCPhone(otpPhone), [otpPhone])
   const isOtpPhoneValid = React.useMemo(() => isValidPhoneNumber(fullOtpPhone), [fullOtpPhone])
@@ -462,7 +464,12 @@ export function SignUpPage({ onNavigate }: Props) {
                 <Label htmlFor="su-cpw" className="text-foreground">{t.auth.confirmPassword}</Label>
                 <div className="relative"><Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input id="su-cpw" type={showPw ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="pl-9 text-foreground" required /></div>
               </div>
-              <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2" disabled={loading}>
+              {!inviteToken && (
+                <div className="flex justify-center">
+                  <SavemaliCaptcha onVerify={() => setCaptchaOk(true)} />
+                </div>
+              )}
+              <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2" disabled={loading || (!inviteToken && !captchaOk)}>
                 {loading ? <Loader2 className="size-4 animate-spin" /> : null}
                 {inviteToken ? (loading ? t.auth.loading : (fr ? "Rejoindre l'équipe" : "Join team")) : <>{t.auth.next} <ChevronRight className="size-4" /></>}
               </Button>

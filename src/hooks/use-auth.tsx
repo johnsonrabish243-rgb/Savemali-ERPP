@@ -7,6 +7,7 @@ import { getDeviceInfo, initSession, clearSession, startActivityTracking, isSess
 interface AuthUser {
   id: string
   email?: string
+  email_verified?: boolean
   last_sign_in_at?: string
 }
 
@@ -15,12 +16,14 @@ interface AuthState {
   workspace: Workspace | null
   loading: boolean
   isOwner: boolean
+  emailVerified: boolean
 }
 
 interface AuthContext extends AuthState {
   signOut: () => Promise<void>
   refreshWorkspace: () => Promise<void>
   checkAuth: () => Promise<void>
+  resendVerification: () => Promise<void>
 }
 
 const AuthCtx = React.createContext<AuthContext | undefined>(undefined)
@@ -31,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     workspace: null,
     loading: true,
     isOwner: false,
+    emailVerified: true,
   })
 
   const signOut = React.useCallback(async () => {
@@ -41,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     try { await insforge.auth.signOut() } catch {}
     clearSession()
-    setState({ user: null, workspace: null, loading: false, isOwner: false })
+    setState({ user: null, workspace: null, loading: false, isOwner: false, emailVerified: true })
   }, [state.user])
 
   useSession(signOut)
@@ -106,7 +110,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (cancelled) return
 
         const user = data.user as AuthUser
-        setState({ user, workspace: result.workspace, loading: false, isOwner: result.isOwner })
+        const emailVerified = (user as any).email_verified !== false && (user as any).email_confirmed_at != null
+        setState({ user, workspace: result.workspace, loading: false, isOwner: result.isOwner, emailVerified })
 
         initSession()
 
@@ -151,18 +156,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await insforge.auth.getCurrentUser()
       if (error || !data?.user) {
-        setState({ user: null, workspace: null, loading: false, isOwner: false })
+        setState({ user: null, workspace: null, loading: false, isOwner: false, emailVerified: true })
         return
       }
       const result = await fetchWorkspace(data.user.id)
-      setState({ user: data.user as AuthUser, workspace: result.workspace, loading: false, isOwner: result.isOwner })
+      const user = data.user as AuthUser
+      const emailVerified = (user as any).email_verified !== false && (user as any).email_confirmed_at != null
+      setState({ user, workspace: result.workspace, loading: false, isOwner: result.isOwner, emailVerified })
     } catch (err) {
-      setState({ user: null, workspace: null, loading: false, isOwner: false })
+      setState({ user: null, workspace: null, loading: false, isOwner: false, emailVerified: true })
     }
   }, [fetchWorkspace])
 
+  const resendVerification = React.useCallback(async () => {
+    if (!state.user?.email) return
+    try {
+      await fetch(`${import.meta.env.VITE_INSFORGE_URL}/api/auth/email/send-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: state.user.email }),
+      })
+    } catch {}
+  }, [state.user])
+
   return (
-    <AuthCtx.Provider value={{ ...state, signOut, refreshWorkspace, checkAuth }}>
+    <AuthCtx.Provider value={{ ...state, signOut, refreshWorkspace, checkAuth, resendVerification }}>
       {children}
     </AuthCtx.Provider>
   )
