@@ -186,6 +186,7 @@ body {
   border: 1px solid var(--border);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
+  color: var(--foreground);
 }
 
 .ag-dialog [data-slot="dialog-content"] {
@@ -213,6 +214,9 @@ body {
   background: var(--surface-alt);
   padding: 12px 24px;
   margin: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 /* ── Agentic Dialog Form Fields ── */
@@ -228,6 +232,7 @@ body {
   border-radius: 4px;
   border: 1px solid var(--border);
   background: var(--surface);
+  color: var(--foreground);
   height: 40px;
   padding: 0 12px;
   font-size: 14px;
