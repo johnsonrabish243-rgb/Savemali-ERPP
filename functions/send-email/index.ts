@@ -39,8 +39,6 @@ function cors(origin: string | null): Record<string, string> {
   return { "Access-Control-Allow-Origin": a, "Access-Control-Allow-Methods": "POST,OPTIONS", "Access-Control-Allow-Headers": "Content-Type,Authorization" }
 }
 
-/* ────────────── LAYOUT WRAPPER ────────────── */
-
 function page(title: string, body: string): string {
   return [
     '<!DOCTYPE html>',
@@ -68,27 +66,27 @@ function page(title: string, body: string): string {
     '    }',
     '  </style>',
     '</head>',
-    '<body style="margin:0;padding:0;background:#f0f0f3;font-family:Arial,Helvetica,sans-serif;">',
-    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f0f3">',
+    '<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">',
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f5">',
     '<tr><td align="center" style="padding:40px 16px">',
     '<!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="500" align="center"><tr><td><![endif]-->',
-    '<table role="presentation" class="wrap" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:500px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.06)">',
+    '<table role="presentation" class="wrap" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:500px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">',
     '<!-- HEADER -->',
-    '<tr><td class="hdr" style="background:linear-gradient(135deg,#7c3aed,#a855f7 40%,#c8399c 70%,#e11d48);padding:36px 40px 32px;text-align:center">',
-    '<img src="' + LOGO_URL + '" alt="SaveMali" width="120" style="display:block;margin:0 auto 14px;max-width:120px;height:auto;border-radius:8px">',
-    '<p style="margin:0;color:rgba(255,255,255,.85);font-size:12px;letter-spacing:.4px">Gestion intelligente pour votre activite</p>',
+    '<tr><td class="hdr" style="background:linear-gradient(135deg,#7c3aed 0%,#a855f7 50%,#c8399c 100%);padding:40px 40px 36px;text-align:center">',
+    '<img src="' + LOGO_URL + '" alt="SaveMali" width="120" style="display:block;margin:0 auto 16px;max-width:120px;height:auto;border-radius:8px">',
+    '<p style="margin:0;color:rgba(255,255,255,.9);font-size:13px;letter-spacing:.5px;font-family:Arial,Helvetica,sans-serif">Gestion intelligente pour votre activite</p>',
     '</td></tr>',
     '<!-- BODY -->',
-    '<tr><td class="bdy" style="padding:40px 40px 36px">',
+    '<tr><td class="bdy" style="padding:44px 40px 40px">',
     body,
     '</td></tr>',
     '<!-- DIVIDER -->',
     '<tr><td style="padding:0 40px"><div style="height:1px;background:linear-gradient(90deg,transparent,#e4e4e7,transparent)"></div></td></tr>',
     '<!-- FOOTER -->',
-    '<tr><td class="ftr" style="padding:24px 40px 28px;text-align:center">',
-    '<p style="margin:0 0 4px;color:#71717a;font-size:11px;font-weight:500">' + FOOTER_COPY + '</p>',
-    '<p style="margin:0 0 8px;color:#d4d4d8;font-size:10px">' + FOOTER_ADDRESS + '</p>',
-    '<p style="margin:0"><a href="' + SITE_URL + '" style="color:#7c3aed;font-size:10px;text-decoration:none;font-weight:500">' + SITE_URL + '</a> &nbsp;|&nbsp; <a href="mailto:' + SUPPORT_EMAIL + '" style="color:#7c3aed;font-size:10px;text-decoration:none;font-weight:500">' + SUPPORT_EMAIL + '</a></p>',
+    '<tr><td class="ftr" style="padding:28px 40px 32px;text-align:center">',
+    '<p style="margin:0 0 6px;color:#71717a;font-size:11px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + FOOTER_COPY + '</p>',
+    '<p style="margin:0 0 10px;color:#d4d4d8;font-size:10px;font-family:Arial,Helvetica,sans-serif">' + FOOTER_ADDRESS + '</p>',
+    '<p style="margin:0"><a href="' + SITE_URL + '" style="color:#7c3aed;font-size:10px;text-decoration:none;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + SITE_URL + '</a> &nbsp;|&nbsp; <a href="mailto:' + SUPPORT_EMAIL + '" style="color:#7c3aed;font-size:10px;text-decoration:none;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + SUPPORT_EMAIL + '</a></p>',
     '</td></tr>',
     '</table>',
     '<!--[if mso]></td></tr></table><![endif]-->',
@@ -97,50 +95,45 @@ function page(title: string, body: string): string {
   ].join('\n')
 }
 
-/* ────────────── REUSABLE BLOCKS ────────────── */
-
 function iconCircle(emoji: string, gradient: string): string {
-  return '<tr><td style="text-align:center;padding-bottom:24px"><div style="display:inline-block;width:56px;height:56px;border-radius:50%;background:' + gradient + ';line-height:56px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.12)"><span style="font-size:24px;color:#fff">' + emoji + '</span></div></td></tr>'
+  return '<tr><td style="text-align:center;padding-bottom:28px"><div style="display:inline-block;width:60px;height:60px;border-radius:50%;background:' + gradient + ';line-height:60px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.15)"><span style="font-size:26px;color:#fff">' + emoji + '</span></div></td></tr>'
 }
 
 function heading(text: string): string {
-  return '<tr><td style="text-align:center;padding-bottom:12px"><h1 style="margin:0;color:#18181b;font-size:21px;font-weight:700;font-family:Arial,Helvetica,sans-serif">' + text + '</h1></td></tr>'
+  return '<tr><td style="text-align:center;padding-bottom:14px"><h1 style="margin:0;color:#18181b;font-size:22px;font-weight:700;font-family:Arial,Helvetica,sans-serif">' + text + '</h1></td></tr>'
 }
 
 function paragraph(text: string): string {
-  return '<tr><td style="text-align:center;padding-bottom:28px"><p style="margin:0;color:#52525b;font-size:14px;line-height:1.65;font-family:Arial,Helvetica,sans-serif">' + text + '</p></td></tr>'
+  return '<tr><td style="text-align:center;padding-bottom:32px"><p style="margin:0;color:#52525b;font-size:14px;line-height:1.7;font-family:Arial,Helvetica,sans-serif">' + text + '</p></td></tr>'
 }
 
 function otpRow(code: string): string {
   var cells = ''
   for (var i = 0; i < code.length; i++) {
-    var border = i === 0 ? '#7c3aed' : '#e4e4e7'
-    cells += '<td class="otp-cell" style="width:44px;height:52px;padding:0 ' + (i < code.length - 1 ? '4px' : '0') + '">'
-      + '<div style="width:44px;height:52px;background:#f9fafb;border:2px solid ' + border + ';border-radius:10px;text-align:center;line-height:52px;font-size:22px;font-weight:700;color:#18181b;font-family:\'Courier New\',monospace">' + code[i] + '</div></td>'
+    cells += '<td class="otp-cell" style="width:46px;height:54px;padding:0 ' + (i < code.length - 1 ? '5px' : '0') + '">'
+      + '<div style="width:46px;height:54px;background:#fafafa;border:2px solid #e4e4e7;border-radius:12px;text-align:center;line-height:54px;font-size:24px;font-weight:700;color:#18181b;font-family:\'Courier New\',monospace">' + code[i] + '</div></td>'
   }
-  return '<tr><td style="padding-bottom:28px"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto"><tr>' + cells + '</tr></table></td></tr>'
+  return '<tr><td style="padding-bottom:32px"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto"><tr>' + cells + '</tr></table></td></tr>'
 }
 
 function primaryBtn(href: string, label: string, grad: string): string {
-  return '<tr><td style="text-align:center;padding-bottom:28px"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto"><tr><td style="background:' + grad + ';border-radius:10px"><a href="' + href + '" target="_blank" style="display:inline-block;padding:14px 36px;color:#fff;font-size:14px;font-weight:600;text-decoration:none;font-family:Arial,Helvetica,sans-serif">' + label + '</a></td></tr></table></td></tr>'
+  return '<tr><td style="text-align:center;padding-bottom:32px"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto"><tr><td style="background:' + grad + ';border-radius:12px"><a href="' + href + '" target="_blank" style="display:inline-block;padding:15px 40px;color:#fff;font-size:14px;font-weight:600;text-decoration:none;font-family:Arial,Helvetica,sans-serif;letter-spacing:.3px">' + label + '</a></td></tr></table></td></tr>'
 }
 
 function notice(text: string): string {
-  return '<tr><td style="padding-bottom:4px"><div style="background:#fefce8;border:1px solid #fde68a;border-radius:10px;padding:12px 16px"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:16px;vertical-align:top;padding-top:2px;font-size:12px;color:#92400e">!</td><td style="padding-left:8px"><p style="margin:0;color:#92400e;font-size:11px;line-height:1.5">' + text + '</p></td></tr></table></div></td></tr>'
+  return '<tr><td style="padding-bottom:4px"><div style="background:#fefce8;border:1px solid #fde68a;border-radius:12px;padding:14px 18px"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:18px;vertical-align:top;padding-top:2px;font-size:13px;color:#92400e;font-weight:700">!</td><td style="padding-left:10px"><p style="margin:0;color:#92400e;font-size:12px;line-height:1.6;font-family:Arial,Helvetica,sans-serif">' + text + '</p></td></tr></table></div></td></tr>'
 }
 
 function expiry(text: string): string {
-  return '<tr><td style="text-align:center;padding-bottom:4px"><p style="margin:0;color:#71717a;font-size:12px">Ce code expire dans <strong style="color:#18181b">' + text + '</strong>.</p></td></tr>'
+  return '<tr><td style="text-align:center;padding-bottom:4px"><p style="margin:0;color:#71717a;font-size:13px;font-family:Arial,Helvetica,sans-serif">Ce code expire dans <strong style="color:#18181b">' + text + '</strong>.</p></td></tr>'
 }
-
-/* ────────────── TEMPLATES ────────────── */
 
 function tplVerificationCode(code: string) {
   return {
     subject: 'Code de verification - SaveMali',
     html: page('Verification email', [
       iconCircle('&#9993;', 'linear-gradient(135deg,#7c3aed,#a855f7)'),
-      heading('Verifiez votre email'),
+      heading('Verification de votre email'),
       paragraph('Entrez le code a 6 chiffres ci-dessous pour activer votre compte SaveMali.'),
       otpRow(code),
       expiry('1 min 30 s'),
@@ -154,7 +147,7 @@ function tplVerificationLink(link: string) {
     subject: 'Verification de votre email - SaveMali',
     html: page('Verification email', [
       iconCircle('&#9993;', 'linear-gradient(135deg,#7c3aed,#a855f7)'),
-      heading('Verifiez votre email'),
+      heading('Verification de votre email'),
       paragraph('Cliquez sur le bouton ci-dessous pour activer votre compte SaveMali.'),
       primaryBtn(link, 'Verifier mon email', 'linear-gradient(135deg,#7c3aed,#a855f7)'),
       expiry('24 heures'),
@@ -172,23 +165,23 @@ function tplWelcome(name: string) {
       paragraph('Bonjour <strong style="color:#18181b">' + name + '</strong>,'),
       paragraph('Votre compte a ete cree avec succes. Accedez desormais a votre tableau de bord.'),
       primaryBtn(SITE_URL + '/signin', 'Acceder a mon tableau de bord', 'linear-gradient(135deg,#7c3aed,#a855f7)'),
-      '<tr><td><div style="background:#f9fafb;border-radius:10px;padding:16px 20px"><p style="margin:0 0 4px;color:#18181b;font-size:12px;font-weight:600">Besoin d\'aide ?</p><p style="margin:0;color:#52525b;font-size:12px;line-height:1.5">Contactez-nous a <a href="mailto:' + SUPPORT_EMAIL + '" style="color:#7c3aed;text-decoration:none">' + SUPPORT_EMAIL + '</a></p></div></td></tr>',
+      '<tr><td><div style="background:#f9fafb;border-radius:12px;padding:18px 22px;border:1px solid #f4f4f5"><p style="margin:0 0 6px;color:#18181b;font-size:13px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Besoin d\'aide ?</p><p style="margin:0;color:#52525b;font-size:12px;line-height:1.6;font-family:Arial,Helvetica,sans-serif">Contactez-nous a <a href="mailto:' + SUPPORT_EMAIL + '" style="color:#7c3aed;text-decoration:none">' + SUPPORT_EMAIL + '</a></p></div></td></tr>',
     ].join('')),
   }
 }
 
 function tplContact(d: { name: string; email: string; phone?: string; address?: string; message: string }) {
   var rows = ''
-  rows += '<tr><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 2px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:600">Nom</p><p style="margin:0;color:#18181b;font-size:13px;font-weight:500">' + d.name + '</p></td></tr>'
-  rows += '<tr><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 2px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:600">Email</p><p style="margin:0;color:#7c3aed;font-size:13px;font-weight:500">' + d.email + '</p></td></tr>'
-  if (d.phone) rows += '<tr><td style="padding:12px 16px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 2px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:600">Telephone</p><p style="margin:0;color:#18181b;font-size:13px;font-weight:500">' + d.phone + '</p></td></tr>'
-  if (d.address) rows += '<tr><td style="padding:12px 16px"><p style="margin:0 0 2px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:600">Adresse</p><p style="margin:0;color:#18181b;font-size:13px;font-weight:500">' + d.address + '</p></td></tr>'
+  rows += '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Nom</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + d.name + '</p></td></tr>'
+  rows += '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Email</p><p style="margin:0;color:#7c3aed;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + d.email + '</p></td></tr>'
+  if (d.phone) rows += '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Telephone</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + d.phone + '</p></td></tr>'
+  if (d.address) rows += '<tr><td style="padding:14px 18px"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Adresse</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + d.address + '</p></td></tr>'
   return {
     subject: 'Nouveau message - ' + d.name,
     html: page('Message de contact', [
       heading('Nouveau message de contact'),
-      '<tr><td style="padding-bottom:16px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:10px;overflow:hidden;border:1px solid #f4f4f5">' + rows + '</table></td></tr>',
-      '<tr><td><div style="border-left:3px solid #7c3aed;padding:16px 20px;background:#f9fafb;border-radius:0 10px 10px 0"><p style="margin:0 0 4px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:600">Message</p><p style="margin:0;color:#18181b;font-size:13px;line-height:1.7;white-space:pre-wrap">' + d.message + '</p></div></td></tr>',
+      '<tr><td style="padding-bottom:20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;border:1px solid #f4f4f5">' + rows + '</table></td></tr>',
+      '<tr><td><div style="border-left:3px solid #7c3aed;padding:18px 22px;background:#f9fafb;border-radius:0 12px 12px 0"><p style="margin:0 0 5px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Message</p><p style="margin:0;color:#18181b;font-size:14px;line-height:1.7;white-space:pre-wrap;font-family:Arial,Helvetica,sans-serif">' + d.message + '</p></div></td></tr>',
     ].join('')),
   }
 }
@@ -228,7 +221,7 @@ function tplInvite(d: { inviterName: string; workspaceName: string; role: string
       iconCircle('&#128101;', 'linear-gradient(135deg,#7c3aed,#a855f7)'),
       heading('Vous etes invite !'),
       paragraph('<strong style="color:#18181b">' + d.inviterName + '</strong> vous invite a rejoindre l\'equipe sur SaveMali.'),
-      '<tr><td style="text-align:center;padding-bottom:28px"><div style="display:inline-block;background:#f9fafb;border:1px solid #f4f4f5;border-radius:10px;padding:14px 24px"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:600">Workspace</p><p style="margin:0;color:#18181b;font-size:15px;font-weight:600">' + d.workspaceName + '</p><p style="margin:4px 0 0;color:#7c3aed;font-size:12px;font-weight:500;text-transform:capitalize">' + d.role + '</p></div></td></tr>',
+      '<tr><td style="text-align:center;padding-bottom:32px"><div style="display:inline-block;background:#f9fafb;border:1px solid #f4f4f5;border-radius:12px;padding:16px 28px"><p style="margin:0 0 4px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Workspace</p><p style="margin:0;color:#18181b;font-size:16px;font-weight:600;font-family:Arial,Helvetica,sans-serif">' + d.workspaceName + '</p><p style="margin:5px 0 0;color:#7c3aed;font-size:13px;font-weight:500;text-transform:capitalize;font-family:Arial,Helvetica,sans-serif">' + d.role + '</p></div></td></tr>',
       primaryBtn(d.inviteLink, 'Rejoindre l\'equipe', 'linear-gradient(135deg,#7c3aed,#a855f7)'),
       expiry('7 jours'),
       notice("Vous n'avez pas demande cette invitation ? Ignorez cet email en toute securite."),
@@ -243,7 +236,7 @@ function tplMemberJoined(d: { memberName: string; workspaceName: string; role: s
       iconCircle('&#10003;', 'linear-gradient(135deg,#22c55e,#16a34a)'),
       heading('Nouveau membre dans l\'equipe'),
       paragraph('<strong style="color:#18181b">' + d.memberName + '</strong> a rejoint le workspace <strong style="color:#18181b">' + d.workspaceName + '</strong> en tant que <strong style="color:#7c3aed">' + d.role + '</strong>.'),
-      '<tr><td><div style="background:#f9fafb;border-radius:10px;padding:16px 20px"><p style="margin:0;color:#52525b;font-size:12px;line-height:1.5">Vous pouvez gerer les permissions de ce membre depuis le panneau d\'administration.</p></div></td></tr>',
+      '<tr><td><div style="background:#f9fafb;border-radius:12px;padding:18px 22px;border:1px solid #f4f4f5"><p style="margin:0;color:#52525b;font-size:13px;line-height:1.6;font-family:Arial,Helvetica,sans-serif">Vous pouvez gerer les permissions de ce membre depuis le panneau d\'administration.</p></div></td></tr>',
     ].join('')),
   }
 }
@@ -258,8 +251,6 @@ const TEMPLATES: Record<string, (d: any) => { subject: string; html: string }> =
   'invite': (d) => tplInvite(d),
   'member-joined': (d) => tplMemberJoined(d),
 }
-
-/* ────────────── HANDLER ────────────── */
 
 export default async function handler(req: Request): Promise<Response> {
   const h = cors(req.headers.get('origin'))

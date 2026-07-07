@@ -152,6 +152,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => { stopTracking(); clearInterval(interval) }
   }, [state.user, signOut])
 
+  // Poll for email verification status (re-checks every 3s until verified)
+  React.useEffect(() => {
+    if (!state.user || state.emailVerified) return
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await insforge.auth.getCurrentUser()
+        if (data?.user) {
+          const verified = (data.user as any).email_verified !== false && (data.user as any).email_confirmed_at != null
+          if (verified) {
+            setState((prev) => ({ ...prev, emailVerified: true }))
+          }
+        }
+      } catch {}
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [state.user, state.emailVerified])
+
   const checkAuth = React.useCallback(async () => {
     try {
       const { data, error } = await insforge.auth.getCurrentUser()
