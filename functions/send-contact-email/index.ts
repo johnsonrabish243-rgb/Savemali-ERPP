@@ -97,7 +97,7 @@ function checkRateLimit(key: string): { allowed: boolean; remaining: number } {
   return { allowed: true, remaining: RATE_LIMIT_MAX - record.count };
 }
 
-// ── Email HTML (logo via CID for inbox preview) ──
+// ── Email HTML (professional template, email-client compatible) ──
 
 function generateContactEmailHtml(data: {
   name: string;
@@ -111,69 +111,181 @@ function generateContactEmailHtml(data: {
 }): string {
   const { name, email, phone, address, message, date, time, hasLogo } = data;
   const messageHtml = nl2br(message);
+  const year = new Date().getFullYear();
 
   const logoImg = hasLogo
-    ? `<img src="cid:save-mali-logo" alt="SaveMali" width="56" height="56" style="border-radius:12px;box-shadow:0 4px 12px rgba(200,57,156,0.12);display:block;">`
-    : `<img src="${LOGO_URL}" alt="SaveMali" width="56" height="56" style="border-radius:12px;box-shadow:0 4px 12px rgba(200,57,156,0.12);display:block;">`;
+    ? `<img src="cid:save-mali-logo" alt="SaveMali" width="56" height="56" style="display:block;border-radius:12px;border:0;outline:none;text-decoration:none;">`
+    : `<img src="${LOGO_URL}" alt="SaveMali" width="56" height="56" style="display:block;border-radius:12px;border:0;outline:none;text-decoration:none;">`;
 
   return `<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f0f2f5;">
-<tr><td align="center" style="padding:40px 20px;">
-<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;width:100%;">
-  <tr><td align="center" style="padding-bottom:24px;">
-    ${logoImg}
-  </td></tr>
-  <tr><td style="background:#ffffff;border-radius:16px;border:1px solid #e5e7eb;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-    <div style="height:4px;background:linear-gradient(90deg,#c8399c,#d94fb0,#e87bc4);"></div>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-    <tr><td style="padding:40px 40px 8px;">
-      <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">&#128233; Nouvelle demande de rendez-vous</h1>
-      <p style="margin:0;color:#6b7280;font-size:14px;line-height:1.6;">Un utilisateur a soumis une demande via le formulaire de contact de SaveMali.</p>
-    </td></tr>
-    <tr><td style="padding:24px 40px;">
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #f3f4f6;border-radius:12px;overflow:hidden;">
-        <tr style="background:#f9fafb;">
-          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;width:140px;">Nom complet</td>
-          <td style="padding:12px 16px;font-size:13px;color:#111827;">${escapeHtml(name)}</td>
-        </tr>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>SaveMali — Nouvelle demande de rendez-vous</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:AllowPNG/>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { margin: 0; padding: 0; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { border: 0; -ms-interpolation-mode: bicubic; outline: none; text-decoration: none; }
+    a { color: #c8399c; text-decoration: none; }
+    @media only screen and (max-width: 620px) {
+      .email-container { width: 100% !important; max-width: 100% !important; }
+      .fluid { max-width: 100% !important; height: auto !important; }
+      .stack-column { display: block !important; width: 100% !important; }
+      .center-on-narrow { text-align: center !important; display: block !important; margin-left: auto !important; margin-right: auto !important; float: none !important; }
+      .padding-mobile { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;width:100% !important;">
+
+<!-- Preheader (hidden text for inbox preview) -->
+<div style="display:none;font-size:1px;color:#f0f2f5;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
+  Nouvelle demande de rendez-vous de ${escapeHtml(name)} — SaveMali
+</div>
+
+<!-- Background -->
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#f0f2f5;">
+  <tr>
+    <td align="center" style="padding:40px 10px;">
+
+      <!-- Container 600px -->
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="email-container" style="max-width:600px;margin:0 auto;">
+
+        <!-- LOGO -->
         <tr>
-          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;border-top:1px solid #f3f4f6;">Email</td>
-          <td style="padding:12px 16px;font-size:13px;color:#111827;border-top:1px solid #f3f4f6;"><a href="mailto:${escapeHtml(email)}" style="color:#c8399c;text-decoration:none;">${escapeHtml(email)}</a></td>
+          <td align="center" style="padding:0 0 24px 0;">
+            ${logoImg}
+          </td>
         </tr>
-        ${phone ? `<tr style="background:#f9fafb;">
-          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;border-top:1px solid #f3f4f6;">WhatsApp</td>
-          <td style="padding:12px 16px;font-size:13px;color:#111827;border-top:1px solid #f3f4f6;"><a href="tel:${escapeHtml(phone)}" style="color:#c8399c;text-decoration:none;">${escapeHtml(phone)}</a></td>
-        </tr>` : ""}
-        ${address ? `<tr${phone ? "" : ' style="background:#f9fafb;"'}>
-          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;border-top:1px solid #f3f4f6;">Adresse</td>
-          <td style="padding:12px 16px;font-size:13px;color:#111827;border-top:1px solid #f3f4f6;">${escapeHtml(address)}</td>
-        </tr>` : ""}
+
+        <!-- CARD -->
+        <tr>
+          <td style="background-color:#ffffff;border-radius:16px;border:1px solid #e5e7eb;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+
+            <!-- Brand bar -->
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td style="height:4px;background:linear-gradient(90deg,#c8399c,#d94fb0,#e87bc4);font-size:0;line-height:0;">&nbsp;</td>
+              </tr>
+            </table>
+
+            <!-- Header -->
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td style="padding:40px 40px 8px 40px;" class="padding-mobile">
+                  <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;line-height:1.3;">
+                    &#128233; Nouvelle demande de rendez-vous
+                  </h1>
+                  <p style="margin:0;color:#6b7280;font-size:14px;line-height:1.6;">
+                    Un utilisateur a soumis une demande via le formulaire de contact de SaveMali.
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Info table -->
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="padding:24px 40px;" class="padding-mobile">
+              <tr>
+                <td style="padding:0 0 0 40px;" class="padding-mobile">
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border:1px solid #f3f4f6;border-radius:12px;overflow:hidden;">
+                    <tr style="background-color:#f9fafb;">
+                      <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;width:140px;border:0;">Nom complet</td>
+                      <td style="padding:12px 16px;font-size:13px;color:#111827;border:0;">${escapeHtml(name)}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;border-top:1px solid #f3f4f6;border:0;border-top:1px solid #f3f4f6;">Email</td>
+                      <td style="padding:12px 16px;font-size:13px;color:#111827;border:0;border-top:1px solid #f3f4f6;">
+                        <a href="mailto:${escapeHtml(email)}" style="color:#c8399c;text-decoration:none;">${escapeHtml(email)}</a>
+                      </td>
+                    </tr>
+                    ${phone ? `<tr style="background-color:#f9fafb;">
+                      <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;border:0;border-top:1px solid #f3f4f6;">WhatsApp</td>
+                      <td style="padding:12px 16px;font-size:13px;color:#111827;border:0;border-top:1px solid #f3f4f6;">
+                        <a href="tel:${escapeHtml(phone)}" style="color:#c8399c;text-decoration:none;">${escapeHtml(phone)}</a>
+                      </td>
+                    </tr>` : ""}
+                    ${address ? `<tr${phone ? "" : ' style="background-color:#f9fafb;"'}>
+                      <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;border:0;border-top:1px solid #f3f4f6;">Adresse</td>
+                      <td style="padding:12px 16px;font-size:13px;color:#111827;border:0;border-top:1px solid #f3f4f6;">${escapeHtml(address)}</td>
+                    </tr>` : ""}
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Message -->
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td style="padding:0 40px 24px 40px;" class="padding-mobile">
+                  <div style="background-color:#fdf2f8;border-radius:12px;padding:20px;border:1px solid #fce7f3;">
+                    <p style="margin:0 0 8px;font-size:12px;font-weight:600;color:#9d174d;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
+                    <div style="margin:0;font-size:14px;color:#111827;line-height:1.7;">${messageHtml}</div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Date/Time -->
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td style="padding:0 40px 16px 40px;" class="padding-mobile">
+                  <p style="margin:0;font-size:12px;color:#9ca3af;">
+                    &#128197; Reçue le ${escapeHtml(date)} à ${escapeHtml(time)} (heure de Kalemie)
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Closing -->
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td style="padding:0 40px 32px 40px;" class="padding-mobile">
+                  <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.6;">
+                    Merci de traiter cette demande dans les meilleurs délais.
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:24px 40px 0 40px;text-align:center;" class="padding-mobile">
+            <p style="margin:0 0 4px;font-size:11px;color:#9ca3af;">
+              &#169; ${year} SaveMali SARL — Kalemie, Tanganyika, RDC
+            </p>
+            <p style="margin:0 0 4px;font-size:10px;color:#d1d5db;">
+              D&eacute;velopp&eacute; par John Mocket
+            </p>
+            <p style="margin:0;font-size:10px;color:#d1d5db;">
+              Email automatique — ne pas r&eacute;pondre directement
+            </p>
+          </td>
+        </tr>
+
       </table>
-    </td></tr>
-    <tr><td style="padding:0 40px 24px;">
-      <div style="background:#fdf2f8;border-radius:12px;padding:20px;border:1px solid #fce7f3;">
-        <p style="margin:0 0 8px;font-size:12px;font-weight:600;color:#9d174d;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
-        <div style="margin:0;font-size:14px;color:#111827;line-height:1.7;">${messageHtml}</div>
-      </div>
-    </td></tr>
-    <tr><td style="padding:0 40px 24px;">
-      <p style="margin:0;font-size:12px;color:#9ca3af;">&#128197; Reçue le ${escapeHtml(date)} à ${escapeHtml(time)} (heure de Kalemie)</p>
-    </td></tr>
-    <tr><td style="padding:0 40px 32px;">
-      <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.6;">Merci de traiter cette demande dans les meilleurs délais.</p>
-    </td></tr>
-    </table>
-  </td></tr>
-  <tr><td style="padding:24px 40px 0;text-align:center;">
-    <p style="margin:0 0 4px;font-size:11px;color:#9ca3af;">&#169; ${new Date().getFullYear()} SaveMali SARL — Kalemie, Tanganyika, RDC</p>
-    <p style="margin:0;font-size:10px;color:#d1d5db;">Email automatique — ne pas répondre directement</p>
-  </td></tr>
+      <!-- /Container -->
+
+    </td>
+  </tr>
 </table>
-</td></tr>
-</table>
+
 </body>
 </html>`;
 }
@@ -190,21 +302,31 @@ function generatePlainText(data: {
   time: string;
 }): string {
   const { name, email, phone, address, message, date, time } = data;
-  let text = `NOUVELLE DEMANDE DE RENDEZ-VOUS\n`;
-  text += `${"=".repeat(40)}\n\n`;
-  text += `Nom complet : ${name}\n`;
-  text += `Email : ${email}\n`;
-  if (phone) text += `WhatsApp : ${phone}\n`;
-  if (address) text += `Adresse : ${address}\n`;
-  text += `\nMessage :\n${message}\n`;
-  text += `\n${"─".repeat(40)}\n`;
-  text += `Reçue le ${date} à ${time} (heure de Kalemie)\n`;
-  text += `\nSaveMali SARL — Kalemie, Tanganyika, RDC\n`;
-  text += `Email automatique — ne pas répondre directement\n`;
-  return text;
+  const lines = [
+    `NOUVELLE DEMANDE DE RENDEZ-VOUS`,
+    `${"=".repeat(40)}`,
+    ``,
+    `Nom complet : ${name}`,
+    `Email : ${email}`,
+  ];
+  if (phone) lines.push(`WhatsApp : ${phone}`);
+  if (address) lines.push(`Adresse : ${address}`);
+  lines.push(
+    ``,
+    `Message :`,
+    `${message}`,
+    ``,
+    `${"─".repeat(40)}`,
+    `Reçue le ${date} à ${time} (heure de Kalemie)`,
+    ``,
+    `SaveMali SARL — Kalemie, Tanganyika, RDC`,
+    `Développé par John Mocket`,
+    `Email automatique — ne pas répondre directement`,
+  );
+  return lines.join("\n");
 }
 
-// ── SMTP ──
+// ── SMTP (optimized for deliverability) ──
 
 async function sendEmail(
   to: string,
@@ -228,6 +350,7 @@ async function sendEmail(
     port: smtpPort,
     secure: smtpPort === 465,
     auth: { user: smtpUser, pass: smtpPass },
+    tls: { rejectUnauthorized: true },
   });
 
   const attachments = logo
@@ -239,19 +362,28 @@ async function sendEmail(
       }]
     : [];
 
+  const messageId = `<${Date.now()}.${Math.random().toString(36).slice(2)}@contact.savemali.com>`;
+
   await transporter.sendMail({
     from: `"${senderName}" <${smtpUser}>`,
     to,
-    replyTo: `"${senderName}" <${smtpUser}>`,
+    replyTo: `"${senderName} Support" <${smtpUser}>`,
+    sender: smtpUser,
     subject,
     html,
     text,
     attachments,
+    messageId,
     headers: {
-      "X-Mailer": "SaveMali-ContactForm/1.0",
+      "X-Mailer": "SaveMali-ContactForm/2.0",
+      "X-Priority": "3",
+      "X-MSMail-Priority": "Normal",
       "Precedence": "bulk",
-      "List-Unsubscribe": `<mailto:${smtpUser}?subject=Désabonnement>`,
+      "List-Unsubscribe": `<mailto:${smtpUser}?subject=unsubscribe&body=Pour%20vous%20d%C3%A9sabonner%2C%20merci%20de%20contacter%20l%27%C3%A9quipe%20SaveMali>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
       "X-Auto-Response-Suppress": "All",
+      "Auto-Submitted": "auto-generated",
+      "Feedback-ID": `contact-form:${Date.now()}:savemali`,
     },
   });
 
