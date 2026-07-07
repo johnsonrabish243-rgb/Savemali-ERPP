@@ -415,7 +415,7 @@ export function SignUpPage({ onNavigate }: Props) {
       )}
 
       {/* STEP 2 */}
-      {step === 2 && !showOTP && (
+      {step === 2 && (
         <Card className="w-full max-w-sm shadow-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-xl font-bold text-foreground">{t.auth.step2}</CardTitle>
