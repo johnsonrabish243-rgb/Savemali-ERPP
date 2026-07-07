@@ -2,6 +2,8 @@ import { createAdminClient, createClient } from "npm:@insforge/sdk";
 import nodemailer from "npm:nodemailer@6.9.16";
 
 const ALLOWED_ORIGINS = [
+  "https://www.savemali.online",
+  "https://savemali.online",
   "https://savemali.vercel.app",
   "https://savemali.com",
   "http://localhost:5173",

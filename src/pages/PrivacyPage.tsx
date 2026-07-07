@@ -19,7 +19,7 @@ const sections: Record<string, { title: string; content: string }[]> = {
   fr: [
     {
       title: "1. Introduction",
-      content: `SaveMali SARL (« SaveMali », « nous », « notre ») s'engage a proteger la confidentialite et la securite des donnees personnelles de ses utilisateurs. La presente Politique de Confidentialite decrit comment nous collectons, utilisons, stockons, partageons et protegeons vos informations lorsque vous utilisez notre plateforme ERP (https://savemali.com) et nos services associes. En utilisant la plateforme, vous consentez aux pratiques decrites dans la presente politique.`,
+      content: `SaveMali SARL (« SaveMali », « nous », « notre ») s'engage a proteger la confidentialite et la securite des donnees personnelles de ses utilisateurs. La presente Politique de Confidentialite decrit comment nous collectons, utilisons, stockons, partageons et protegeons vos informations lorsque vous utilisez notre plateforme ERP (https://www.savemali.online) et nos services associes. En utilisant la plateforme, vous consentez aux pratiques decrites dans la presente politique.`,
     },
     {
       title: "2. Responsable du Traitement",
@@ -77,7 +77,7 @@ const sections: Record<string, { title: string; content: string }[]> = {
   en: [
     {
       title: "1. Introduction",
-      content: `SaveMali SARL ("SaveMali", "we", "us", "our") is committed to protecting the confidentiality and security of its users' personal data. This Privacy Policy describes how we collect, use, store, share, and protect your information when you use our ERP platform (https://savemali.com) and related services. By using the platform, you consent to the practices described in this policy.`,
+      content: `SaveMali SARL ("SaveMali", "we", "us", "our") is committed to protecting the confidentiality and security of its users' personal data. This Privacy Policy describes how we collect, use, store, share, and protect your information when you use our ERP platform (https://www.savemali.online) and related services. By using the platform, you consent to the practices described in this policy.`,
     },
     {
       title: "2. Data Controller",

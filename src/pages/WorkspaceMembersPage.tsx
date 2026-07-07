@@ -249,7 +249,7 @@ export function WorkspaceMembersPage({ onNavigate }: Props) {
 
   const copyCredentials = async () => {
     if (!createdCredentials) return
-    const text = `SaveMali - Identifiants de connexion\n\nNom : ${createdCredentials.name}\nEmail : ${createdCredentials.email}\nMot de passe : ${createdCredentials.password}\n\nConnectez-vous sur savemali.com`
+    const text = `SaveMali - Identifiants de connexion\n\nNom : ${createdCredentials.name}\nEmail : ${createdCredentials.email}\nMot de passe : ${createdCredentials.password}\n\nConnectez-vous sur www.savemali.online`
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)

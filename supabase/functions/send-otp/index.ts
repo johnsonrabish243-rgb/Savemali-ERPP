@@ -15,6 +15,8 @@
  */
 
 const ALLOWED_ORIGINS = [
+  "https://www.savemali.online",
+  "https://savemali.online",
   "https://savemali.vercel.app",
   "https://savemali.com",
   "http://localhost:5173",

@@ -1,6 +1,8 @@
 import nodemailer from "npm:nodemailer@6.9.16";
 
 const ALLOWED_ORIGINS = [
+  "https://www.savemali.online",
+  "https://savemali.online",
   "https://savemali.vercel.app",
   "https://savemali.com",
   "http://localhost:5173",
@@ -18,7 +20,7 @@ function getCorsHeaders(req: Request): Record<string, string> {
   };
 }
 
-const LOGO_URL = "https://55h7r6yk.us-east.insforge.app/api/storage/buckets/avatars/objects/avatars%2Fsave-mali-logo%2Flogo.png?v=3a37ba1efd147a36099514335c3f374a";
+const LOGO_URL = "https://www.savemali.online/SaveMali_Logo.png";
 
 // ── Input Validation ──
 
@@ -112,7 +114,7 @@ function generateContactEmailHtml(data: {
         <!-- Logo -->
         <tr>
           <td align="center" style="padding:0 0 24px 0;">
-            <a href="https://savemali.com" target="_blank" style="text-decoration:none;">
+             <a href="https://www.savemali.online" target="_blank" style="text-decoration:none;">
               <img src="${LOGO_URL}" alt="SaveMali" width="56" height="56" style="display:block;border-radius:12px;border:0;outline:none;text-decoration:none;" />
             </a>
           </td>
@@ -296,7 +298,7 @@ async function sendEmail(
     tls: { rejectUnauthorized: true },
   });
 
-  const messageId = "<" + Date.now() + "." + Math.random().toString(36).slice(2) + "@contact.savemali.com>";
+  const messageId = "<" + Date.now() + "." + Math.random().toString(36).slice(2) + "@contact.savemali.online>";
 
   await transporter.sendMail({
     from: '"' + senderName + '" <' + smtpUser + ">",

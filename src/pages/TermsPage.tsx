@@ -12,7 +12,7 @@ const sections: Record<string, { title: string; content: string }[]> = {
   fr: [
     {
       title: "1. Acceptation des Conditions",
-      content: "En accedant a la plateforme SaveMali (https://savemali.com) et en utilisant nos services, vous reconnaissez avoir lu, compris et accepte d'etre lie par les presentes Conditions Generales d'Utilisation (CGU). Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser nos services. Ces conditions constituent un contrat legal entre vous et SaveMali SARL.",
+      content: "En accedant a la plateforme SaveMali (https://www.savemali.online) et en utilisant nos services, vous reconnaissez avoir lu, compris et accepte d'etre lie par les presentes Conditions Generales d'Utilisation (CGU). Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser nos services. Ces conditions constituent un contrat legal entre vous et SaveMali SARL.",
     },
     {
       title: "2. Definition des Parties",
@@ -78,7 +78,7 @@ const sections: Record<string, { title: string; content: string }[]> = {
   en: [
     {
       title: "1. Acceptance of Terms",
-      content: "By accessing the SaveMali platform (https://savemali.com) and using our services, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use. If you do not accept these terms, please do not use our services. These terms constitute a legal contract between you and SaveMali SARL.",
+      content: "By accessing the SaveMali platform (https://www.savemali.online) and using our services, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use. If you do not accept these terms, please do not use our services. These terms constitute a legal contract between you and SaveMali SARL.",
     },
     {
       title: "2. Definition of Parties",

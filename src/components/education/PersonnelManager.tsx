@@ -248,7 +248,7 @@ export default function PersonnelManager({ workspace }: Props) {
 
   async function copyCredentials() {
     if (!newCreds) return;
-    const text = `SaveMali - Identifiants de connexion\n\nEmail : ${newCreds.email}\nMot de passe : ${newCreds.password}\n\nConnectez-vous sur savemali.com`;
+    const text = `SaveMali - Identifiants de connexion\n\nEmail : ${newCreds.email}\nMot de passe : ${newCreds.password}\n\nConnectez-vous sur www.savemali.online`;
     try {
       await navigator.clipboard.writeText(text);
     } catch {
