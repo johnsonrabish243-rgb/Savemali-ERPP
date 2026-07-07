@@ -142,8 +142,10 @@ export default function PersonnelManager({ workspace }: Props) {
   function generatePassword(): string {
     const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*";
     let pwd = "S";
+    const randomValues = new Uint8Array(15);
+    crypto.getRandomValues(randomValues);
     for (let i = 0; i < 15; i++) {
-      pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+      pwd += chars.charAt(randomValues[i] % chars.length);
     }
     return pwd;
   }

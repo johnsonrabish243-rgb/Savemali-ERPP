@@ -131,7 +131,9 @@ export function WorkspaceMembersPage({ onNavigate }: Props) {
     const first = name.split(" ")[0] || "emp"
     const clean = first.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, "")
     const base = clean || "emp"
-    return `${base}${Math.floor(Math.random() * 9000 + 1000)}`
+    const digits = new Uint8Array(4)
+    crypto.getRandomValues(digits)
+    return `${base}${Array.from(digits, (b) => b % 10).join("")}`
   }
 
   const handleSave = async () => {

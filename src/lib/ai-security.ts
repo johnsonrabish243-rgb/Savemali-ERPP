@@ -154,9 +154,9 @@ const AI_RATE_WINDOW = 60 * 1000 // 1 minute
 
 export function checkAiRateLimit(): { allowed: boolean; remaining: number } {
   const raw = localStorage.getItem(AI_RATE_KEY)
-  const record: { count: number; windowStart: number } = raw 
-    ? JSON.parse(raw) 
-    : { count: 0, windowStart: Date.now() }
+  let record: { count: number; windowStart: number }
+  try { record = raw ? JSON.parse(raw) : { count: 0, windowStart: Date.now() } }
+  catch { record = { count: 0, windowStart: Date.now() } }
   
   const now = Date.now()
   if (now - record.windowStart > AI_RATE_WINDOW) {

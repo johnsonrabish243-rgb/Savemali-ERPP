@@ -141,7 +141,9 @@ interface AttemptRecord {
 
 export function trackLoginAttempt(success: boolean): { blocked: boolean; remainingAttempts: number } {
   const raw = localStorage.getItem(ATTEMPTS_KEY)
-  const record: AttemptRecord = raw ? JSON.parse(raw) : { count: 0, lastAttempt: 0, lockedUntil: null }
+  let record: AttemptRecord
+  try { record = raw ? JSON.parse(raw) : { count: 0, lastAttempt: 0, lockedUntil: null } }
+  catch { record = { count: 0, lastAttempt: 0, lockedUntil: null } }
 
   if (record.lockedUntil && Date.now() < record.lockedUntil) {
     return { blocked: true, remainingAttempts: 0 }
@@ -166,7 +168,9 @@ export function trackLoginAttempt(success: boolean): { blocked: boolean; remaini
 export function getLoginAttempts(): { count: number; locked: boolean; remainingTime: number } {
   const raw = localStorage.getItem(ATTEMPTS_KEY)
   if (!raw) return { count: 0, locked: false, remainingTime: 0 }
-  const record: AttemptRecord = JSON.parse(raw)
+  let record: AttemptRecord
+  try { record = JSON.parse(raw) }
+  catch { return { count: 0, locked: false, remainingTime: 0 } }
   if (record.lockedUntil && Date.now() < record.lockedUntil) {
     return { count: record.count, locked: true, remainingTime: Math.ceil((record.lockedUntil - Date.now()) / 1000) }
   }
@@ -199,10 +203,8 @@ export function getPasswordStrength(password: string): PasswordStrength {
 }
 
 // ── Content Security Policy ──
-export const CSP_META = {
-  "httpEquiv": "Content-Security-Policy" as const,
-  "content": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https://55h7r6yk.us-east.insforge.app https://open.er-api.com wss:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
-} as const
+// CSP is configured server-side via vercel.json HTTP headers.
+// This constant is unused — kept for reference only.
 
 // ── API Rate Limiter ──
 const API_RATE_KEY = "savemali_api_rate"
@@ -213,7 +215,8 @@ interface ApiRateRecord {
 
 function getApiRates(): ApiRateRecord {
   const raw = localStorage.getItem(API_RATE_KEY)
-  return raw ? JSON.parse(raw) : { calls: {} }
+  try { return raw ? JSON.parse(raw) : { calls: {} } }
+  catch { return { calls: {} } }
 }
 
 function saveApiRates(record: ApiRateRecord): void {
@@ -294,7 +297,9 @@ export interface SecurityEvent {
 
 export function logSecurityEvent(event: Omit<SecurityEvent, "timestamp">): void {
   const raw = localStorage.getItem(SECURITY_LOG_KEY)
-  const logs: SecurityEvent[] = raw ? JSON.parse(raw) : []
+  let logs: SecurityEvent[]
+  try { logs = raw ? JSON.parse(raw) : [] }
+  catch { logs = [] }
   logs.push({ ...event, timestamp: Date.now() })
   // Keep only last 100 entries
   if (logs.length > MAX_LOG_ENTRIES) {
@@ -305,7 +310,8 @@ export function logSecurityEvent(event: Omit<SecurityEvent, "timestamp">): void 
 
 export function getSecurityLogs(): SecurityEvent[] {
   const raw = localStorage.getItem(SECURITY_LOG_KEY)
-  return raw ? JSON.parse(raw) : []
+  try { return raw ? JSON.parse(raw) : [] }
+  catch { return [] }
 }
 
 export function clearSecurityLogs(): void {

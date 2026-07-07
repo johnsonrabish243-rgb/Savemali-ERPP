@@ -99,6 +99,11 @@ export function SettingsPage({ onNavigate }: Props) {
   const handleClearCache = async () => {
     setClearing(true)
     const csrfToken = generateCsrfToken()
+    if (!validateCsrfToken(csrfToken)) {
+      toast.error(fr ? "Erreur de sécurité CSRF" : "CSRF security error")
+      setClearing(false)
+      return
+    }
     const keep = new Set([
       "vite-ui-theme", "savemali-lang", "savemali_font_size",
       "savemali_access_violations", "savemali_lockout_until",
@@ -111,10 +116,6 @@ export function SettingsPage({ onNavigate }: Props) {
     }
     try { await caches?.keys().then((names) => names.forEach((n) => caches.delete(n))) } catch {}
     setClearing(false)
-    if (!validateCsrfToken(csrfToken)) {
-      toast.error(fr ? "Erreur de sécurité CSRF" : "CSRF security error")
-      return
-    }
     toast.success(fr ? "Cache vidé avec succès" : "Cache cleared successfully")
   }
 
@@ -122,12 +123,13 @@ export function SettingsPage({ onNavigate }: Props) {
     if (!user?.email) return
     setSendingPwd(true)
     const csrfToken = generateCsrfToken()
-    const { error } = await insforge.auth.sendResetPasswordEmail({ email: user.email })
-    setSendingPwd(false)
     if (!validateCsrfToken(csrfToken)) {
       toast.error(fr ? "Erreur de sécurité CSRF" : "CSRF security error")
+      setSendingPwd(false)
       return
     }
+    const { error } = await insforge.auth.sendResetPasswordEmail({ email: user.email })
+    setSendingPwd(false)
     if (error) {
       toast.error(fr ? "Erreur d'envoi" : "Send error")
     } else {
@@ -138,14 +140,15 @@ export function SettingsPage({ onNavigate }: Props) {
   const handleBackup = async () => {
     setBackingUp(true)
     const csrfToken = generateCsrfToken()
+    if (!validateCsrfToken(csrfToken)) {
+      toast.error(fr ? "Erreur de sécurité CSRF" : "CSRF security error")
+      setBackingUp(false)
+      return
+    }
     await new Promise((r) => setTimeout(r, 2000))
     const now = new Date().toISOString()
     localStorage.setItem("savemali_last_backup", now)
     setBackingUp(false)
-    if (!validateCsrfToken(csrfToken)) {
-      toast.error(fr ? "Erreur de sécurité CSRF" : "CSRF security error")
-      return
-    }
     toast.success(fr ? "Sauvegarde terminée" : "Backup complete")
   }
 
