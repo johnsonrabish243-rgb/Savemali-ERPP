@@ -21,7 +21,14 @@ interface SendEmailOptions {
   templateData?: Record<string, any>
 }
 
-export async function sendEmail(options: SendEmailOptions): Promise<{ id?: string; error?: string }> {
+export interface SendEmailResult {
+  id?: string
+  error?: string
+  blocked?: boolean
+  remainingTime?: number
+}
+
+export async function sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
   try {
     const res = await fetch(`${FUNCTIONS_URL}/send-email`, {
       method: "POST",
@@ -32,7 +39,11 @@ export async function sendEmail(options: SendEmailOptions): Promise<{ id?: strin
     const data = await res.json()
 
     if (!res.ok) {
-      return { error: data.error || `HTTP ${res.status}` }
+      return {
+        error: data.error || `HTTP ${res.status}`,
+        blocked: data.blocked || false,
+        remainingTime: data.remainingTime,
+      }
     }
 
     return { id: data.id }
@@ -41,15 +52,15 @@ export async function sendEmail(options: SendEmailOptions): Promise<{ id?: strin
   }
 }
 
-export async function sendVerificationEmail(to: string, code: string): Promise<{ id?: string; error?: string }> {
+export async function sendVerificationEmail(to: string, code: string): Promise<SendEmailResult> {
   return sendEmail({
     to,
     template: "verification-code",
-    templateData: { code },
+    templateData: { code, email: to },
   })
 }
 
-export async function sendVerificationLink(to: string, link: string): Promise<{ id?: string; error?: string }> {
+export async function sendVerificationLink(to: string, link: string): Promise<SendEmailResult> {
   return sendEmail({
     to,
     template: "verification-link",
@@ -57,7 +68,7 @@ export async function sendVerificationLink(to: string, link: string): Promise<{ 
   })
 }
 
-export async function sendWelcomeEmail(to: string, name: string): Promise<{ id?: string; error?: string }> {
+export async function sendWelcomeEmail(to: string, name: string): Promise<SendEmailResult> {
   return sendEmail({
     to,
     template: "welcome",
@@ -71,7 +82,7 @@ export async function sendContactEmail(data: {
   phone?: string
   address?: string
   message: string
-}): Promise<{ id?: string; error?: string }> {
+}): Promise<SendEmailResult> {
   return sendEmail({
     to: "savemali243@gmail.com",
     template: "contact",
@@ -79,10 +90,18 @@ export async function sendContactEmail(data: {
   })
 }
 
-export async function sendPasswordResetEmail(to: string, link: string): Promise<{ id?: string; error?: string }> {
+export async function sendPasswordResetEmail(to: string, code: string): Promise<SendEmailResult> {
   return sendEmail({
     to,
-    template: "password-reset",
+    template: "password-reset-code",
+    templateData: { code, email: to },
+  })
+}
+
+export async function sendPasswordResetLink(to: string, link: string): Promise<SendEmailResult> {
+  return sendEmail({
+    to,
+    template: "password-reset-link",
     templateData: { link },
   })
 }

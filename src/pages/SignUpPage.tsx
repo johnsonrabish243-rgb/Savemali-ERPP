@@ -3,7 +3,7 @@ import {
   Mail, Lock, Eye, EyeOff, AlertCircle, Building2,
   Check, ChevronRight, ChevronLeft, Loader2,
   FlaskConical, ShoppingCart, BookOpen, BarChart3, ArrowLeft, PartyPopper,
-  RefreshCw, Copy, CheckCheck, Wand2, MailCheck
+  RefreshCw, Copy, CheckCheck, Wand2, MailCheck, ShieldCheck
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -57,7 +57,6 @@ export function SignUpPage({ onNavigate }: Props) {
     const all = upper + lower + digits + special
     const arr = new Uint8Array(16)
     crypto.getRandomValues(arr)
-    // Ensure at least one from each category
     let pw = ""
     pw += upper[arr[0] % upper.length]
     pw += lower[arr[1] % lower.length]
@@ -66,7 +65,6 @@ export function SignUpPage({ onNavigate }: Props) {
     for (let i = 4; i < 16; i++) {
       pw += all[arr[i] % all.length]
     }
-    // Shuffle
     const shuffled = pw.split("").sort(() => Math.random() - 0.5).join("")
     return shuffled
   }, [])
@@ -77,7 +75,6 @@ export function SignUpPage({ onNavigate }: Props) {
     setPwApplied(false)
   }, [generatePassword])
 
-  // Auto-generate on mount
   React.useEffect(() => {
     setSuggestedPw(generatePassword())
   }, [generatePassword])
@@ -102,9 +99,15 @@ export function SignUpPage({ onNavigate }: Props) {
 
   const [showWelcome, setShowWelcome] = React.useState(false)
   const [createdWsType, setCreatedWsType] = React.useState<WorkspaceType>("pharmacy")
+
+  // Email verification (code-based)
   const [emailVerificationSent, setEmailVerificationSent] = React.useState(false)
   const [verificationEmail, setVerificationEmail] = React.useState("")
+  const [verifyCode, setVerifyCode] = React.useState(["", "", "", "", "", ""])
+  const verifyCodeRefs = React.useRef<(HTMLInputElement | null)[]>([])
+  const [verifying, setVerifying] = React.useState(false)
 
+  // Invite flow
   const [inviteToken, setInviteToken] = React.useState<string | null>(null)
   const [inviteData, setInviteData] = React.useState<{ email: string; display_name: string; role: string; workspace_name: string; workspace_type: WorkspaceType } | null>(null)
   const [inviteLoading, setInviteLoading] = React.useState(false)
@@ -125,7 +128,7 @@ export function SignUpPage({ onNavigate }: Props) {
         .eq("status", "pending")
         .maybeSingle()
       if (error || !data) {
-        setInviteError(fr ? "Lien d'invitation invalide ou expiré." : "Invalid or expired invite link.")
+        setInviteError(fr ? "Lien d'invitation invalide ou expir\u00e9." : "Invalid or expired invite link.")
         setInviteLoading(false)
         return
       }
@@ -173,6 +176,90 @@ export function SignUpPage({ onNavigate }: Props) {
     handleFinish()
   }
 
+  // Verification code handlers
+  const handleCodeChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return
+    const newCode = [...verifyCode]
+    newCode[index] = value.slice(-1)
+    setVerifyCode(newCode)
+    setError(null)
+    if (value && index < 5) {
+      verifyCodeRefs.current[index + 1]?.focus()
+    }
+    if (newCode.every((d) => d !== "") && index === 5) {
+      handleVerifyCode(newCode.join(""))
+    }
+  }
+
+  const handleCodeKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !verifyCode[index] && index > 0) {
+      verifyCodeRefs.current[index - 1]?.focus()
+    }
+  }
+
+  const handleCodePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault()
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6)
+    if (pasted.length === 6) {
+      const newCode = pasted.split("")
+      setVerifyCode(newCode)
+      verifyCodeRefs.current[5]?.focus()
+      setTimeout(() => handleVerifyCode(pasted), 100)
+    }
+  }
+
+  const handleVerifyCode = async (codeStr?: string) => {
+    const code = codeStr || verifyCode.join("")
+    if (code.length !== 6) return
+    setVerifying(true)
+    setError(null)
+    try {
+      const { data, error: verifyError } = await insforge.auth.verifyEmail({ email: verificationEmail, otp: code })
+      if (verifyError) {
+        setError(verifyError.message || (fr ? "Code invalide ou expir\u00e9" : "Invalid or expired code"))
+        setVerifying(false)
+        return
+      }
+      // Verification successful, now create workspace
+      const uid = data?.user?.id || (data as any)?.id || ""
+      if (uid) {
+        const { error: wsError } = await insforge.database.from("workspaces").insert([{ owner_id: uid, name: workspaceName.trim(), type: workspaceType }])
+        if (wsError) console.error("Workspace creation error:", wsError)
+      }
+      await checkAuth()
+      // Redirect based on workspace type
+      const redirectPage = workspaceType === "pharmacy" ? "pharmacy" : "dashboard"
+      onNavigate(redirectPage)
+    } catch (err: any) {
+      setError(err.message || (fr ? "Erreur de v\u00e9rification" : "Verification error"))
+    } finally {
+      setVerifying(false)
+    }
+  }
+
+  const handleResendCode = async () => {
+    try {
+      // Use InsForge SDK to resend verification email
+      const { error } = await insforge.auth.resendVerificationEmail({ email: verificationEmail })
+      if (error) {
+        // Check if it's a rate limit error
+        const msg = (error.message || "").toLowerCase()
+        if (msg.includes("too many") || msg.includes("rate") || msg.includes("block")) {
+          setError(fr
+            ? "Trop de demandes. Vous avez d\u00e9pass\u00e9 la limite de 4 tentatives. Veuillez r\u00e9essayer demain."
+            : "Too many requests. You have exceeded the 4 attempt limit. Please try again tomorrow.")
+        }
+      }
+    } catch (err: any) {
+      // Check if it's a rate limit error from the edge function
+      if (err?.blocked) {
+        setError(fr
+          ? `Trop de demandes. Votre session est bloqu\u00e9e jusqu'au lendemain. Temps restant: ${err.remainingTime || 1440} min.`
+          : `Too many requests. Your session is blocked until tomorrow. Remaining time: ${err.remainingTime || 1440} min.`)
+      }
+    }
+  }
+
   const handleInviteFinish = async () => {
     setLoading(true); setError(null)
     try {
@@ -182,37 +269,31 @@ export function SignUpPage({ onNavigate }: Props) {
       if (authData?.requireEmailVerification) {
         setVerificationEmail(email)
         setEmailVerificationSent(true)
+        setStep(3)
         setLoading(false)
         return
       }
 
       const uid = authData?.user?.id || (authData as any)?.id || ""
-      if (!uid) throw new Error(fr ? "Erreur de création du compte" : "Account creation error")
+      if (!uid) throw new Error(fr ? "Erreur de cr\u00e9ation du compte" : "Account creation error")
 
-      // Verify the invite still exists and email matches
       const { data: memberData } = await insforge.database
         .from("workspace_members")
         .select("email")
         .eq("invite_token", inviteToken!)
         .eq("status", "pending")
         .maybeSingle()
-      if (!memberData) throw new Error(fr ? "Invitation expirée ou invalide." : "Invite expired or invalid.")
+      if (!memberData) throw new Error(fr ? "Invitation expir\u00e9e ou invalide." : "Invite expired or invalid.")
       if ((memberData as any).email.toLowerCase() !== email.toLowerCase()) {
-        throw new Error(fr ? "Cet email ne correspond pas à l'invitation." : "This email doesn't match the invitation.")
+        throw new Error(fr ? "Cet email ne correspond pas \u00e0 l'invitation." : "This email doesn't match the invitation.")
       }
 
-      // Link the member to this user account
       const { error: linkError } = await insforge.database.from("workspace_members")
-        .update({
-          user_id: uid,
-          status: "active",
-          accepted_at: new Date().toISOString(),
-        })
+        .update({ user_id: uid, status: "active", accepted_at: new Date().toISOString() })
         .eq("invite_token", inviteToken!)
         .eq("email", email)
 
       if (linkError) throw linkError
-
       await checkAuth()
       onNavigate("dashboard")
     } catch (err: any) {
@@ -225,14 +306,13 @@ export function SignUpPage({ onNavigate }: Props) {
   const handleFinish = async () => {
     setLoading(true); setError(null)
     try {
-      const { data: authData, error: signUpError } = await insforge.auth.signUp({ email, password, redirectTo: `${window.location.origin}/signin` })
+      const { data: authData, error: signUpError } = await insforge.auth.signUp({ email, password })
       if (signUpError) {
         const msg = (signUpError.message || "").toLowerCase()
         if (msg.includes("already") || msg.includes("existe") || msg.includes("exist")) {
           setError(fr
-            ? "Cet email est déjà utilisé. Création bloquée."
+            ? "Cet email est d\u00e9j\u00e0 utilis\u00e9. Cr\u00e9ation bloqu\u00e9e."
             : "This email is already taken. Registration blocked.")
-          try { await insforge.database.from("workspace_members").update({ status: "blocked" }).eq("email", email) } catch {}
         } else {
           setError(signUpError.message || t.auth.error)
         }
@@ -243,14 +323,15 @@ export function SignUpPage({ onNavigate }: Props) {
       if (authData?.requireEmailVerification) {
         setVerificationEmail(email)
         setEmailVerificationSent(true)
+        setStep(3)
         setLoading(false)
         return
       }
 
       const uid = authData?.user?.id || (authData as any)?.id || ""
-      if (!uid) throw new Error(fr ? "Erreur de création du compte" : "Account creation error")
+      if (!uid) throw new Error(fr ? "Erreur de cr\u00e9ation du compte" : "Account creation error")
 
-      const { data: wsData, error: wsError } = await insforge.database.from("workspaces").insert([{ owner_id: uid, name: workspaceName.trim(), type: workspaceType }]).select().single()
+      const { error: wsError } = await insforge.database.from("workspaces").insert([{ owner_id: uid, name: workspaceName.trim(), type: workspaceType }])
       if (wsError) throw wsError
 
       import("@/lib/stats").then(({ invalidateStatsCache }) => invalidateStatsCache()).catch(() => {})
@@ -264,7 +345,7 @@ export function SignUpPage({ onNavigate }: Props) {
     }
   }
 
-  const steps = [{ num: 1, label: t.auth.step1 }, { num: 2, label: t.auth.step2 }]
+  const steps = [{ num: 1, label: t.auth.step1 }, { num: 2, label: t.auth.step2 }, { num: 3, label: fr ? "Code" : "Code" }]
   const visibleSteps = inviteToken ? [{ num: 1, label: fr ? "Compte" : "Account" }] : steps
 
   // Invite loading state
@@ -274,7 +355,7 @@ export function SignUpPage({ onNavigate }: Props) {
       <div className="mb-6"><Logo size="lg" /></div>
       <div className="flex flex-col items-center gap-3">
         <Loader2 className="size-8 animate-spin text-accent" />
-        <p className="text-sm text-muted-foreground">{fr ? "Vérification de l'invitation..." : "Verifying invite..."}</p>
+        <p className="text-sm text-muted-foreground">{fr ? "V\u00e9rification de l'invitation..." : "Verifying invite..."}</p>
       </div>
     </div>
   )
@@ -293,7 +374,7 @@ export function SignUpPage({ onNavigate }: Props) {
           <CardDescription className="text-muted-foreground">{inviteError}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button className="w-full" variant="outline" onClick={() => onNavigate("home")}><ArrowLeft className="size-4 mr-2" />{fr ? "Retour à l'accueil" : "Back to home"}</Button>
+          <Button className="w-full" variant="outline" onClick={() => onNavigate("home")}><ArrowLeft className="size-4 mr-2" />{fr ? "Retour \u00e0 l'accueil" : "Back to home"}</Button>
         </CardContent>
       </Card>
     </div>
@@ -329,7 +410,7 @@ export function SignUpPage({ onNavigate }: Props) {
             <CardDescription className="text-muted-foreground">
               {inviteToken && inviteData ? (
                 <span className="block">
-                  {fr ? "Vous avez été invité par" : "You were invited by"} <span className="font-semibold text-foreground">{inviteData.workspace_name}</span>
+                  {fr ? "Vous \u00eates invit\u00e9 par" : "You were invited by"} <span className="font-semibold text-foreground">{inviteData.workspace_name}</span>
                   <br />
                   {fr ? "en tant que" : "as"} <span className="font-semibold text-foreground capitalize">{inviteData.role}</span>
                 </span>
@@ -349,7 +430,6 @@ export function SignUpPage({ onNavigate }: Props) {
                 <Label htmlFor="su-pw" className="text-foreground">{t.auth.password}</Label>
                 <div className="relative"><Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input id="su-pw" type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} className="pl-9 pr-9 text-foreground" required /><button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">{showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button></div>
                 <PasswordStrengthMeter password={password} />
-                {/* Auto-generated password suggestion */}
                 {suggestedPw && !password && (
                   <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-2">
                     <div className="flex items-center gap-2 text-xs font-medium text-accent">
@@ -360,43 +440,23 @@ export function SignUpPage({ onNavigate }: Props) {
                       <code className="flex-1 rounded bg-muted px-2 py-1.5 text-xs font-mono text-foreground break-all select-all">
                         {suggestedPw}
                       </code>
-                      <button
-                        type="button"
-                        onClick={handleCopyPassword}
-                        className="shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                        title={fr ? "Copier" : "Copy"}
-                      >
+                      <button type="button" onClick={handleCopyPassword} className="shrink-0 rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" title={fr ? "Copier" : "Copy"}>
                         {pwCopied ? <CheckCheck className="size-3.5 text-green-500" /> : <Copy className="size-3.5" />}
                       </button>
                     </div>
                     <div className="flex gap-1.5">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs gap-1 flex-1"
-                        onClick={handleUsePassword}
-                      >
-                        <Check className="size-3" />
-                        {fr ? "Utiliser" : "Use it"}
+                      <Button type="button" size="sm" variant="outline" className="h-7 text-xs gap-1 flex-1" onClick={handleUsePassword}>
+                        <Check className="size-3" /> {fr ? "Utiliser" : "Use it"}
                       </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 text-xs gap-1"
-                        onClick={handleGeneratePassword}
-                      >
-                        <RefreshCw className="size-3" />
-                        {fr ? "Autre" : "Another"}
+                      <Button type="button" size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={handleGeneratePassword}>
+                        <RefreshCw className="size-3" /> {fr ? "Autre" : "Another"}
                       </Button>
                     </div>
                   </div>
                 )}
                 {pwApplied && (
                   <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                    <CheckCheck className="size-3" />
-                    {fr ? "Mot de passe appliqué" : "Password applied"}
+                    <CheckCheck className="size-3" /> {fr ? "Mot de passe appliqu\u00e9" : "Password applied"}
                   </p>
                 )}
               </div>
@@ -404,10 +464,9 @@ export function SignUpPage({ onNavigate }: Props) {
                 <Label htmlFor="su-cpw" className="text-foreground">{t.auth.confirmPassword}</Label>
                 <div className="relative"><Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input id="su-cpw" type={showPw ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="pl-9 text-foreground" required /></div>
               </div>
-              {!inviteToken && <div />}
               <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2" disabled={loading}>
                 {loading ? <Loader2 className="size-4 animate-spin" /> : null}
-                {inviteToken ? (loading ? t.auth.loading : (fr ? "Rejoindre l'équipe" : "Join team")) : <>{t.auth.next} <ChevronRight className="size-4" /></>}
+                {inviteToken ? (loading ? t.auth.loading : (fr ? "Rejoindre l'\u00e9quipe" : "Join team")) : <>{t.auth.next} <ChevronRight className="size-4" /></>}
               </Button>
             </form>
           </CardContent>
@@ -450,33 +509,68 @@ export function SignUpPage({ onNavigate }: Props) {
         </Card>
       )}
 
-      {/* EMAIL VERIFICATION SENT */}
-      {emailVerificationSent && (
+      {/* STEP 3: EMAIL VERIFICATION CODE */}
+      {step === 3 && emailVerificationSent && (
         <Card className="w-full max-w-sm shadow-lg">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-3 flex size-16 items-center justify-center rounded-full bg-accent/10">
-              <MailCheck className="size-8 text-accent" />
+            <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-accent/10">
+              <ShieldCheck className="size-6 text-accent" />
             </div>
-            <CardTitle className="text-xl font-bold text-foreground">
-              {fr ? "Vérifiez votre email" : "Check your email"}
+            <CardTitle className="text-lg font-bold text-foreground">
+              {fr ? "V\u00e9rifiez votre email" : "Verify your email"}
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              {fr
-                ? `Un lien de vérification a été envoyé à ${verificationEmail}. Cliquez sur le lien pour activer votre compte.`
-                : `A verification link has been sent to ${verificationEmail}. Click the link to activate your account.`}
+              {fr ? `Code envoy\u00e9 \u00e0 ${verificationEmail}` : `Code sent to ${verificationEmail}`}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <Button
-              className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
-              onClick={() => onNavigate("signin")}
-            >
-              <ArrowLeft className="size-4" />
-              {fr ? "Retour à la connexion" : "Back to sign in"}
-            </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              {fr ? "Vous n'avez pas reçu l'email ? Vérifiez vos spams." : "Didn't receive the email? Check your spam folder."}
+          <CardContent className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="size-4" />
+                <AlertDescription className="text-sm">{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex justify-center gap-2">
+              {verifyCode.map((digit, i) => (
+                <input
+                  key={i}
+                  ref={(el) => { verifyCodeRefs.current[i] = el }}
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleCodeChange(i, e.target.value)}
+                  onKeyDown={(e) => handleCodeKeyDown(i, e)}
+                  onPaste={i === 0 ? handleCodePaste : undefined}
+                  className="size-12 rounded-lg border border-input bg-background text-center text-lg font-bold text-foreground focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
+                  autoFocus={i === 0}
+                />
+              ))}
+            </div>
+
+            <p className="text-center text-xs text-muted-foreground">
+              {fr ? "Le code expire dans 1 minute 30 secondes" : "The code expires in 1 minute 30 seconds"}
             </p>
+
+            <Button
+              onClick={() => handleVerifyCode()}
+              disabled={verifyCode.join("").length !== 6 || verifying}
+              className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
+            >
+              {verifying ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
+              {fr ? "V\u00e9rifier" : "Verify"}
+            </Button>
+
+            <div className="flex flex-col gap-2">
+              <Button variant="ghost" onClick={handleResendCode} className="w-full text-accent">
+                {fr ? "Renvoyer le code" : "Resend code"}
+              </Button>
+              <Button variant="ghost" onClick={() => { setStep(1); setVerifyCode(["", "", "", "", "", ""]); setEmailVerificationSent(false); setError(null) }} className="w-full">
+                <ArrowLeft className="mr-2 size-4" />
+                {fr ? "Changer d'email" : "Change email"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -493,18 +587,14 @@ export function SignUpPage({ onNavigate }: Props) {
             </CardTitle>
             <CardDescription className="text-muted-foreground">
               {fr
-                ? "Votre compte a été créé avec succès. Que souhaitez-vous faire ?"
+                ? "Votre compte a \u00e9t\u00e9 cr\u00e9\u00e9 avec succ\u00e8s. Que souhaitez-vous faire ?"
                 : "Your account has been created successfully. What would you like to do?"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {createdWsType === "pharmacy" && (
-              <Button
-                className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
-                onClick={() => onNavigate("pharmacy")}
-              >
-                <FlaskConical className="size-4" />
-                {fr ? "Ajouter mon stock maintenant" : "Add my stock now"}
+              <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2" onClick={() => onNavigate("pharmacy")}>
+                <FlaskConical className="size-4" /> {fr ? "Ajouter mon stock maintenant" : "Add my stock now"}
               </Button>
             )}
             <Button
@@ -518,7 +608,7 @@ export function SignUpPage({ onNavigate }: Props) {
         </Card>
       )}
 
-      <p className="mt-4 text-xs text-muted-foreground text-center">© {new Date().getFullYear()} SaveMali. Développé par John Mocket</p>
+      <p className="mt-4 text-xs text-muted-foreground text-center">&copy; {new Date().getFullYear()} SaveMali SARL &mdash; D\u00e9velopp\u00e9 par John Mocket</p>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import * as React from "react"
 import { gsap } from "gsap"
-import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound, MailCheck, Loader2 } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound, MailCheck, Loader2, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -34,6 +34,13 @@ export function SignInPage({ onNavigate }: Props) {
   const [resendSuccess, setResendSuccess] = React.useState(false)
   const [emailVerified, setEmailVerified] = React.useState(false)
 
+  // Code-based verification states
+  const [showVerifyCode, setShowVerifyCode] = React.useState(false)
+  const [verifyCode, setVerifyCode] = React.useState(["", "", "", "", "", ""])
+  const verifyCodeRefs = React.useRef<(HTMLInputElement | null)[]>([])
+  const [verifying, setVerifying] = React.useState(false)
+  const [verifyError, setVerifyError] = React.useState<string | null>(null)
+
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const status = params.get("insforge_status")
@@ -56,25 +63,23 @@ export function SignInPage({ onNavigate }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Injection detection
     if (detectInjection(email) || detectInjection(password)) {
       logSecurityEvent({ type: "injection_attempt", details: `Suspicious input in login: ${email}`, path: "signin" })
-      setError(fr ? "Entrée suspecte détectée." : "Suspicious input detected.")
+      setError(fr ? "Entr\u00e9e suspecte d\u00e9tect\u00e9e." : "Suspicious input detected.")
       return
     }
 
-    // Check lockout
     if (isUserLockedOut()) {
       const { remainingTime } = getLoginAttempts()
       setError(fr
-        ? `Trop de tentatives. Réessayez dans ${Math.ceil(remainingTime / 60)} min.`
+        ? `Trop de tentatives. R\u00e9essayez dans ${Math.ceil(remainingTime / 60)} min.`
         : `Too many attempts. Retry in ${Math.ceil(remainingTime / 60)} min.`)
       return
     }
 
     const { locked, remainingTime } = getLoginAttempts()
     if (locked) {
-      setError(fr ? `Trop de tentatives. Réessayez dans ${remainingTime}s.` : `Too many attempts. Retry in ${remainingTime}s.`)
+      setError(fr ? `Trop de tentatives. R\u00e9essayez dans ${remainingTime}s.` : `Too many attempts. Retry in ${remainingTime}s.`)
       return
     }
     setError(null)
@@ -100,11 +105,11 @@ export function SignInPage({ onNavigate }: Props) {
     } catch (err: any) {
       if (err?.statusCode === 403 || (err?.message || "").toLowerCase().includes("email not confirmed") || (err?.message || "").toLowerCase().includes("email not verified")) {
         setEmailNotVerified(true)
-        setError(fr ? "Email non vérifié. Vérifiez votre boîte de réception." : "Email not verified. Check your inbox.")
+        setError(fr ? "Email non v\u00e9rifi\u00e9. V\u00e9rifiez votre bo\u00eete de r\u00e9ception." : "Email not verified. Check your inbox.")
       } else {
         const result = trackLoginAttempt(false)
         if (result.blocked) {
-          setError(fr ? "Trop de tentatives. Réessayez dans 15 min." : "Too many attempts. Retry in 15 min.")
+          setError(fr ? "Trop de tentatives. R\u00e9essayez dans 15 min." : "Too many attempts. Retry in 15 min.")
         } else {
           const remaining = result.remainingAttempts
           const hint = remaining > 0
@@ -123,15 +128,118 @@ export function SignInPage({ onNavigate }: Props) {
     setResendLoading(true)
     setResendSuccess(false)
     try {
-      await insforge.auth.resendVerificationEmail({
+      // Show code input UI
+      setShowVerifyCode(true)
+      setVerifyError(null)
+      setVerifyCode(["", "", "", "", "", ""])
+      // Send verification code via InsForge SDK
+      const { error } = await insforge.auth.resendVerificationEmail({
         email,
         redirectTo: `${window.location.origin}/signin`,
       })
-      setResendSuccess(true)
-    } catch {
-      setError(fr ? "Erreur lors de l'envoi. Réessayez." : "Failed to resend. Try again.")
+      if (error) {
+        const msg = (error.message || "").toLowerCase()
+        if (msg.includes("too many") || msg.includes("rate") || msg.includes("block")) {
+          setError(fr
+            ? "Trop de demandes. Vous avez d\u00e9pass\u00e9 la limite de 4 tentatives. Veuillez r\u00e9essayer demain."
+            : "Too many requests. You have exceeded the 4 attempt limit. Please try again tomorrow.")
+          setShowVerifyCode(false)
+        } else {
+          setError(fr ? "Erreur lors de l'envoi. R\u00e9essayez." : "Failed to resend. Try again.")
+          setShowVerifyCode(false)
+        }
+      } else {
+        setResendSuccess(true)
+      }
+    } catch (err: any) {
+      if (err?.blocked) {
+        setError(fr
+          ? `Trop de demandes. Votre session est bloqu\u00e9e jusqu'au lendemain. Temps restant: ${err.remainingTime || 1440} min.`
+          : `Too many requests. Your session is blocked until tomorrow. Remaining time: ${err.remainingTime || 1440} min.`)
+        setShowVerifyCode(false)
+      } else {
+        setError(fr ? "Erreur lors de l'envoi. R\u00e9essayez." : "Failed to resend. Try again.")
+        setShowVerifyCode(false)
+      }
     } finally {
       setResendLoading(false)
+    }
+  }
+
+  const handleCodeChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return
+    const newCode = [...verifyCode]
+    newCode[index] = value.slice(-1)
+    setVerifyCode(newCode)
+    setVerifyError(null)
+    if (value && index < 5) {
+      verifyCodeRefs.current[index + 1]?.focus()
+    }
+    if (newCode.every((d) => d !== "") && index === 5) {
+      handleVerifyCode(newCode.join(""))
+    }
+  }
+
+  const handleCodeKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !verifyCode[index] && index > 0) {
+      verifyCodeRefs.current[index - 1]?.focus()
+    }
+  }
+
+  const handleCodePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault()
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6)
+    if (pasted.length === 6) {
+      const newCode = pasted.split("")
+      setVerifyCode(newCode)
+      verifyCodeRefs.current[5]?.focus()
+      setTimeout(() => handleVerifyCode(pasted), 100)
+    }
+  }
+
+  const handleVerifyCode = async (codeStr?: string) => {
+    const code = codeStr || verifyCode.join("")
+    if (code.length !== 6) return
+    setVerifying(true)
+    setVerifyError(null)
+    try {
+      const { data, error: verifyError } = await insforge.auth.verifyEmail({ email, otp: code })
+      if (verifyError) {
+        setVerifyError(verifyError.message || (fr ? "Code invalide ou expir\u00e9" : "Invalid or expired code"))
+        setVerifying(false)
+        return
+      }
+      setEmailVerified(true)
+      setShowVerifyCode(false)
+    } catch (err: any) {
+      setVerifyError(err.message || (fr ? "Erreur de v\u00e9rification" : "Verification error"))
+    } finally {
+      setVerifying(false)
+    }
+  }
+
+  const handleResendCode = async () => {
+    try {
+      const { error } = await insforge.auth.resendVerificationEmail({
+        email,
+        redirectTo: `${window.location.origin}/signin`,
+      })
+      if (error) {
+        const msg = (error.message || "").toLowerCase()
+        if (msg.includes("too many") || msg.includes("rate") || msg.includes("block")) {
+          setVerifyError(fr
+            ? "Trop de demandes. Vous avez d\u00e9pass\u00e9 la limite de 4 tentatives. Veuillez r\u00e9essayer demain."
+            : "Too many requests. You have exceeded the 4 attempt limit. Please try again tomorrow.")
+        }
+      } else {
+        setResendSuccess(true)
+      }
+    } catch (err: any) {
+      if (err?.blocked) {
+        setVerifyError(fr
+          ? `Trop de demandes. Votre session est bloqu\u00e9e jusqu'au lendemain.`
+          : `Too many requests. Your session is blocked until tomorrow.`)
+      }
     }
   }
 
@@ -158,7 +266,7 @@ export function SignInPage({ onNavigate }: Props) {
                 <MailCheck className="size-6 text-green-600 dark:text-green-400" />
               </div>
               <p className="text-sm text-foreground">
-                {fr ? "Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter." : "Your email has been verified successfully! You can now sign in."}
+                {fr ? "Votre email a \u00e9t\u00e9 v\u00e9rifi\u00e9 avec succ\u00e8s ! Vous pouvez maintenant vous connecter." : "Your email has been verified successfully! You can now sign in."}
               </p>
               <Button
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
@@ -166,6 +274,67 @@ export function SignInPage({ onNavigate }: Props) {
               >
                 {fr ? "Se connecter" : "Sign in"}
               </Button>
+            </div>
+          ) : showVerifyCode ? (
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-accent/10">
+                  <ShieldCheck className="size-6 text-accent" />
+                </div>
+                <p className="text-sm font-medium text-foreground">
+                  {fr ? "Code de v\u00e9rification" : "Verification code"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {fr ? `Envoy\u00e9 \u00e0 ${email}` : `Sent to ${email}`}
+                </p>
+              </div>
+
+              {verifyError && (
+                <Alert variant="destructive">
+                  <AlertCircle className="size-4" />
+                  <AlertDescription className="text-sm">{verifyError}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="flex justify-center gap-2">
+                {verifyCode.map((digit, i) => (
+                  <input
+                    key={i}
+                    ref={(el) => { verifyCodeRefs.current[i] = el }}
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleCodeChange(i, e.target.value)}
+                    onKeyDown={(e) => handleCodeKeyDown(i, e)}
+                    onPaste={i === 0 ? handleCodePaste : undefined}
+                    className="size-12 rounded-lg border border-input bg-background text-center text-lg font-bold text-foreground focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
+                    autoFocus={i === 0}
+                  />
+                ))}
+              </div>
+
+              <p className="text-center text-xs text-muted-foreground">
+                {fr ? "Le code expire dans 1 minute 30 secondes" : "The code expires in 1 minute 30 seconds"}
+              </p>
+
+              <Button
+                onClick={() => handleVerifyCode()}
+                disabled={verifyCode.join("").length !== 6 || verifying}
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
+              >
+                {verifying ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
+                {fr ? "V\u00e9rifier" : "Verify"}
+              </Button>
+
+              <div className="flex flex-col gap-2">
+                <Button variant="ghost" onClick={handleResendCode} className="w-full text-accent">
+                  {fr ? "Renvoyer le code" : "Resend code"}
+                </Button>
+                <Button variant="ghost" onClick={() => { setShowVerifyCode(false); setVerifyCode(["", "", "", "", "", ""]); setVerifyError(null) }} className="w-full">
+                  {fr ? "Retour" : "Back"}
+                </Button>
+              </div>
             </div>
           ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -179,11 +348,11 @@ export function SignInPage({ onNavigate }: Props) {
               <div className="rounded-lg border border-accent/30 bg-accent/5 p-4 space-y-3">
                 <div className="flex items-center gap-2 text-sm font-medium text-accent">
                   <MailCheck className="size-4" />
-                  {fr ? "Email non vérifié" : "Email not verified"}
+                  {fr ? "Email non v\u00e9rifi\u00e9" : "Email not verified"}
                 </div>
                 {resendSuccess ? (
                   <p className="text-xs text-green-600 dark:text-green-400">
-                    {fr ? "Email de vérification renvoyé ! Vérifiez votre boîte." : "Verification email resent! Check your inbox."}
+                    {fr ? "Email de v\u00e9rification renvoy\u00e9 ! V\u00e9rifiez votre bo\u00eete." : "Verification email resent! Check your inbox."}
                   </p>
                 ) : (
                   <Button
@@ -195,7 +364,7 @@ export function SignInPage({ onNavigate }: Props) {
                     disabled={resendLoading || !email}
                   >
                     {resendLoading ? <Loader2 className="size-3 animate-spin" /> : <MailCheck className="size-3" />}
-                    {fr ? "Renvoyer l'email de vérification" : "Resend verification email"}
+                    {fr ? "Renvoyer l'email de v\u00e9rification" : "Resend verification email"}
                   </Button>
                 )}
               </div>
@@ -239,7 +408,7 @@ export function SignInPage({ onNavigate }: Props) {
       </Card>
 
       <p className="mt-4 text-xs text-muted-foreground text-center">
-        © {new Date().getFullYear()} SaveMali. Développé par John Mocket
+        \u00a9 {new Date().getFullYear()} SaveMali SARL &mdash; D\u00e9velopp\u00e9 par John Mocket
       </p>
     </div>
   )
