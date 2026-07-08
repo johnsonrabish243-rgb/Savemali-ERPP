@@ -10,7 +10,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { fetchExchangeRate } from "@/lib/currency"
 import { LoadingScreen } from "@/components/LoadingScreen"
 import { isUserLockedOut } from "@/hooks/use-security"
-import { useAbuseProtection, useRequestTracking } from "@/hooks/use-abuse-protection"
+import { useAbuseProtection } from "@/hooks/use-abuse-protection"
 import { SecurityBlockPage } from "@/pages/SecurityBlockPage"
 
 const HomePage = React.lazy(() => import("@/pages/HomePage").then(m => ({ default: m.HomePage })))
@@ -77,7 +77,6 @@ function AppContent() {
   const [showLoading, setShowLoading] = React.useState(true)
   const [lockedOut, setLockedOut] = React.useState(() => isUserLockedOut())
   const { isBlocked, remainingMs, status, resetProtection } = useAbuseProtection()
-  useRequestTracking()
 
   // Check lockout periodically (every 30s) for auto-reactivation
   React.useEffect(() => {
@@ -126,6 +125,9 @@ function AppContent() {
     if (!loading && user && (page === "signin" || page === "signup")) {
       setPage("dashboard")
     }
+    if (!loading && !user && !["home", "signin", "signup", "about", "contact", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion"].includes(page)) {
+      setPage("home")
+    }
   }, [user, loading, page])
 
   const showNav = !NO_NAV_PAGES.includes(page)
@@ -146,8 +148,8 @@ function AppContent() {
     )
   }
 
-  // Abuse protection screen
-  if (isBlocked) {
+  // Abuse protection screen (skip for logged-in users to prevent false lockouts)
+  if (isBlocked && !user) {
     return (
       <SecurityBlockPage
         remainingMs={remainingMs}
@@ -159,6 +161,13 @@ function AppContent() {
   }
 
   // Email verification: handled on SignInPage only (single verification point)
+
+  // If auth resolved but no user and page requires auth, redirect to home (prevents white screen)
+  const PUBLIC_PAGES: Page[] = ["home", "signin", "signup", "about", "contact", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion"]
+  if (!loading && !user && !PUBLIC_PAGES.includes(page)) {
+    setPage("home")
+    return null
+  }
 
   if (loading) {
     return (

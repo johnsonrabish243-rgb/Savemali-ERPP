@@ -8,8 +8,8 @@ const CONFIG = {
   clickViolationThreshold: 3,
 
   // Page refresh detection
-  maxRefreshesPerMinute: 15,
-  refreshViolationThreshold: 3,
+  maxRefreshesPerMinute: 60,
+  refreshViolationThreshold: 5,
 
   // Request loop detection
   maxRequestsPerSecond: 10,
