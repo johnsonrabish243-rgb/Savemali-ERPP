@@ -80,6 +80,20 @@ export function SignInPage({ onNavigate }: Props) {
     return () => ctx.revert()
   }, [])
 
+  // Handle verify_email query parameter (from email link)
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const verifyEmail = params.get("verify_email")
+    if (verifyEmail) {
+      window.history.replaceState({}, "", window.location.pathname)
+      setEmail(verifyEmail)
+      setEmailNotVerified(true)
+      setShowVerifyCode(true)
+      setVerifyCode(["", "", "", "", "", ""])
+      setError(fr ? "Email non verifie. Entrez le code recu par email." : "Email not verified. Enter the code sent to your email.")
+    }
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 

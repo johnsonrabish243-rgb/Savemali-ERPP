@@ -53,10 +53,11 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
 }
 
 export async function sendVerificationEmail(to: string, code: string): Promise<SendEmailResult> {
+  const link = `${window.location.origin}/signin?verify_email=${encodeURIComponent(to)}`
   return sendEmail({
     to,
     template: "verification-code",
-    templateData: { code, email: to },
+    templateData: { code, email: to, link },
   })
 }
 

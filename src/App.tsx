@@ -67,6 +67,9 @@ function AppContent() {
       window.history.replaceState({}, "", window.location.pathname)
       return "signup"
     }
+    if (params.get("verify_email")) {
+      return "signin"
+    }
     return "home"
   })
   const { user, workspace, loading, signOut, emailVerified, resendVerification, checkAuth } = useAuth()

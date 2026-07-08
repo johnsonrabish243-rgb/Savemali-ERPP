@@ -117,17 +117,22 @@ function expiry(text: string): string {
   return '<tr><td style="text-align:center;padding-bottom:4px"><p style="margin:0;color:#71717a;font-size:13px;font-family:Arial,Helvetica,sans-serif">Ce code expire dans <strong style="color:#18181b">' + text + '</strong>.</p></td></tr>'
 }
 
-function tplVerificationCode(code: string) {
+function tplVerificationCode(code: string, link?: string) {
+  var linkSection = ''
+  if (link) {
+    linkSection = '<tr><td style="padding:0 0 16px"><p style="margin:0 0 6px;color:#52525b;font-size:13px;font-weight:600;font-family:Arial,Helvetica,sans-serif">LIEN :</p><a href="' + link + '" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:12px 28px;border-radius:8px;font-family:Arial,Helvetica,sans-serif">Cliquer ici pour verifier</a></td></tr>'
+  }
   return {
     subject: 'Verification de votre compte',
     html: page('Verification de votre compte', [
       iconCircle('&#9993;', 'linear-gradient(135deg,#7c3aed,#a855f7)'),
       heading('Verification de votre compte'),
       paragraph('Bonjour,'),
-      paragraph('Merci de votre inscription. Pour activer votre compte, veuillez utiliser le code suivant :'),
-      otpRow(code),
+      paragraph('Merci de votre inscription. Vous pouvez activer votre compte soit en cliquant sur le lien ci-dessous, soit en saisissant le code manuellement sur la plateforme :'),
+      linkSection,
+      '<tr><td style="padding:0 0 16px"><p style="margin:0 0 6px;color:#52525b;font-size:13px;font-weight:600;font-family:Arial,Helvetica,sans-serif">CODE :</p>' + otpRow(code) + '</td></tr>',
       expiry('1 minute et 30 secondes'),
-      notice("Attention : Ce code est valide pour une duree de 1 minute et 30 secondes. Si le delai expire, vous devrez demander un nouveau code via la plateforme."),
+      notice('Attention : Ces options sont valides pour une duree de 1 minute et 30 secondes. Si le delai expire, vous devrez demander une nouvelle verification via la plateforme.'),
       paragraph('Cordialement,<br>L\'equipe technique.'),
     ].join('')),
   }
@@ -233,7 +238,7 @@ function tplMemberJoined(d: { memberName: string; workspaceName: string; role: s
 }
 
 const TEMPLATES: Record<string, (d: any) => { subject: string; html: string }> = {
-  'verification-code': (d) => tplVerificationCode(d.code),
+  'verification-code': (d) => tplVerificationCode(d.code, d.link),
   'verification-link': (d) => tplVerificationLink(d.link),
   'welcome': (d) => tplWelcome(d.name),
   'contact': (d) => tplContact(d),

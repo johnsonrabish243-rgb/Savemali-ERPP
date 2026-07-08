@@ -104,6 +104,9 @@ export function SignUpPage({ onNavigate }: Props) {
   // Email verification (code-based)
   const [emailVerificationSent, setEmailVerificationSent] = React.useState(false)
   const [verificationEmail, setVerificationEmail] = React.useState("")
+  const [verifyCode, setVerifyCode] = React.useState(["", "", "", "", "", ""])
+  const verifyCodeRefs = React.useRef<(HTMLInputElement | null)[]>([])
+  const [verifying, setVerifying] = React.useState(false)
 
   // Auto-redirect after transition
   React.useEffect(() => {
@@ -192,6 +195,74 @@ export function SignUpPage({ onNavigate }: Props) {
   }
 
   // Verification code handlers
+  const handleCodeChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return
+    const newCode = [...verifyCode]
+    newCode[index] = value.slice(-1)
+    setVerifyCode(newCode)
+    setError(null)
+    if (value && index < 5) verifyCodeRefs.current[index + 1]?.focus()
+    if (newCode.every((d) => d !== "") && index === 5) handleVerifyCode(newCode.join(""))
+  }
+
+  const handleCodeKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !verifyCode[index] && index > 0) verifyCodeRefs.current[index - 1]?.focus()
+  }
+
+  const handleCodePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault()
+    const p = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6)
+    if (p.length === 6) {
+      setVerifyCode(p.split(""))
+      verifyCodeRefs.current[5]?.focus()
+      setTimeout(() => handleVerifyCode(p), 100)
+    }
+  }
+
+  const handleVerifyCode = async (codeStr?: string) => {
+    const code = codeStr || verifyCode.join("")
+    if (code.length !== 6) return
+    setVerifying(true)
+    setError(null)
+    try {
+      const { data, error: verifyError } = await insforge.auth.verifyEmail({ email: verificationEmail, otp: code })
+      if (verifyError) {
+        setError(verifyError.message || (fr ? "Code invalide ou expire" : "Invalid or expired code"))
+        setVerifying(false)
+        return
+      }
+      const uid = data?.user?.id || (data as any)?.id || ""
+      if (uid) {
+        const { error: wsError } = await insforge.database.from("workspaces").insert([{ owner_id: uid, name: workspaceName.trim(), type: workspaceType }])
+        if (wsError) console.error("Workspace creation error:", wsError)
+      }
+      localStorage.removeItem("savemali_pending_ws")
+      await checkAuth()
+      setCreatedWsType(workspaceType)
+      setShowTransition(true)
+    } catch (err: any) {
+      setError(err.message || (fr ? "Erreur de verification" : "Verification error"))
+    } finally {
+      setVerifying(false)
+    }
+  }
+
+  const handleResendCode = async () => {
+    try {
+      const { error } = await insforge.auth.resendVerificationEmail({ email: verificationEmail, redirectTo: `${window.location.origin}/signin` })
+      if (error) {
+        const msg = (error.message || "").toLowerCase()
+        if (msg.includes("too many") || msg.includes("rate") || msg.includes("block")) {
+          setError(fr ? "Trop de demandes. Veuillez reessayer demain." : "Too many requests. Please try again tomorrow.")
+        }
+      }
+    } catch (err: any) {
+      if (err?.blocked) {
+        setError(fr ? "Trop de demandes. Session bloquee." : "Too many requests. Session blocked.")
+      }
+    }
+  }
+
   const handleInviteFinish = async () => {
     setLoading(true); setError(null)
     try {
@@ -451,25 +522,60 @@ export function SignUpPage({ onNavigate }: Props) {
               <Mail className="size-6 text-accent" />
             </div>
             <CardTitle className="text-lg font-bold text-foreground">
-              {fr ? "Verifier votre email" : "Verify your email"}
+              {fr ? "Verification de votre email" : "Verify your email"}
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              {fr
-                ? `Un code a ete envoye a ${verificationEmail}. Connectez-vous et saisissez-le pour activer votre compte.`
-                : `A code was sent to ${verificationEmail}. Sign in and enter it to activate your account.`}
+              {fr ? `Code envoye a ${verificationEmail}` : `Code sent to ${verificationEmail}`}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="size-4" />
+                <AlertDescription className="text-sm">{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex justify-center gap-2">
+              {verifyCode.map((digit, i) => (
+                <input
+                  key={i}
+                  ref={(el) => { verifyCodeRefs.current[i] = el }}
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleCodeChange(i, e.target.value)}
+                  onKeyDown={(e) => handleCodeKeyDown(i, e)}
+                  onPaste={i === 0 ? handleCodePaste : undefined}
+                  className="size-12 rounded-lg border border-input bg-background text-center text-lg font-bold text-foreground focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
+                  autoFocus={i === 0}
+                />
+              ))}
+            </div>
+
+            <p className="text-center text-xs text-muted-foreground">
+              {fr ? "Le code expire dans 1 minute 30 secondes" : "The code expires in 1 minute 30 seconds"}
+            </p>
+
             <Button
-              onClick={() => onNavigate("signin")}
+              onClick={() => handleVerifyCode()}
+              disabled={verifyCode.join("").length !== 6 || verifying}
               className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
             >
-              {fr ? "Aller a la connexion" : "Go to sign in"} <ChevronRight className="size-4" />
+              {verifying ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
+              {fr ? "Verifier" : "Verify"}
             </Button>
-            <Button variant="ghost" onClick={() => { setStep(1); setEmailVerificationSent(false); setError(null) }} className="w-full">
-              <ArrowLeft className="mr-2 size-4" />
-              {fr ? "Changer d'email" : "Change email"}
-            </Button>
+
+            <div className="flex flex-col gap-2">
+              <Button variant="ghost" onClick={handleResendCode} className="w-full text-accent">
+                {fr ? "Renvoyer le code" : "Resend code"}
+              </Button>
+              <Button variant="ghost" onClick={() => { setStep(1); setVerifyCode(["", "", "", "", "", ""]); setEmailVerificationSent(false); setError(null) }} className="w-full">
+                <ArrowLeft className="mr-2 size-4" />
+                {fr ? "Changer d'email" : "Change email"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
