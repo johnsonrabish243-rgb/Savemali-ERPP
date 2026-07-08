@@ -74,9 +74,7 @@ function AppContent() {
   const { user, workspace, loading, signOut, emailVerified, checkAuth } = useAuth()
   const { setCurrentPage } = usePredictiveContext()
   const { lang } = useLanguage()
-  const [showLoading, setShowLoading] = React.useState(() => {
-    return !sessionStorage.getItem("savemali_loaded")
-  })
+  const [showLoading, setShowLoading] = React.useState(true)
   const [lockedOut, setLockedOut] = React.useState(() => isUserLockedOut())
   const { isBlocked, remainingMs, status, resetProtection } = useAbuseProtection()
   useRequestTracking()
@@ -115,7 +113,6 @@ function AppContent() {
 
   const handleLoadingDone = React.useCallback(() => {
     setShowLoading(false)
-    sessionStorage.setItem("savemali_loaded", "1")
   }, [])
 
   // Save current page to localStorage for session persistence
