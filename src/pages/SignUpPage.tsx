@@ -248,6 +248,8 @@ export function SignUpPage({ onNavigate }: Props) {
   }
 
   const handleResendCode = async () => {
+    setVerifyCode(["", "", "", "", "", ""])
+    setError(null)
     try {
       const { error } = await insforge.auth.resendVerificationEmail({ email: verificationEmail, redirectTo: `${window.location.origin}/signin` })
       if (error) {

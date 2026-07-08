@@ -267,6 +267,7 @@ function EmailVerificationGate({ user, lang, onVerify, onSignOut, onResend }: { 
   const [verifying, setVerifying] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [redirectTarget, setRedirectTarget] = React.useState<string | null>(null)
+  const [resent, setResent] = React.useState(false)
 
   const handleChange = (i: number, val: string) => {
     if (!/^\d*$/.test(val)) return
@@ -274,6 +275,7 @@ function EmailVerificationGate({ user, lang, onVerify, onSignOut, onResend }: { 
     next[i] = val.slice(-1)
     setCode(next)
     setError(null)
+    setResent(false)
     if (val && i < 5) refs.current[i + 1]?.focus()
     if (next.every((d) => d !== "") && i === 5) handleVerify(next.join(""))
   }
@@ -292,15 +294,25 @@ function EmailVerificationGate({ user, lang, onVerify, onSignOut, onResend }: { 
     }
   }
 
+  const handleResend = async () => {
+    setCode(["", "", "", "", "", ""])
+    setError(null)
+    setResent(false)
+    await onResend()
+    setResent(true)
+    refs.current[0]?.focus()
+  }
+
   const handleVerify = async (codeStr?: string) => {
     const c = codeStr || code.join("")
     if (c.length !== 6) return
     setVerifying(true)
     setError(null)
+    setResent(false)
     try {
       const { error: verifyError } = await insforge.auth.verifyEmail({ email: user.email || "", otp: c })
       if (verifyError) {
-        setError(verifyError.message || (fr ? "Code invalide ou expire" : "Invalid or expired code"))
+        setError(verifyError.message || (fr ? "Code invalide ou expire. Cliquez sur Renvoyer pour obtenir un nouveau code." : "Invalid or expired code. Click Resend to get a new code."))
         setVerifying(false)
         return
       }
@@ -366,6 +378,7 @@ function EmailVerificationGate({ user, lang, onVerify, onSignOut, onResend }: { 
         <p className="text-sm text-muted-foreground">
           {fr ? "Un code a ete envoye a " + (user.email || "") + ". Saisissez-le ci-dessous." : "A code was sent to " + (user.email || "") + ". Enter it below."}
         </p>
+        {resent && <p className="text-sm text-green-600 dark:text-green-400">{fr ? "Nouveau code envoye ! Verifiez votre boîte." : "New code sent! Check your inbox."}</p>}
         {error && <p className="text-sm text-destructive">{error}</p>}
         <div className="flex justify-center gap-2">
           {code.map((digit, i) => (
@@ -390,7 +403,7 @@ function EmailVerificationGate({ user, lang, onVerify, onSignOut, onResend }: { 
           {fr ? "Verifier" : "Verify"}
         </Button>
         <div className="flex gap-2">
-          <Button onClick={() => onResend()} variant="outline" className="flex-1">{fr ? "Renvoyer" : "Resend"}</Button>
+          <Button onClick={handleResend} variant="outline" className="flex-1">{fr ? "Renvoyer" : "Resend"}</Button>
           <Button onClick={() => onSignOut()} variant="ghost" className="flex-1">{fr ? "Se deconnecter" : "Sign out"}</Button>
         </div>
       </div>

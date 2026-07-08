@@ -288,6 +288,9 @@ export function SignInPage({ onNavigate }: Props) {
   }
 
   const handleResendCode = async () => {
+    setVerifyCode(["", "", "", "", "", ""])
+    setVerifyError(null)
+    setResendSuccess(false)
     try {
       const { error } = await insforge.auth.resendVerificationEmail({
         email,
