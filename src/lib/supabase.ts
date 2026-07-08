@@ -5,7 +5,7 @@ function getClient() {
   const anonKey = import.meta.env.VITE_INSFORGE_ANON_KEY
   if (!baseUrl) console.error("VITE_INSFORGE_URL is not set")
   if (!anonKey) console.error("VITE_INSFORGE_ANON_KEY is not set")
-  return createClient({ baseUrl, anonKey })
+  return createClient({ baseUrl, anonKey, isServerMode: true })
 }
 
 export const insforge = getClient()
