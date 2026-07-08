@@ -32,7 +32,6 @@ export function SignInPage({ onNavigate }: Props) {
   const [emailNotVerified, setEmailNotVerified] = React.useState(false)
   const [resendLoading, setResendLoading] = React.useState(false)
   const [resendSuccess, setResendSuccess] = React.useState(false)
-  const [emailVerified, setEmailVerified] = React.useState(false)
 
   // Code-based verification states
   const [showVerifyCode, setShowVerifyCode] = React.useState(false)
@@ -122,11 +121,24 @@ export function SignInPage({ onNavigate }: Props) {
       sessionStorage.setItem("savemali_just_logged_in", "1")
       await logAudit({ action: "login", actor_email: email, metadata: { success: true } })
       await checkAuth()
+      // Check if email is verified before navigating away
+      const { data: freshUser } = await insforge.auth.getCurrentUser()
+      const verified = !!(freshUser as any)?.email_confirmed_at
+      if (!verified) {
+        setEmailNotVerified(true)
+        setShowVerifyCode(true)
+        setVerifyCode(["", "", "", "", "", ""])
+        setError(fr ? "Email non vérifié. Entrez le code reçu par email." : "Email not verified. Enter the code sent to your email.")
+        setLoading(false)
+        return
+      }
       onNavigate("dashboard")
     } catch (err: any) {
       if (err?.statusCode === 403 || (err?.message || "").toLowerCase().includes("email not confirmed") || (err?.message || "").toLowerCase().includes("email not verified")) {
         setEmailNotVerified(true)
-        setError(fr ? "Email non vérifié. Vérifiez votre boîte de réception." : "Email not verified. Check your inbox.")
+        setShowVerifyCode(true)
+        setVerifyCode(["", "", "", "", "", ""])
+        setError(fr ? "Email non vérifié. Entrez le code reçu par email." : "Email not verified. Enter the code sent to your email.")
       } else {
         const result = trackLoginAttempt(false)
         if (result.blocked) {
@@ -230,8 +242,30 @@ export function SignInPage({ onNavigate }: Props) {
         setVerifying(false)
         return
       }
-      setEmailVerified(true)
-      setShowVerifyCode(false)
+      // Create workspace if pending from signup
+      try {
+        const raw = localStorage.getItem("savemali_pending_ws")
+        if (raw) {
+          const pending = JSON.parse(raw)
+          const uid = data?.user?.id || (data as any)?.id || ""
+          if (uid) {
+            const { data: existing } = await insforge.database.from("workspaces").select("id").eq("owner_id", uid).maybeSingle()
+            if (!existing) {
+              await insforge.database.from("workspaces").insert([{ owner_id: uid, name: pending.name, type: pending.type }])
+            }
+          }
+          localStorage.removeItem("savemali_pending_ws")
+          await checkAuth()
+          const target = pending.type === "pharmacy" ? "pharmacy" : "dashboard"
+          setRedirectTarget(target)
+          setShowTransition(true)
+          return
+        }
+      } catch {}
+      // Fallback: just redirect to dashboard
+      await checkAuth()
+      setRedirectTarget("dashboard")
+      setShowTransition(true)
     } catch (err: any) {
       setVerifyError(err.message || (fr ? "Erreur de vérification" : "Verification error"))
     } finally {
@@ -305,21 +339,6 @@ export function SignInPage({ onNavigate }: Props) {
                 onClick={async () => { await checkAuth(); onNavigate(redirectTarget as Page) }}
               >
                 {fr ? "Aller maintenant" : "Go now"} <ChevronRight className="size-4" />
-              </Button>
-            </div>
-          ) : emailVerified ? (
-            <div className="space-y-4 text-center">
-              <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                <MailCheck className="size-6 text-green-600 dark:text-green-400" />
-              </div>
-              <p className="text-sm text-foreground">
-                {fr ? "Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter." : "Your email has been verified successfully! You can now sign in."}
-              </p>
-              <Button
-                className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-                onClick={() => setEmailVerified(false)}
-              >
-                {fr ? "Se connecter" : "Sign in"}
               </Button>
             </div>
           ) : showVerifyCode ? (
