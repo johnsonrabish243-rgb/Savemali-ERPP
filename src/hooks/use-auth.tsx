@@ -100,14 +100,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function init() {
       try {
-        // Restore refresh token from localStorage for cross-origin session persistence
+        const http = insforge.getHttpClient()
+
+        // Restore refresh token for cross-origin session persistence
         const savedRefreshToken = localStorage.getItem("savemali_refresh_token")
         if (savedRefreshToken) {
-          insforge.getHttpClient().setRefreshToken(savedRefreshToken)
+          http.setRefreshToken(savedRefreshToken)
+          try {
+            await http.refreshAndSaveSession()
+          } catch {
+            localStorage.removeItem("savemali_refresh_token")
+          }
         }
 
         // Auto-persist refresh token whenever SDK rotates it
-        const http = insforge.getHttpClient()
         const origSetRefreshToken = http.setRefreshToken.bind(http)
         http.setRefreshToken = (token: string | null) => {
           origSetRefreshToken(token)
@@ -118,31 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        // Try standard getCurrentUser first
-        let { data, error } = await insforge.auth.getCurrentUser()
-
-        // If failed and we have a stored refresh token, try manual mobile refresh
-        if ((!data?.user || error) && savedRefreshToken) {
-          try {
-            const refreshResponse = await http.post(
-              "/api/auth/refresh?client_type=mobile",
-              { refresh_token: savedRefreshToken },
-              { credentials: "include", skipAuthRefresh: true } as any
-            )
-            if (refreshResponse?.accessToken) {
-              insforge.auth.saveSessionFromResponse(refreshResponse)
-              if (refreshResponse.refreshToken) {
-                http.setRefreshToken(refreshResponse.refreshToken)
-              }
-              insforge.setAccessToken(refreshResponse.accessToken)
-              // Retry getCurrentUser with new token
-              ;({ data, error } = await insforge.auth.getCurrentUser())
-            }
-          } catch {
-            localStorage.removeItem("savemali_refresh_token")
-          }
-        }
-
+        const { data, error } = await insforge.auth.getCurrentUser()
         if (cancelled) return
 
         if (error || !data?.user) {
