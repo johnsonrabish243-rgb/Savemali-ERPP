@@ -45,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch {}
     }
     try { await insforge.auth.signOut() } catch {}
+    localStorage.removeItem("savemali_refresh_token")
     clearSession()
     setState({ user: null, workspace: null, loading: false, isOwner: false, emailVerified: true })
   }, [state.user])
@@ -99,6 +100,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function init() {
       try {
+        // Restore refresh token from localStorage for cross-origin session persistence
+        const savedRefreshToken = localStorage.getItem("savemali_refresh_token")
+        if (savedRefreshToken) {
+          insforge.getHttpClient().setRefreshToken(savedRefreshToken)
+        }
+
+        // Auto-persist refresh token whenever SDK rotates it
+        const http = insforge.getHttpClient()
+        const origSetRefreshToken = http.setRefreshToken.bind(http)
+        http.setRefreshToken = (token: string | null) => {
+          origSetRefreshToken(token)
+          if (token) {
+            localStorage.setItem("savemali_refresh_token", token)
+          } else {
+            localStorage.removeItem("savemali_refresh_token")
+          }
+        }
+
         const { data, error } = await insforge.auth.getCurrentUser()
         if (cancelled) return
 

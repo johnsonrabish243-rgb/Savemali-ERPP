@@ -121,6 +121,9 @@ export function SignInPage({ onNavigate }: Props) {
     try {
       const { data: signInData, error: signInError } = await insforge.auth.signInWithPassword({ email, password })
       if (signInError) throw signInError
+      if (signInData?.refreshToken) {
+        localStorage.setItem("savemali_refresh_token", signInData.refreshToken)
+      }
       const uid = signInData?.user?.id
       if (uid) {
         const { data: member } = await insforge.database.from("workspace_members").select("status").eq("user_id", uid).maybeSingle()
