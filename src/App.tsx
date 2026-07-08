@@ -13,7 +13,7 @@ import { isUserLockedOut } from "@/hooks/use-security"
 import { useAbuseProtection, useRequestTracking } from "@/hooks/use-abuse-protection"
 import { SecurityBlockPage } from "@/pages/SecurityBlockPage"
 import { Button } from "@/components/ui/button"
-import { Mail } from "lucide-react"
+import { insforge } from "@/lib/supabase"
 
 const HomePage = React.lazy(() => import("@/pages/HomePage").then(m => ({ default: m.HomePage })))
 const EducationPage = React.lazy(() => import("@/pages/EducationPage").then(m => ({ default: m.EducationPage })))
@@ -151,30 +151,9 @@ function AppContent() {
     )
   }
 
-  // Email verification gate - BLOCK access until email verified
+  // Email verification gate with code input
   if (user && !emailVerified && page !== "signin" && page !== "signup") {
-    return (
-      <div className="flex min-h-svh flex-col items-center justify-center bg-background px-4">
-        <div className="w-full max-w-sm text-center space-y-4">
-          <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-accent/10">
-            <Mail className="size-8 text-accent" />
-          </div>
-          <h1 className="text-xl font-bold text-foreground">{lang === "fr" ? "Verification de votre email" : "Verify your email"}</h1>
-          <p className="text-sm text-muted-foreground">
-            {lang === "fr"
-              ? "Un code de verification a ete envoye a " + user.email + ". Veuillez saisir le code pour activer votre compte."
-              : "A verification code was sent to " + user.email + ". Please enter the code to activate your account."}
-          </p>
-          <Button onClick={() => resendVerification()} variant="outline" className="gap-2">
-            <Mail className="size-4" />
-            {lang === "fr" ? "Renvoyer le code" : "Resend code"}
-          </Button>
-          <Button onClick={() => signOut()} variant="ghost" className="text-sm">
-            {lang === "fr" ? "Se deconnecter" : "Sign out"}
-          </Button>
-        </div>
-      </div>
-    )
+    return <EmailVerificationGate user={user} lang={lang} onVerify={checkAuth} onSignOut={signOut} onResend={resendVerification} />
   }
 
   if (loading) {
@@ -272,6 +251,133 @@ export function App() {
         </PredictiveProvider>
       </AuthProvider>
     </LanguageProvider>
+  )
+}
+
+/* ─── Email Verification Gate with Code Input ─── */
+
+function EmailVerificationGate({ user, lang, onVerify, onSignOut, onResend }: { user: { id?: string; email?: string }; lang: string; onVerify: () => Promise<void>; onSignOut: () => Promise<void>; onResend: () => Promise<void> }) {
+  const fr = lang === "fr"
+  const [code, setCode] = React.useState(["", "", "", "", "", ""])
+  const refs = React.useRef<(HTMLInputElement | null)[]>([])
+  const [verifying, setVerifying] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+  const [redirectTarget, setRedirectTarget] = React.useState<string | null>(null)
+
+  const handleChange = (i: number, val: string) => {
+    if (!/^\d*$/.test(val)) return
+    const next = [...code]
+    next[i] = val.slice(-1)
+    setCode(next)
+    setError(null)
+    if (val && i < 5) refs.current[i + 1]?.focus()
+    if (next.every((d) => d !== "") && i === 5) handleVerify(next.join(""))
+  }
+
+  const handleKeyDown = (i: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !code[i] && i > 0) refs.current[i - 1]?.focus()
+  }
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault()
+    const p = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6)
+    if (p.length === 6) {
+      setCode(p.split(""))
+      refs.current[5]?.focus()
+      setTimeout(() => handleVerify(p), 100)
+    }
+  }
+
+  const handleVerify = async (codeStr?: string) => {
+    const c = codeStr || code.join("")
+    if (c.length !== 6) return
+    setVerifying(true)
+    setError(null)
+    try {
+      const { error: verifyError } = await insforge.auth.verifyEmail({ email: user.email || "", otp: c })
+      if (verifyError) {
+        setError(verifyError.message || (fr ? "Code invalide ou expire" : "Invalid or expired code"))
+        setVerifying(false)
+        return
+      }
+      // Verified — check workspace and determine redirect
+      await onVerify()
+      // Small delay to let state update
+      setTimeout(async () => {
+        try {
+          const { data: ws } = await insforge.database.from("workspaces").select("type").eq("owner_id", user.id || "").maybeSingle()
+          if (ws?.type === "pharmacy") setRedirectTarget("pharmacy")
+          else setRedirectTarget("dashboard")
+        } catch {
+          setRedirectTarget("dashboard")
+        }
+      }, 500)
+    } catch {
+      setError(fr ? "Erreur de verification" : "Verification error")
+      setVerifying(false)
+    }
+  }
+
+  // Auto-redirect after verification
+  React.useEffect(() => {
+    if (!redirectTarget) return
+    const t = setTimeout(() => { window.location.href = redirectTarget === "pharmacy" ? "/pharmacy" : "/dashboard" }, 1500)
+    return () => clearTimeout(t)
+  }, [redirectTarget])
+
+  if (redirectTarget) {
+    return (
+      <div className="flex min-h-svh flex-col items-center justify-center bg-background px-4">
+        <div className="w-full max-w-sm text-center space-y-4">
+          <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-green-500/10">
+            <span className="text-3xl">&#10003;</span>
+          </div>
+          <h1 className="text-xl font-bold text-foreground">{fr ? "Email verifie !" : "Email verified !"}</h1>
+          <p className="text-sm text-muted-foreground">{fr ? "Redirection en cours..." : "Redirecting..."}</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex min-h-svh flex-col items-center justify-center bg-background px-4">
+      <div className="w-full max-w-sm text-center space-y-4">
+        <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-accent/10">
+          <span className="text-3xl">&#9993;</span>
+        </div>
+        <h1 className="text-xl font-bold text-foreground">{fr ? "Verification de votre email" : "Verify your email"}</h1>
+        <p className="text-sm text-muted-foreground">
+          {fr ? "Un code a ete envoye a " + (user.email || "") + ". Saisissez-le ci-dessous." : "A code was sent to " + (user.email || "") + ". Enter it below."}
+        </p>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <div className="flex justify-center gap-2">
+          {code.map((digit, i) => (
+            <input
+              key={i}
+              ref={(el) => { refs.current[i] = el }}
+              type="tel"
+              inputMode="numeric"
+              maxLength={1}
+              value={digit}
+              onChange={(e) => handleChange(i, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(i, e)}
+              onPaste={i === 0 ? handlePaste : undefined}
+              className="size-12 rounded-lg border border-input bg-background text-center text-lg font-bold text-foreground focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
+              autoFocus={i === 0}
+            />
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">{fr ? "Code expire dans 1 min 30 s" : "Code expires in 1 min 30 s"}</p>
+        <Button onClick={() => handleVerify()} disabled={code.join("").length !== 6 || verifying} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2">
+          {verifying ? <span className="size-4 animate-spin">&#8987;</span> : <span>&#10003;</span>}
+          {fr ? "Verifier" : "Verify"}
+        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => onResend()} variant="outline" className="flex-1">{fr ? "Renvoyer" : "Resend"}</Button>
+          <Button onClick={() => onSignOut()} variant="ghost" className="flex-1">{fr ? "Se deconnecter" : "Sign out"}</Button>
+        </div>
+      </div>
+    </div>
   )
 }
 
