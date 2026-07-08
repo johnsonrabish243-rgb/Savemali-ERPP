@@ -188,10 +188,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resendVerification = React.useCallback(async () => {
     if (!state.user?.email) return
     try {
-      await fetch(`${import.meta.env.VITE_INSFORGE_URL}/api/auth/email/send-verification`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: state.user.email }),
+      await insforge.auth.resendVerificationEmail({
+        email: state.user.email,
+        redirectTo: `${window.location.origin}/signin`,
       })
     } catch {}
   }, [state.user])
