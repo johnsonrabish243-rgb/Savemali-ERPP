@@ -14,6 +14,7 @@ import { useAbuseProtection, useRequestTracking } from "@/hooks/use-abuse-protec
 import { SecurityBlockPage } from "@/pages/SecurityBlockPage"
 import { Button } from "@/components/ui/button"
 import { insforge } from "@/lib/supabase"
+import { Mail } from "lucide-react"
 
 const HomePage = React.lazy(() => import("@/pages/HomePage").then(m => ({ default: m.HomePage })))
 const EducationPage = React.lazy(() => import("@/pages/EducationPage").then(m => ({ default: m.EducationPage })))
@@ -300,14 +301,27 @@ function EmailVerificationGate({ user, lang, onVerify, onSignOut, onResend }: { 
         setVerifying(false)
         return
       }
-      // Verified — check workspace and determine redirect
+      // Create workspace if pending from signup
+      try {
+        const raw = localStorage.getItem("savemali_pending_ws")
+        if (raw) {
+          const pending = JSON.parse(raw)
+          const { data: existing } = await insforge.database.from("workspaces").select("id").eq("owner_id", user.id || "").maybeSingle()
+          if (!existing) {
+            await insforge.database.from("workspaces").insert([{ owner_id: user.id, name: pending.name, type: pending.type }])
+          }
+          localStorage.removeItem("savemali_pending_ws")
+          await onVerify()
+          setRedirectTarget(pending.type === "pharmacy" ? "pharmacy" : "dashboard")
+          return
+        }
+      } catch {}
+      // Fallback: just check existing workspace
       await onVerify()
-      // Small delay to let state update
       setTimeout(async () => {
         try {
           const { data: ws } = await insforge.database.from("workspaces").select("type").eq("owner_id", user.id || "").maybeSingle()
-          if (ws?.type === "pharmacy") setRedirectTarget("pharmacy")
-          else setRedirectTarget("dashboard")
+          setRedirectTarget(ws?.type === "pharmacy" ? "pharmacy" : "dashboard")
         } catch {
           setRedirectTarget("dashboard")
         }
