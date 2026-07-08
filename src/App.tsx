@@ -68,7 +68,7 @@ function AppContent() {
     }
     return "home"
   })
-  const { user, workspace, loading, signOut, emailVerified, resendVerification } = useAuth()
+  const { user, workspace, loading, signOut, emailVerified, resendVerification, checkAuth } = useAuth()
   const { setCurrentPage } = usePredictiveContext()
   const { lang } = useLanguage()
   const [showLoading, setShowLoading] = React.useState(() => {
