@@ -13,6 +13,7 @@ import { isUserLockedOut } from "@/hooks/use-security"
 import { useAbuseProtection, useRequestTracking } from "@/hooks/use-abuse-protection"
 import { SecurityBlockPage } from "@/pages/SecurityBlockPage"
 import { Button } from "@/components/ui/button"
+import { Mail } from "lucide-react"
 
 const HomePage = React.lazy(() => import("@/pages/HomePage").then(m => ({ default: m.HomePage })))
 const EducationPage = React.lazy(() => import("@/pages/EducationPage").then(m => ({ default: m.EducationPage })))
@@ -67,7 +68,7 @@ function AppContent() {
     }
     return "home"
   })
-  const { user, workspace, loading, signOut } = useAuth()
+  const { user, workspace, loading, signOut, emailVerified, resendVerification } = useAuth()
   const { setCurrentPage } = usePredictiveContext()
   const { lang } = useLanguage()
   const [showLoading, setShowLoading] = React.useState(() => {
@@ -147,6 +148,32 @@ function AppContent() {
         lockoutLevel={status.lockoutLevel}
         onBack={resetProtection}
       />
+    )
+  }
+
+  // Email verification gate - BLOCK access until email verified
+  if (user && !emailVerified && page !== "signin" && page !== "signup") {
+    return (
+      <div className="flex min-h-svh flex-col items-center justify-center bg-background px-4">
+        <div className="w-full max-w-sm text-center space-y-4">
+          <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-accent/10">
+            <Mail className="size-8 text-accent" />
+          </div>
+          <h1 className="text-xl font-bold text-foreground">{lang === "fr" ? "Verification de votre email" : "Verify your email"}</h1>
+          <p className="text-sm text-muted-foreground">
+            {lang === "fr"
+              ? "Un code de verification a ete envoye a " + user.email + ". Veuillez saisir le code pour activer votre compte."
+              : "A verification code was sent to " + user.email + ". Please enter the code to activate your account."}
+          </p>
+          <Button onClick={() => resendVerification()} variant="outline" className="gap-2">
+            <Mail className="size-4" />
+            {lang === "fr" ? "Renvoyer le code" : "Resend code"}
+          </Button>
+          <Button onClick={() => signOut()} variant="ghost" className="text-sm">
+            {lang === "fr" ? "Se deconnecter" : "Sign out"}
+          </Button>
+        </div>
+      </div>
     )
   }
 

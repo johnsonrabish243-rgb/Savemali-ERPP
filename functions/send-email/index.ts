@@ -119,14 +119,16 @@ function expiry(text: string): string {
 
 function tplVerificationCode(code: string) {
   return {
-    subject: 'Code de verification - SaveMali',
-    html: page('Verification email', [
+    subject: 'Verification de votre compte',
+    html: page('Verification de votre compte', [
       iconCircle('&#9993;', 'linear-gradient(135deg,#7c3aed,#a855f7)'),
-      heading('Verification de votre email'),
-      paragraph('Entrez le code a 6 chiffres ci-dessous pour activer votre compte SaveMali.'),
+      heading('Verification de votre compte'),
+      paragraph('Bonjour,'),
+      paragraph('Merci de votre inscription. Pour activer votre compte, veuillez utiliser le code suivant :'),
       otpRow(code),
-      expiry('1 min 30 s'),
-      notice("Vous n'avez pas demande ce code ? Ignorez cet email en toute securite. Votre compte ne sera pas cree."),
+      expiry('1 minute et 30 secondes'),
+      notice("Attention : Ce code est valide pour une duree de 1 minute et 30 secondes. Si le delai expire, vous devrez demander un nouveau code via la plateforme."),
+      paragraph('Cordialement,<br>L\'equipe technique.'),
     ].join('')),
   }
 }

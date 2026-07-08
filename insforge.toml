@@ -1,5 +1,5 @@
 [auth]
-require_email_verification = false
+require_email_verification = true
 verify_email_method = "code"
 reset_password_method = "code"
 disable_signup = false
