@@ -3,7 +3,7 @@ import {
   Mail, Lock, Eye, EyeOff, AlertCircle, Building2,
   Check, ChevronRight, ChevronLeft, Loader2,
   FlaskConical, ShoppingCart, BookOpen, BarChart3, ArrowLeft,
-  RefreshCw, Copy, CheckCheck, Wand2, MailCheck, ShieldCheck
+  RefreshCw, Copy, CheckCheck, Wand2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -101,13 +101,6 @@ export function SignUpPage({ onNavigate }: Props) {
   const [createdWsType, setCreatedWsType] = React.useState<WorkspaceType>("pharmacy")
   const [redirectCountdown, setRedirectCountdown] = React.useState(4)
 
-  // Email verification (code-based)
-  const [emailVerificationSent, setEmailVerificationSent] = React.useState(false)
-  const [verificationEmail, setVerificationEmail] = React.useState("")
-  const [verifyCode, setVerifyCode] = React.useState(["", "", "", "", "", ""])
-  const verifyCodeRefs = React.useRef<(HTMLInputElement | null)[]>([])
-  const [verifying, setVerifying] = React.useState(false)
-
   // Auto-redirect after transition
   React.useEffect(() => {
     if (!showTransition) return
@@ -194,90 +187,6 @@ export function SignUpPage({ onNavigate }: Props) {
     handleFinish()
   }
 
-  // Verification code handlers
-  const handleCodeChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return
-    const newCode = [...verifyCode]
-    newCode[index] = value.slice(-1)
-    setVerifyCode(newCode)
-    setError(null)
-    if (value && index < 5) {
-      verifyCodeRefs.current[index + 1]?.focus()
-    }
-    if (newCode.every((d) => d !== "") && index === 5) {
-      handleVerifyCode(newCode.join(""))
-    }
-  }
-
-  const handleCodeKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !verifyCode[index] && index > 0) {
-      verifyCodeRefs.current[index - 1]?.focus()
-    }
-  }
-
-  const handleCodePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault()
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6)
-    if (pasted.length === 6) {
-      const newCode = pasted.split("")
-      setVerifyCode(newCode)
-      verifyCodeRefs.current[5]?.focus()
-      setTimeout(() => handleVerifyCode(pasted), 100)
-    }
-  }
-
-  const handleVerifyCode = async (codeStr?: string) => {
-    const code = codeStr || verifyCode.join("")
-    if (code.length !== 6) return
-    setVerifying(true)
-    setError(null)
-    try {
-      const { data, error: verifyError } = await insforge.auth.verifyEmail({ email: verificationEmail, otp: code })
-      if (verifyError) {
-        setError(verifyError.message || (fr ? "Code invalide ou expiré" : "Invalid or expired code"))
-        setVerifying(false)
-        return
-      }
-      // Verification successful, now create workspace
-      const uid = data?.user?.id || (data as any)?.id || ""
-      if (uid) {
-        const { error: wsError } = await insforge.database.from("workspaces").insert([{ owner_id: uid, name: workspaceName.trim(), type: workspaceType }])
-        if (wsError) console.error("Workspace creation error:", wsError)
-      }
-      await checkAuth()
-      // Show transition page with auto-redirect
-      setCreatedWsType(workspaceType)
-      setShowTransition(true)
-    } catch (err: any) {
-      setError(err.message || (fr ? "Erreur de vérification" : "Verification error"))
-    } finally {
-      setVerifying(false)
-    }
-  }
-
-  const handleResendCode = async () => {
-    try {
-      // Use InsForge SDK to resend verification email
-      const { error } = await insforge.auth.resendVerificationEmail({ email: verificationEmail, redirectTo: `${window.location.origin}/signin` })
-      if (error) {
-        // Check if it's a rate limit error
-        const msg = (error.message || "").toLowerCase()
-        if (msg.includes("too many") || msg.includes("rate") || msg.includes("block")) {
-          setError(fr
-            ? "Trop de demandes. Vous avez dépassé la limite de 4 tentatives. Veuillez réessayer demain."
-            : "Too many requests. You have exceeded the 4 attempt limit. Please try again tomorrow.")
-        }
-      }
-    } catch (err: any) {
-      // Check if it's a rate limit error from the edge function
-      if (err?.blocked) {
-        setError(fr
-          ? `Trop de demandes. Votre session est bloquée jusqu'au lendemain. Temps restant: ${err.remainingTime || 1440} min.`
-          : `Too many requests. Your session is blocked until tomorrow. Remaining time: ${err.remainingTime || 1440} min.`)
-      }
-    }
-  }
-
   const handleInviteFinish = async () => {
     setLoading(true); setError(null)
     try {
@@ -338,14 +247,6 @@ export function SignUpPage({ onNavigate }: Props) {
         return
       }
 
-      if (authData?.requireEmailVerification) {
-        setVerificationEmail(email)
-        setEmailVerificationSent(true)
-        setStep(3)
-        setLoading(false)
-        return
-      }
-
       const uid = authData?.user?.id || (authData as any)?.id || ""
       if (!uid) throw new Error(fr ? "Erreur de création du compte" : "Account creation error")
 
@@ -354,8 +255,9 @@ export function SignUpPage({ onNavigate }: Props) {
 
       import("@/lib/stats").then(({ invalidateStatsCache }) => invalidateStatsCache()).catch(() => {})
 
-      setCreatedWsType(workspaceType)
-      setShowTransition(true)
+      await checkAuth()
+      const target = workspaceType === "pharmacy" ? "pharmacy" : "dashboard"
+      onNavigate(target as any)
     } catch (err: any) {
       setError(err.message || t.auth.error)
     } finally {
@@ -363,7 +265,7 @@ export function SignUpPage({ onNavigate }: Props) {
     }
   }
 
-  const steps = [{ num: 1, label: t.auth.step1 }, { num: 2, label: t.auth.step2 }, { num: 3, label: fr ? "Code" : "Code" }]
+  const steps = [{ num: 1, label: t.auth.step1 }, { num: 2, label: t.auth.step2 }]
   const visibleSteps = inviteToken ? [{ num: 1, label: fr ? "Compte" : "Account" }] : steps
 
   // Invite loading state
@@ -523,72 +425,6 @@ export function SignUpPage({ onNavigate }: Props) {
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* STEP 3: EMAIL VERIFICATION CODE */}
-      {step === 3 && emailVerificationSent && (
-        <Card className="w-full max-w-sm shadow-lg">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-accent/10">
-              <ShieldCheck className="size-6 text-accent" />
-            </div>
-            <CardTitle className="text-lg font-bold text-foreground">
-              {fr ? "Vérifiez votre email" : "Verify your email"}
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              {fr ? `Code envoyé à ${verificationEmail}` : `Code sent to ${verificationEmail}`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="size-4" />
-                <AlertDescription className="text-sm">{error}</AlertDescription>
-              </Alert>
-            )}
-
-            <div className="flex justify-center gap-2">
-              {verifyCode.map((digit, i) => (
-                <input
-                  key={i}
-                  ref={(el) => { verifyCodeRefs.current[i] = el }}
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleCodeChange(i, e.target.value)}
-                  onKeyDown={(e) => handleCodeKeyDown(i, e)}
-                  onPaste={i === 0 ? handleCodePaste : undefined}
-                  className="size-12 rounded-lg border border-input bg-background text-center text-lg font-bold text-foreground focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none transition-all"
-                  autoFocus={i === 0}
-                />
-              ))}
-            </div>
-
-            <p className="text-center text-xs text-muted-foreground">
-              {fr ? "Le code expire dans 1 minute 30 secondes" : "The code expires in 1 minute 30 seconds"}
-            </p>
-
-            <Button
-              onClick={() => handleVerifyCode()}
-              disabled={verifyCode.join("").length !== 6 || verifying}
-              className="w-full bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
-            >
-              {verifying ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
-              {fr ? "Vérifier" : "Verify"}
-            </Button>
-
-            <div className="flex flex-col gap-2">
-              <Button variant="ghost" onClick={handleResendCode} className="w-full text-accent">
-                {fr ? "Renvoyer le code" : "Resend code"}
-              </Button>
-              <Button variant="ghost" onClick={() => { setStep(1); setVerifyCode(["", "", "", "", "", ""]); setEmailVerificationSent(false); setError(null) }} className="w-full">
-                <ArrowLeft className="mr-2 size-4" />
-                {fr ? "Changer d'email" : "Change email"}
-              </Button>
-            </div>
           </CardContent>
         </Card>
       )}
