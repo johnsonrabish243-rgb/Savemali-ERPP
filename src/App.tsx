@@ -67,6 +67,8 @@ function AppContent() {
     if (params.get("verify_email")) {
       return "signin"
     }
+    const saved = localStorage.getItem("savemali_current_page")
+    if (saved && (saved as Page)) return saved as Page
     return "home"
   })
   const { user, workspace, loading, signOut, emailVerified, checkAuth } = useAuth()
@@ -115,6 +117,13 @@ function AppContent() {
     setShowLoading(false)
     sessionStorage.setItem("savemali_loaded", "1")
   }, [])
+
+  // Save current page to localStorage for session persistence
+  React.useEffect(() => {
+    if (page !== "signin" && page !== "signup") {
+      localStorage.setItem("savemali_current_page", page)
+    }
+  }, [page])
 
   React.useEffect(() => {
     if (!loading && user && (page === "signin" || page === "signup")) {
