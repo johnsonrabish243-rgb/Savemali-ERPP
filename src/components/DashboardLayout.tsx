@@ -336,7 +336,18 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
             {t.dashboard.welcomeTitle.replace("{name}", user?.email?.split("@")[0] ?? "")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {t.dashboard.welcomeSubtitle} — {format(new Date(), "d MMMM yyyy", { locale: fr ? frLocale : enUS })}
+            {(() => {
+              const wsType = workspace?.type
+              const greetings: Record<string, { fr: string; en: string }> = {
+                pharmacy: { fr: "💊 Gérez votre pharmacie en toute sérénité", en: "💊 Manage your pharmacy with confidence" },
+                commerce: { fr: "🛒 Gérez votre commerce facilement", en: "🛒 Manage your shop with ease" },
+                education: { fr: "🎓 Gérez votre établissement scolaire", en: "🎓 Manage your school efficiently" },
+                gestion: { fr: "📊 Gérez votre entreprise intelligemment", en: "📊 Manage your business smartly" },
+                hr: { fr: "👥 Gérez vos ressources humaines", en: "👥 Manage your human resources" },
+              }
+              const msg = wsType ? greetings[wsType] : { fr: "📋 Bienvenue sur SaveMali", en: "📋 Welcome to SaveMali" }
+              return fr ? msg.fr : msg.en
+            })()} — {format(new Date(), "d MMMM yyyy", { locale: fr ? frLocale : enUS })}
           </p>
         </div>
 
