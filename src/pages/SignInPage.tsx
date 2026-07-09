@@ -32,6 +32,7 @@ export function SignInPage({ onNavigate }: Props) {
   const [emailNotVerified, setEmailNotVerified] = React.useState(false)
   const [resendLoading, setResendLoading] = React.useState(false)
   const [resendSuccess, setResendSuccess] = React.useState(false)
+  const [resendCooldown, setResendCooldown] = React.useState(0)
 
   // Code-based verification states
   const [showVerifyCode, setShowVerifyCode] = React.useState(false)
@@ -39,6 +40,18 @@ export function SignInPage({ onNavigate }: Props) {
   const verifyCodeRefs = React.useRef<(HTMLInputElement | null)[]>([])
   const [verifying, setVerifying] = React.useState(false)
   const [verifyError, setVerifyError] = React.useState<string | null>(null)
+
+  // Resend cooldown timer
+  React.useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) { clearInterval(timer); return 0 }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [resendCooldown > 0])
 
   // Redirect after email verification (for link-based fallback)
   const [showTransition, setShowTransition] = React.useState(false)
@@ -156,7 +169,7 @@ export function SignInPage({ onNavigate }: Props) {
   }
 
   const handleResendVerification = async () => {
-    if (!email) return
+    if (!email || resendCooldown > 0) return
     setResendLoading(true)
     setResendSuccess(false)
     try {
@@ -177,11 +190,14 @@ export function SignInPage({ onNavigate }: Props) {
             : "Too many requests. You have exceeded the 4 attempt limit. Please try again tomorrow.")
           setShowVerifyCode(false)
         } else {
-          setError(fr ? "Erreur lors de l'envoi. Réessayez." : "Failed to resend. Try again.")
+          setError(error.message || (fr ? "Erreur lors de l'envoi. Réessayez." : "Failed to resend. Try again."))
           setShowVerifyCode(false)
         }
+        setResendCooldown(60)
       } else {
         setResendSuccess(true)
+        setResendCooldown(60)
+        setTimeout(() => setResendSuccess(false), 5000)
       }
     } catch (err: any) {
       if (err?.blocked) {
@@ -190,7 +206,7 @@ export function SignInPage({ onNavigate }: Props) {
           : `Too many requests. Your session is blocked until tomorrow. Remaining time: ${err.remainingTime || 1440} min.`)
         setShowVerifyCode(false)
       } else {
-        setError(fr ? "Erreur lors de l'envoi. Réessayez." : "Failed to resend. Try again.")
+        setError(err?.message || (fr ? "Erreur lors de l'envoi. Réessayez." : "Failed to resend. Try again."))
         setShowVerifyCode(false)
       }
     } finally {
@@ -273,6 +289,7 @@ export function SignInPage({ onNavigate }: Props) {
   }
 
   const handleResendCode = async () => {
+    if (resendCooldown > 0) return
     setVerifyCode(["", "", "", "", "", ""])
     setVerifyError(null)
     setResendSuccess(false)
@@ -287,16 +304,24 @@ export function SignInPage({ onNavigate }: Props) {
           setVerifyError(fr
             ? "Trop de demandes. Vous avez dépassé la limite de 4 tentatives. Veuillez réessayer demain."
             : "Too many requests. You have exceeded the 4 attempt limit. Please try again tomorrow.")
+        } else {
+          setVerifyError(error.message || (fr ? "Erreur lors de l'envoi du code" : "Error sending code"))
         }
+        setResendCooldown(60)
       } else {
         setResendSuccess(true)
+        setResendCooldown(60)
+        setTimeout(() => setResendSuccess(false), 5000)
       }
     } catch (err: any) {
       if (err?.blocked) {
         setVerifyError(fr
           ? `Trop de demandes. Votre session est bloquée jusqu'au lendemain.`
           : `Too many requests. Your session is blocked until tomorrow.`)
+      } else {
+        setVerifyError(err?.message || (fr ? "Erreur lors de l'envoi du code" : "Error sending code"))
       }
+      setResendCooldown(60)
     }
   }
 
@@ -396,8 +421,20 @@ export function SignInPage({ onNavigate }: Props) {
               </Button>
 
               <div className="flex flex-col gap-2">
-                <Button variant="ghost" onClick={handleResendCode} className="w-full text-accent">
-                  {fr ? "Renvoyer le code" : "Resend code"}
+                {resendSuccess && (
+                  <p className="text-center text-xs text-green-600 dark:text-green-400">
+                    {fr ? "Code renvoyé avec succès !" : "Code resent successfully!"}
+                  </p>
+                )}
+                <Button
+                  variant="ghost"
+                  onClick={handleResendCode}
+                  disabled={resendCooldown > 0}
+                  className="w-full text-accent"
+                >
+                  {resendCooldown > 0
+                    ? `${fr ? "Renvoyer dans" : "Resend in"} ${resendCooldown}s`
+                    : (fr ? "Renvoyer le code" : "Resend code")}
                 </Button>
                 <Button variant="ghost" onClick={() => { setShowVerifyCode(false); setVerifyCode(["", "", "", "", "", ""]); setVerifyError(null) }} className="w-full">
                   {fr ? "Retour" : "Back"}
@@ -429,10 +466,12 @@ export function SignInPage({ onNavigate }: Props) {
                     size="sm"
                     className="w-full gap-2"
                     onClick={handleResendVerification}
-                    disabled={resendLoading || !email}
+                    disabled={resendLoading || !email || resendCooldown > 0}
                   >
                     {resendLoading ? <Loader2 className="size-3 animate-spin" /> : <MailCheck className="size-3" />}
-                    {fr ? "Renvoyer l'email de vérification" : "Resend verification email"}
+                    {resendCooldown > 0
+                      ? `${fr ? "Renvoyer dans" : "Resend in"} ${resendCooldown}s`
+                      : (fr ? "Renvoyer l'email de vérification" : "Resend verification email")}
                   </Button>
                 )}
               </div>

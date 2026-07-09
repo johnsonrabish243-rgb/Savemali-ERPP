@@ -108,6 +108,20 @@ export function SignUpPage({ onNavigate }: Props) {
   const [verifyCode, setVerifyCode] = React.useState(["", "", "", "", "", ""])
   const verifyCodeRefs = React.useRef<(HTMLInputElement | null)[]>([])
   const [verifying, setVerifying] = React.useState(false)
+  const [resendCooldown, setResendCooldown] = React.useState(0)
+  const [resendSuccess, setResendSuccess] = React.useState(false)
+
+  // Resend cooldown timer
+  React.useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) { clearInterval(timer); return 0 }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [resendCooldown > 0])
 
   // Auto-redirect after transition
   React.useEffect(() => {
@@ -250,20 +264,32 @@ export function SignUpPage({ onNavigate }: Props) {
   }
 
   const handleResendCode = async () => {
+    if (resendCooldown > 0) return
     setVerifyCode(["", "", "", "", "", ""])
     setError(null)
+    setResendSuccess(false)
     try {
       const { error } = await insforge.auth.resendVerificationEmail({ email: verificationEmail, redirectTo: `${window.location.origin}/signin` })
       if (error) {
         const msg = (error.message || "").toLowerCase()
         if (msg.includes("too many") || msg.includes("rate") || msg.includes("block")) {
           setError(fr ? "Trop de demandes. Veuillez reessayer demain." : "Too many requests. Please try again tomorrow.")
+        } else {
+          setError(error.message || (fr ? "Erreur lors de l'envoi du code" : "Error sending code"))
         }
+        setResendCooldown(60)
+      } else {
+        setResendSuccess(true)
+        setResendCooldown(60)
+        setTimeout(() => setResendSuccess(false), 5000)
       }
     } catch (err: any) {
       if (err?.blocked) {
         setError(fr ? "Trop de demandes. Session bloquee." : "Too many requests. Session blocked.")
+      } else {
+        setError(err?.message || (fr ? "Erreur lors de l'envoi du code" : "Error sending code"))
       }
+      setResendCooldown(60)
     }
   }
 
@@ -572,8 +598,20 @@ export function SignUpPage({ onNavigate }: Props) {
             </Button>
 
             <div className="flex flex-col gap-2">
-              <Button variant="ghost" onClick={handleResendCode} className="w-full text-accent">
-                {fr ? "Renvoyer le code" : "Resend code"}
+              {resendSuccess && (
+                <p className="text-center text-xs text-green-600 dark:text-green-400">
+                  {fr ? "Code renvoye avec succes !" : "Code resent successfully!"}
+                </p>
+              )}
+              <Button
+                variant="ghost"
+                onClick={handleResendCode}
+                disabled={resendCooldown > 0}
+                className="w-full text-accent"
+              >
+                {resendCooldown > 0
+                  ? `${fr ? "Renvoyer dans" : "Resend in"} ${resendCooldown}s`
+                  : (fr ? "Renvoyer le code" : "Resend code")}
               </Button>
               <Button variant="ghost" onClick={() => { setStep(1); setVerifyCode(["", "", "", "", "", ""]); setEmailVerificationSent(false); setError(null) }} className="w-full">
                 <ArrowLeft className="mr-2 size-4" />
