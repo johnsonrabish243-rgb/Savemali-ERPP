@@ -98,7 +98,7 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
     fetchAvatar()
   }, [fetchAvatar])
 
-  // Upload avatar — always uses direct REST API upload (avoids presigned URL issues)
+  // Upload avatar — uses direct REST API upload, then constructs public URL via SDK
   const upload = React.useCallback(async (file: File): Promise<boolean> => {
     if (!userId || !workspaceId) return false
     const error = validateFile(file)
@@ -118,15 +118,13 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
 
       setProgress(60)
 
-      // Direct upload via REST API — bypasses SDK presigned URL strategy
+      // Direct upload via REST API
       const formData = new FormData()
       formData.append("file", compressed, `${userId}.jpg`)
       const baseUrl = import.meta.env.VITE_INSFORGE_URL
-      const anonKey = import.meta.env.VITE_INSFORGE_ANON_KEY
       const accessToken = getAccessToken()
       const headers: Record<string, string> = {}
       if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`
-      else if (anonKey) headers["Authorization"] = `Bearer ${anonKey}`
 
       setProgress(70)
       const directRes = await fetch(`${baseUrl}/api/storage/buckets/${BUCKET}/objects/${encodeURIComponent(path)}`, {
@@ -139,18 +137,23 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
         const errBody = await directRes.text().catch(() => "")
         throw new Error(`Upload failed (${directRes.status}): ${errBody}`)
       }
-      const directData = await directRes.json().catch(() => ({}))
-      const publicUrl = directData?.url ?? `${baseUrl}/api/storage/buckets/${BUCKET}/objects/${path}`
 
       setProgress(90)
 
-      // Update workspace_members
+      // Construct the correct public URL using SDK helper
+      const { data: urlData } = insforge.storage.from(BUCKET).getPublicUrl(path)
+      const publicUrl = urlData?.publicUrl ?? `${baseUrl}/api/storage/buckets/${BUCKET}/objects/${path}`
+
+      // Update workspace_members — throw on error so user sees it
       const { error: dbErr } = await insforge.database
         .from("workspace_members")
         .update({ avatar_url: publicUrl })
         .eq("workspace_id", workspaceId)
         .eq("user_id", userId)
-      if (dbErr) throw dbErr
+      if (dbErr) {
+        console.error("[Avatar] Failed to save avatar_url to DB:", dbErr)
+        throw new Error(`Avatar saved to storage but failed to update profile: ${dbErr.message}`)
+      }
 
       setUrl(publicUrl)
       setProgress(100)
