@@ -10,7 +10,7 @@ function getClient() {
 
 export const insforge = getClient()
 
-export type WorkspaceType = "pharmacy" | "commerce" | "education" | "gestion"
+export type WorkspaceType = "pharmacy" | "commerce" | "education" | "gestion" | "hr"
 
 export interface Workspace {
   id: string

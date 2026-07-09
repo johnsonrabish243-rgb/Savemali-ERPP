@@ -3,7 +3,7 @@ import {
   Mail, Lock, Eye, EyeOff, AlertCircle, Building2,
   Check, ChevronRight, ChevronLeft, Loader2,
   FlaskConical, ShoppingCart, BookOpen, BarChart3, ArrowLeft,
-  RefreshCw, Copy, CheckCheck, Wand2
+  RefreshCw, Copy, CheckCheck, Wand2, Users
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,6 +29,7 @@ const workspaceTypeIcons: Record<WorkspaceType, React.ReactNode> = {
   commerce: <ShoppingCart className="size-5" />,
   education: <BookOpen className="size-5" />,
   gestion: <BarChart3 className="size-5" />,
+  hr: <Users className="size-5" />,
 }
 
 export function SignUpPage({ onNavigate }: Props) {
@@ -168,6 +169,7 @@ export function SignUpPage({ onNavigate }: Props) {
     { key: "commerce", label: t.auth.workspaceTypes.commerce },
     { key: "education", label: t.auth.workspaceTypes.education },
     { key: "gestion", label: t.auth.workspaceTypes.gestion },
+    { key: "hr", label: t.auth.workspaceTypes.hr },
   ]
 
   const handleStep1 = (e: React.FormEvent) => {

@@ -40,6 +40,7 @@ const MODULE_COLORS: Record<string, string> = {
   commerce: "text-warning bg-warning/10 border-warning/30",
   education: "text-brand bg-brand/10 border-brand/30",
   gestion: "text-purple bg-purple/10 border-purple/30",
+  hr: "text-sky-600 bg-sky-500/10 border-sky-500/30",
   system: "text-muted-foreground bg-muted border-border",
 }
 
@@ -48,6 +49,7 @@ const MODULE_ICONS: Record<string, React.ReactNode> = {
   commerce: <ShoppingCart className="size-3.5" />,
   education: <BookOpen className="size-3.5" />,
   gestion: <BarChart3 className="size-3.5" />,
+  hr: <User className="size-3.5" />,
   system: <User className="size-3.5" />,
 }
 
@@ -262,6 +264,7 @@ export function ReportsPage({ onNavigate }: Props) {
             {moduleFilter === "commerce" && "Commerce"}
             {moduleFilter === "education" && (fr ? "Éducation" : "Education")}
             {moduleFilter === "gestion" && "Gestion"}
+            {moduleFilter === "hr" && (fr ? "Ressources Humaines" : "Human Resources")}
           </span>
           <select value={actorFilter} onChange={(e) => setActorFilter(e.target.value)} className="rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
             <option value="all">{fr ? "Tous les membres" : "All members"}</option>

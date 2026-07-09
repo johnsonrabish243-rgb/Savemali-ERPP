@@ -18,6 +18,7 @@ const EducationPage = React.lazy(() => import("@/pages/EducationPage").then(m =>
 const PharmacyPage = React.lazy(() => import("@/pages/PharmacyPage").then(m => ({ default: m.PharmacyPage })))
 const CommercePage = React.lazy(() => import("@/pages/CommercePage").then(m => ({ default: m.CommercePage })))
 const GestionPage = React.lazy(() => import("@/pages/GestionPage").then(m => ({ default: m.GestionPage })))
+const HRPage = React.lazy(() => import("@/pages/HRPage").then(m => ({ default: m.HRPage })))
 const DashboardPage = React.lazy(() => import("@/pages/DashboardPage").then(m => ({ default: m.DashboardPage })))
 const WorkspaceMembersPage = React.lazy(() => import("@/pages/WorkspaceMembersPage").then(m => ({ default: m.WorkspaceMembersPage })))
 const ReportsPage = React.lazy(() => import("@/pages/ReportsPage").then(m => ({ default: m.ReportsPage })))
@@ -30,6 +31,7 @@ const EducationLandingPage = React.lazy(() => import("@/pages/EducationLandingPa
 const PharmacyLandingPage = React.lazy(() => import("@/pages/PharmacyLandingPage").then(m => ({ default: m.PharmacyLandingPage })))
 const CommerceLandingPage = React.lazy(() => import("@/pages/CommerceLandingPage").then(m => ({ default: m.CommerceLandingPage })))
 const GestionLandingPage = React.lazy(() => import("@/pages/GestionLandingPage").then(m => ({ default: m.GestionLandingPage })))
+const HRLandingPage = React.lazy(() => import("@/pages/HRLandingPage").then(m => ({ default: m.HRLandingPage })))
 const AboutPage = React.lazy(() => import("@/pages/AboutPage").then(m => ({ default: m.AboutPage })))
 const ContactPage = React.lazy(() => import("@/pages/ContactPage").then(m => ({ default: m.ContactPage })))
 const SettingsPage = React.lazy(() => import("@/pages/SettingsPage").then(m => ({ default: m.SettingsPage })))
@@ -42,10 +44,10 @@ const ResetPasswordPage = React.lazy(() => import("@/pages/ResetPasswordPage").t
 const SavemaliWidget = React.lazy(() => import("@/components/SavemaliWidget").then(m => ({ default: m.SavemaliWidget })))
 
 export type Page =
-  | "home" | "education" | "pharmacy" | "commerce" | "gestion"
+  | "home" | "education" | "pharmacy" | "commerce" | "gestion" | "hr"
   | "dashboard" | "signin" | "signup" | "members" | "reports"
   | "privacy" | "terms" | "restricted" | "settings"
-  | "landing-education" | "landing-pharmacy" | "landing-commerce" | "landing-gestion"
+  | "landing-education" | "landing-pharmacy" | "landing-commerce" | "landing-gestion" | "landing-hr"
   | "about" | "contact" | "security" | "habits" | "access-denied" | "reset-password"
 
 const NO_NAV_PAGES: Page[] = ["dashboard", "signin", "signup", "members", "reports", "restricted", "settings", "security", "habits", "access-denied", "reset-password"]
@@ -55,6 +57,7 @@ const WS_PAGE_MAP: Record<string, Page> = {
   pharmacy: "pharmacy",
   commerce: "commerce",
   gestion: "gestion",
+  hr: "hr",
 }
 
 function AppContent() {
@@ -163,7 +166,7 @@ function AppContent() {
   // Email verification: handled on SignInPage only (single verification point)
 
   // If auth resolved but no user and page requires auth, redirect to home (prevents white screen)
-  const PUBLIC_PAGES: Page[] = ["home", "signin", "signup", "about", "contact", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion"]
+  const PUBLIC_PAGES: Page[] = ["home", "signin", "signup", "about", "contact", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion", "landing-hr"]
   if (!loading && !user && !PUBLIC_PAGES.includes(page)) {
     setPage("home")
     return null
@@ -227,6 +230,7 @@ function AppContent() {
         {page === "pharmacy" && <PharmacyProvider><PharmacyPage onNavigate={handleNavigate} /></PharmacyProvider>}
         {page === "commerce" && <CommercePage onNavigate={handleNavigate} />}
         {page === "gestion" && <GestionPage onNavigate={handleNavigate} />}
+        {page === "hr" && <HRPage onNavigate={handleNavigate} />}
         {page === "dashboard" && <DashboardPage onNavigate={handleNavigate} />}
         {page === "members" && <WorkspaceMembersPage onNavigate={handleNavigate} />}
         {page === "reports" && <ReportsPage onNavigate={handleNavigate} />}
@@ -239,6 +243,7 @@ function AppContent() {
         {page === "landing-pharmacy" && <PharmacyLandingPage onNavigate={handleNavigate} />}
         {page === "landing-commerce" && <CommerceLandingPage onNavigate={handleNavigate} />}
         {page === "landing-gestion" && <GestionLandingPage onNavigate={handleNavigate} />}
+        {page === "landing-hr" && <HRLandingPage onNavigate={handleNavigate} />}
         {page === "about" && <AboutPage onNavigate={handleNavigate} />}
         {page === "contact" && <ContactPage onNavigate={handleNavigate} />}
         {page === "settings" && <SettingsPage onNavigate={handleNavigate} />}

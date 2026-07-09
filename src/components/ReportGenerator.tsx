@@ -14,6 +14,7 @@ import {
   buildPharmacyReport,
   buildCommerceReport,
   buildGestionReport,
+  buildHRReport,
   type ModuleType,
   type ReportData,
 } from "@/lib/report-generator"
@@ -65,6 +66,7 @@ const MODULE_LABELS: Record<string, { fr: string; en: string }> = {
   pharmacy: { fr: "Pharmacie", en: "Pharmacy" },
   commerce: { fr: "Commerce", en: "Commerce" },
   gestion: { fr: "Gestion", en: "Management" },
+  hr: { fr: "Ressources Humaines", en: "Human Resources" },
 }
 
 export function ReportGenerator({ moduleType, workspace, data, isAdmin = false }: ReportGeneratorProps) {
@@ -160,6 +162,14 @@ export function ReportGenerator({ moduleType, workspace, data, isAdmin = false }
         return { ...buildGestionReport(workspace, {
           employees: data.employees ?? [],
           accounting: data.accounting ?? [],
+          members,
+        }, fr), ...base }
+      case "hr":
+        return { ...buildHRReport(workspace, {
+          employees: data.employees ?? [],
+          departments: data.departments ?? [],
+          contracts: data.contracts ?? [],
+          leaves: data.leaves ?? [],
           members,
         }, fr), ...base }
       default:

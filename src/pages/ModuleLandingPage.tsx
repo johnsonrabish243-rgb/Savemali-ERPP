@@ -1,12 +1,12 @@
 import * as React from "react"
 import { gsap } from "gsap"
-import { BookOpen, FlaskConical, ShoppingCart, BarChart3, CheckCircle2, ArrowRight, ChevronDown } from "lucide-react"
+import { BookOpen, FlaskConical, ShoppingCart, BarChart3, Users, CheckCircle2, ArrowRight, ChevronDown } from "lucide-react"
 import { Logo } from "@/components/Logo"
 import { useLanguage } from "@/lib/i18n"
 import type { Page } from "@/App"
 
 interface Props {
-  moduleKey: "education" | "pharmacy" | "commerce" | "gestion"
+  moduleKey: "education" | "pharmacy" | "commerce" | "gestion" | "hr"
   onNavigate: (page: Page) => void
 }
 
@@ -15,6 +15,7 @@ const MODULE_CONFIG = {
   pharmacy: { icon: FlaskConical, gradientClasses: "from-[#10B981] to-[#14B8A6]", iconBg: "bg-[#ECFDF5]", iconText: "text-[#059669]", color: "emerald" },
   commerce: { icon: ShoppingCart, gradientClasses: "from-[#F59E0B] to-[#F97316]", iconBg: "bg-[#FFFBEB]", iconText: "text-[#D97706]", color: "amber" },
   gestion: { icon: BarChart3, gradientClasses: "from-[#8B5CF6] to-[#A855F7]", iconBg: "bg-[#F5F3FF]", iconText: "text-[#7C3AED]", color: "violet" },
+  hr: { icon: Users, gradientClasses: "from-[#0284C7] to-[#0EA5E9]", iconBg: "bg-[#F0F9FF]", iconText: "text-[#0284C7]", color: "sky" },
 } as const
 
 const MODULE_BENEFITS: Record<string, Record<string, { label: string; desc: string }[]>> = {
@@ -39,6 +40,11 @@ const MODULE_BENEFITS: Record<string, Record<string, { label: string; desc: stri
       { label: "RH simplifiée", desc: "Paie, contrats et congés gérés depuis une interface unique." },
       { label: "Conformité", desc: "Comptabilité aux normes OHADA, exportations fiscales prêtes." },
     ],
+    hr: [
+      { label: "Gestion centralisée", desc: "Toutes les informations de vos employés au même endroit." },
+      { label: "Automatisation", desc: "Congés, présences et évaluations gérés automatiquement." },
+      { label: "Rapports détaillés", desc: "Analysez vos effectifs, rotations et coûts salariaux." },
+    ],
   },
   en: {
     education: [
@@ -60,6 +66,11 @@ const MODULE_BENEFITS: Record<string, Record<string, { label: string; desc: stri
       { label: "Global vision", desc: "Consolidated dashboards for your entire business." },
       { label: "Simplified HR", desc: "Payroll, contracts and leave managed from one interface." },
       { label: "Compliance", desc: "OHADA-standard accounting, tax-ready exports." },
+    ],
+    hr: [
+      { label: "Centralized management", desc: "All employee information in one place." },
+      { label: "Automation", desc: "Leave, attendance and evaluations managed automatically." },
+      { label: "Detailed reports", desc: "Analyze your workforce, turnover and salary costs." },
     ],
   },
 }
@@ -86,6 +97,11 @@ const MODULE_FAQ: Record<string, Record<string, { q: string; a: string }[]>> = {
       { q: "Puis-je générer des rapports personnalisés ?", a: "Oui, un créateur de rapports vous permet de personnaliser chaque indicateur." },
       { q: "Combien d'employés puis-je gérer ?", a: "Aucune limite. Le module RH gère efficacement des centaines d'employés." },
     ],
+    hr: [
+      { q: "Puis-je gérer différents types de contrats ?", a: "Oui, CDI, CDD, stage et freelance sont supportés avec gestion automatique des échéances." },
+      { q: "Le module gère-t-il les congés ?", a: "Oui, demandes en ligne, validation hiérarchique et suivi des soldes de congés." },
+      { q: "Puis-je suivre les formations ?", a: "Oui, planification, suivi des participants et historique des formations." },
+    ],
   },
   en: {
     education: [
@@ -107,6 +123,11 @@ const MODULE_FAQ: Record<string, Record<string, { q: string; a: string }[]>> = {
       { q: "Is the module OHADA compliant?", a: "Yes, accounting follows the OHADA chart of accounts with tax-ready exports." },
       { q: "Can I generate custom reports?", a: "Yes, a report builder lets you customize every indicator." },
       { q: "How many employees can I manage?", a: "No limit. The HR module efficiently handles hundreds of employees." },
+    ],
+    hr: [
+      { q: "Can I manage different contract types?", a: "Yes, permanent, fixed-term, internship and freelance are supported with automatic deadline management." },
+      { q: "Does the module handle leave?", a: "Yes, online requests, hierarchical approval and leave balance tracking." },
+      { q: "Can I track training?", a: "Yes, planning, participant tracking and training history." },
     ],
   },
 }

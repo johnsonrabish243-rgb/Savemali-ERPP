@@ -20,7 +20,7 @@ export interface LogPayload {
   actorEmail: string
   actorName: string
   actionType: string
-  module: "pharmacy" | "commerce" | "education" | "gestion" | "system"
+  module: "pharmacy" | "commerce" | "education" | "gestion" | "hr" | "system"
   description: string
   amountUsd?: number | null
   referenceId?: string | null

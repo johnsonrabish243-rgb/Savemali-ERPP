@@ -5,7 +5,7 @@ import { saveAs } from "file-saver"
 import * as XLSX from "xlsx"
 import { formatCurrency } from "@/lib/currency"
 
-export type ModuleType = "education" | "pharmacy" | "commerce" | "gestion"
+export type ModuleType = "education" | "pharmacy" | "commerce" | "gestion" | "hr"
 
 interface ReportSection {
   title: string
@@ -28,6 +28,7 @@ export const MODULE_LABELS: Record<ModuleType, { fr: string; en: string; color: 
   pharmacy: { fr: "Pharmacie", en: "Pharmacy", color: "#059669" },
   commerce: { fr: "Commerce", en: "Commerce", color: "#ea580c" },
   gestion: { fr: "Gestion", en: "Management", color: "#7c3aed" },
+  hr: { fr: "Ressources Humaines", en: "Human Resources", color: "#0284c7" },
 }
 
 function formatDate(date: Date, fr: boolean): string {
@@ -1112,6 +1113,95 @@ export function buildGestionReport(
           e.description ?? "—",
           `${formatCurrency(Number(e.amount_usd ?? 0))}`,
         ]),
+      },
+    ],
+  }
+}
+
+export function buildHRReport(
+  workspace: Ws,
+  data: {
+    employees: any[]
+    departments: any[]
+    contracts: any[]
+    leaves: any[]
+    members: any[]
+  },
+  fr: boolean
+): ReportData {
+  const activeEmployees = data.employees.filter((e) => e.status === "active")
+  const pendingLeaves = data.leaves.filter((l) => l.status === "pending")
+  const activeContracts = data.contracts.filter((c) => c.status === "active")
+
+  return {
+    workspaceName: workspace.name,
+    workspaceSettings: buildWorkspaceSettings(workspace, fr),
+    moduleType: "hr",
+    stats: [
+      { label: "Employés", labelEn: "Employees", value: data.employees.length },
+      { label: "Actifs", labelEn: "Active", value: activeEmployees.length },
+      { label: "Départements", labelEn: "Departments", value: data.departments.length },
+      { label: "Contrats actifs", labelEn: "Active contracts", value: activeContracts.length },
+      { label: "Congés en attente", labelEn: "Pending leaves", value: pendingLeaves.length },
+      { label: "Membres équipe", labelEn: "Team members", value: data.members.length },
+    ],
+    sections: [
+      buildTeamSection(data.members, fr),
+      {
+        title: "Employés",
+        titleEn: "Employees",
+        headers: ["Nom", "Poste", "Départ.", "Salaire", "Tél.", "Statut"],
+        rows: data.employees.map((e) => [
+          `${e.first_name} ${e.last_name}`,
+          e.position ?? "—",
+          data.departments.find((d) => d.id === e.department_id)?.name ?? "—",
+          e.salary ? formatCurrency(Number(e.salary)) : "—",
+          e.phone ?? "—",
+          e.status ?? "—",
+        ]),
+      },
+      {
+        title: "Départements",
+        titleEn: "Departments",
+        headers: ["Nom", "Description", "Responsable"],
+        rows: data.departments.map((d) => [
+          d.name,
+          d.description ?? "—",
+          data.employees.find((e) => e.id === d.manager_id)
+            ? `${data.employees.find((e) => e.id === d.manager_id)?.first_name} ${data.employees.find((e) => e.id === d.manager_id)?.last_name}`
+            : "—",
+        ]),
+      },
+      {
+        title: "Contrats",
+        titleEn: "Contracts",
+        headers: ["Employé", "Type", "Début", "Fin", "Salaire", "Statut"],
+        rows: data.contracts.map((c) => {
+          const emp = data.employees.find((e) => e.id === c.employee_id)
+          return [
+            emp ? `${emp.first_name} ${emp.last_name}` : "—",
+            c.contract_type ?? "—",
+            c.start_date ?? "—",
+            c.end_date ?? "—",
+            c.salary ? formatCurrency(Number(c.salary)) : "—",
+            c.status ?? "—",
+          ]
+        }),
+      },
+      {
+        title: "Demandes de congé",
+        titleEn: "Leave Requests",
+        headers: ["Employé", "Type", "Début", "Fin", "Statut"],
+        rows: data.leaves.map((l) => {
+          const emp = data.employees.find((e) => e.id === l.employee_id)
+          return [
+            emp ? `${emp.first_name} ${emp.last_name}` : "—",
+            l.leave_type ?? "—",
+            l.start_date ?? "—",
+            l.end_date ?? "—",
+            l.status ?? "—",
+          ]
+        }),
       },
     ],
   }

@@ -23,6 +23,7 @@ const WS_MODULE: Record<string, React.LazyExoticComponent<any>> = {
   pharmacy: PharmacyPage,
   commerce: CommercePage,
   gestion: GestionPage,
+  hr: HRPage,
 }
 
 interface Props {

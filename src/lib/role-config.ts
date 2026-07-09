@@ -423,6 +423,66 @@ export const ROLE_CONFIGS: Record<WorkspaceType, Record<RoleKey, RoleConfig>> = 
     stock_manager: { label: { fr: "Stock", en: "Stock" }, accent: "text-orange-600", accentBg: "bg-orange-500", menu: [] },
     seller: { label: { fr: "Vendeur", en: "Seller" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [] },
   },
+  hr: {
+    admin: {
+      label: { fr: "Administrateur RH", en: "HR Administrator" },
+      accent: "text-sky-600 dark:text-sky-400",
+      accentBg: "bg-sky-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "hr_employees", label: { fr: "Employés", en: "Employees" }, icon: Users },
+        { id: "hr_recruitment", label: { fr: "Recrutement", en: "Recruitment" }, icon: UserPlus },
+        { id: "hr_attendance", label: { fr: "Présence", en: "Attendance" }, icon: ClipboardCheck },
+        { id: "hr_leave", label: { fr: "Congés", en: "Leave" }, icon: Plane },
+        { id: "hr_contracts", label: { fr: "Contrats", en: "Contracts" }, icon: FileCheck },
+        { id: "hr_departments", label: { fr: "Départements", en: "Departments" }, icon: Building2 },
+        { id: "hr_training", label: { fr: "Formations", en: "Training" }, icon: Training },
+        { id: "hr_evaluations", label: { fr: "Évaluations", en: "Evaluations" }, icon: Star },
+        { id: "hr_reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+        { id: "members", label: { fr: "Équipe", en: "Team" }, icon: UserCheck },
+        { id: "security", label: { fr: "Sécurité", en: "Security" }, icon: Shield },
+        { id: "settings", label: { fr: "Paramètres", en: "Settings" }, icon: Settings },
+      ],
+    },
+    manager: {
+      label: { fr: "Manager RH", en: "HR Manager" },
+      accent: "text-sky-600 dark:text-sky-400",
+      accentBg: "bg-sky-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "hr_employees", label: { fr: "Employés", en: "Employees" }, icon: Users },
+        { id: "hr_leave", label: { fr: "Congés", en: "Leave" }, icon: Plane },
+        { id: "hr_attendance", label: { fr: "Présence", en: "Attendance" }, icon: ClipboardCheck },
+        { id: "hr_evaluations", label: { fr: "Évaluations", en: "Evaluations" }, icon: Star },
+        { id: "hr_reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+      ],
+    },
+    employee: {
+      label: { fr: "Employé", en: "Employee" },
+      accent: "text-sky-600 dark:text-sky-400",
+      accentBg: "bg-sky-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "hr_leave", label: { fr: "Mes congés", en: "My Leave" }, icon: Plane },
+        { id: "hr_documents", label: { fr: "Mes documents", en: "My Documents" }, icon: FileCheck },
+      ],
+    },
+    accountant: { label: { fr: "Comptable", en: "Accountant" }, accent: "text-sky-600", accentBg: "bg-sky-500", menu: [] },
+    cashier: { label: { fr: "Caissier", en: "Cashier" }, accent: "text-sky-600", accentBg: "bg-sky-500", menu: [] },
+    supervisor: { label: { fr: "Superviseur", en: "Supervisor" }, accent: "text-sky-600", accentBg: "bg-sky-500", menu: [] },
+    viewer: {
+      label: { fr: "Observateur", en: "Observer" },
+      accent: "text-slate-600",
+      accentBg: "bg-slate-500",
+      menu: [
+        { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+      ],
+    },
+    pharmacist: { label: { fr: "Pharmacien", en: "Pharmacist" }, accent: "text-sky-600", accentBg: "bg-sky-500", menu: [] },
+    teacher: { label: { fr: "Enseignant", en: "Teacher" }, accent: "text-sky-600", accentBg: "bg-sky-500", menu: [] },
+    stock_manager: { label: { fr: "Stock", en: "Stock" }, accent: "text-sky-600", accentBg: "bg-sky-500", menu: [] },
+    seller: { label: { fr: "Vendeur", en: "Seller" }, accent: "text-sky-600", accentBg: "bg-sky-500", menu: [] },
+  },
 }
 
 export const WORKSPACE_TYPE_LABELS: Record<WorkspaceType, { fr: string; en: string }> = {
@@ -430,4 +490,5 @@ export const WORKSPACE_TYPE_LABELS: Record<WorkspaceType, { fr: string; en: stri
   pharmacy: { fr: "Pharmacie", en: "Pharmacy" },
   commerce: { fr: "Commerce", en: "Commerce" },
   gestion: { fr: "Gestion", en: "Management" },
+  hr: { fr: "Ressources Humaines", en: "Human Resources" },
 }

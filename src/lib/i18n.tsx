@@ -43,6 +43,11 @@ export const translations = {
         description: "Outils avancés de gestion d'entreprise : comptabilité, RH, reporting et analyses stratégiques.",
         features: ["Comptabilité", "Gestion RH", "Paie", "Reporting", "Analyses", "Multi-sites"],
       },
+      hr: {
+        title: "Ressources Humaines",
+        description: "Module complet de gestion RH : employés, contrats, congés, formations, évaluations et rapports.",
+        features: ["Gestion employés", "Contrats & paie", "Congés & absences", "Présences", "Formations", "Évaluations"],
+      },
     },
     stats: {
       schools: "Établissements",
@@ -96,6 +101,7 @@ export const translations = {
         commerce: "Commerce / Boutique",
         education: "Établissement scolaire",
         gestion: "Gestion d'entreprise",
+        hr: "Gestion des Ressources Humaines",
       },
       selectMedicines: "Sélectionnez vos médicaments",
       selectMedicinesDesc: "Choisissez dans le catalogue préchargé les médicaments de votre pharmacie. Vous pourrez en ajouter/supprimer à tout moment.",
@@ -300,6 +306,11 @@ export const translations = {
         description: "Advanced business management tools: accounting, HR, reporting and strategic analytics.",
         features: ["Accounting", "HR management", "Payroll", "Reporting", "Analytics", "Multi-site"],
       },
+      hr: {
+        title: "Human Resources",
+        description: "Complete HR management module: employees, contracts, leave, training, evaluations and reports.",
+        features: ["Employee management", "Contracts & payroll", "Leave & absences", "Attendance", "Training", "Evaluations"],
+      },
     },
     stats: {
       schools: "Schools",
@@ -353,6 +364,7 @@ export const translations = {
         commerce: "Commerce / Shop",
         education: "School / Education",
         gestion: "Business Management",
+        hr: "Human Resources",
       },
       selectMedicines: "Select your medicines",
       selectMedicinesDesc: "Choose from the pre-loaded catalog the medicines for your pharmacy. You can add/remove them at any time.",

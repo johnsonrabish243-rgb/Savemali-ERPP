@@ -1,16 +1,16 @@
 import * as React from "react"
 import {
-  BookOpen, FlaskConical, ShoppingCart, BarChart3,
+  BookOpen, FlaskConical, ShoppingCart, BarChart3, Users,
   CheckCircle2, Wifi, Shield, Headphones, Languages, Banknote,
-  ArrowRight, ChevronDown, Star, Users, Building2, TrendingUp, Zap, ChevronRight, ChevronLeft
+  ArrowRight, ChevronDown, Star, Building2, TrendingUp, Zap, ChevronRight, ChevronLeft
 } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/Logo"
 
-type Page = "home" | "education" | "pharmacy" | "commerce" | "gestion" | "dashboard" | "signin" | "signup" | "privacy" | "terms" | "restricted"
+type Page = "home" | "education" | "pharmacy" | "commerce" | "gestion" | "hr" | "dashboard" | "signin" | "signup" | "privacy" | "terms" | "restricted"
 
-const moduleIcons = [BookOpen, FlaskConical, ShoppingCart, BarChart3]
+const moduleIcons = [BookOpen, FlaskConical, ShoppingCart, BarChart3, Users]
 
 const moduleConfig = [
   {
@@ -49,6 +49,15 @@ const moduleConfig = [
     pageKey: "gestion" as Page,
     accent: "#8B5CF6",
   },
+  {
+    gradientClasses: "from-[#0284C7] to-[#0369A1]",
+    iconBg: "bg-[#F0F9FF]",
+    iconText: "text-[#0284C7]",
+    border: "border-[#BAE6FD] hover:border-[#0284C7]",
+    titleText: "text-[#0284C7]",
+    pageKey: "hr" as Page,
+    accent: "#0284C7",
+  },
 ]
 
 interface HomePageProps {
@@ -65,6 +74,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
     { data: t.modules.pharmacy, config: moduleConfig[1] },
     { data: t.modules.commerce, config: moduleConfig[2] },
     { data: t.modules.gestion, config: moduleConfig[3] },
+    { data: t.modules.hr, config: moduleConfig[4] },
   ]
 
   const [stats, setStats] = React.useState([

@@ -103,6 +103,12 @@ export function RoleDashboard() {
         queries.invoices = insforge.database.from("invoices").select("id, total_usd, status").eq("workspace_id", wid)
       }
 
+      if (wsType === "hr") {
+        queries.hrEmployees = insforge.database.from("hr_employees").select("id, status, department_id", { count: "exact", head: false }).eq("workspace_id", wid)
+        queries.hrDepartments = insforge.database.from("hr_departments").select("id", { count: "exact", head: true }).eq("workspace_id", wid)
+        queries.hrLeaves = insforge.database.from("hr_leave_requests").select("id, status").eq("workspace_id", wid).eq("status", "pending")
+      }
+
       const results: Record<string, any> = {}
       const entries = Object.entries(queries)
       const values = await Promise.all(entries.map(([, q]) => q))
@@ -156,6 +162,11 @@ export function RoleDashboard() {
       const employees = results.employees?.data ?? []
       const accountingEntries = results.entries?.data ?? []
 
+      // HR stats
+      const hrEmployees = results.hrEmployees?.data ?? []
+      const hrDepartmentsCount = results.hrDepartments?.count ?? 0
+      const hrPendingLeaves = results.hrLeaves?.data ?? []
+
       const financeByDay: Record<string, { income: number; expenses: number }> = {}
       for (let i = days - 1; i >= 0; i--) { const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000); financeByDay[d.toISOString().slice(0, 10)] = { income: 0, expenses: 0 } }
       accountingEntries.forEach((e: any) => { const day = e.entry_date?.slice(0, 10); if (day && day in financeByDay) { if (e.type === "income") financeByDay[day].income += Number(e.amount_usd ?? 0); else financeByDay[day].expenses += Number(e.amount_usd ?? 0) } })
@@ -192,6 +203,10 @@ export function RoleDashboard() {
         presentToday,
         absentToday,
         lateToday,
+        totalEmployees: hrEmployees.length,
+        departments: hrDepartmentsCount,
+        pendingLeaves: hrPendingLeaves.length,
+        totalUsers: members.length,
       })
 
       setChartData({
@@ -228,6 +243,7 @@ export function RoleDashboard() {
       commerce: { fr: "Commerce", en: "Commerce" },
       education: { fr: "Éducation", en: "Education" },
       gestion: { fr: "Gestion", en: "Management" },
+      hr: { fr: "Ressources Humaines", en: "Human Resources" },
     }
     if (!wsType) return []
     return [{ value: wsType, label: labels[wsType] }]
@@ -418,6 +434,8 @@ export function RoleDashboard() {
       {ws === "gestion" && r === "cashier" && <GestionCashierDashboard stats={stats} chartData={chartData} fr={fr} />}
       {ws === "gestion" && r === "accountant" && <GestionAccountantDashboard stats={stats} chartData={chartData} fr={fr} />}
       {ws === "gestion" && r === "viewer" && <ObserverDashboard stats={stats} fr={fr} ws={ws} />}
+      {ws === "hr" && (r === "admin" || r === "manager") && <HRAdminDashboard stats={stats} fr={fr} activity={activity} />}
+      {ws === "hr" && r === "viewer" && <ObserverDashboard stats={stats} fr={fr} ws={ws} />}
 
       {/* Report Preview Modal */}
       {previewReport && (
@@ -733,6 +751,11 @@ function ObserverDashboard({ stats, fr, ws }: { stats: Record<string, number>; f
     { label: fr ? "Ventes" : "Sales", value: stats.salesCount ?? 0, icon: <ShoppingCart className="size-5 text-white" />, color: "bg-emerald-500" },
     { label: fr ? "Clients" : "Customers", value: stats.customers ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-blue-500" },
     { label: fr ? "Revenus" : "Revenue", value: formatCurrency(stats.totalRevenue ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
+  ] : ws === "hr" ? [
+    { label: fr ? "Employés" : "Employees", value: stats.totalEmployees ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-sky-500" },
+    { label: fr ? "Départements" : "Departments", value: stats.departments ?? 0, icon: <Building2 className="size-5 text-white" />, color: "bg-blue-500" },
+    { label: fr ? "Congés en attente" : "Pending leaves", value: stats.pendingLeaves ?? 0, icon: <Plane className="size-5 text-white" />, color: "bg-amber-500" },
+    { label: fr ? "Membres" : "Members", value: stats.totalUsers ?? 0, icon: <UserCheck className="size-5 text-white" />, color: "bg-emerald-500" },
   ] : [
     { label: fr ? "Employés" : "Employees", value: stats.totalEmployees ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-purple-500" },
     { label: fr ? "Départements" : "Departements", value: stats.departments ?? 0, icon: <Building2 className="size-5 text-white" />, color: "bg-blue-500" },
@@ -763,9 +786,43 @@ function EducationCashierDashboard({ stats, chartData, fr }: { stats: Record<str
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
-      <SectionCard title={fr ? "Frais des 30 derniers jours" : "Last 30 days fees"}>
-        <MiniBarChart data={chartData.fees ?? []} color="#10b981" height={180} />
+      <SectionCard title={fr ? "Revenus vs Dépenses" : "Revenue vs Expenses"}>
+        <FinanceChart data={chartData.finance ?? []} height={180} />
       </SectionCard>
+    </>
+  )
+}
+
+function HRAdminDashboard({ stats, fr, activity }: { stats: Record<string, number>; fr: boolean; activity?: any[] }) {
+  const s: StatCard[] = [
+    { label: fr ? "Employés" : "Employees", value: stats.totalEmployees ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-sky-500" },
+    { label: fr ? "Départements" : "Departments", value: stats.departments ?? 0, icon: <Building2 className="size-5 text-white" />, color: "bg-blue-500" },
+    { label: fr ? "Congés en attente" : "Pending leaves", value: stats.pendingLeaves ?? 0, icon: <Plane className="size-5 text-white" />, color: "bg-amber-500" },
+    { label: fr ? "Membres" : "Members", value: stats.totalUsers ?? 0, icon: <UserCheck className="size-5 text-white" />, color: "bg-emerald-500" },
+  ]
+
+  return (
+    <>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <SectionCard title={fr ? "Activité récente" : "Recent activity"}>
+          <RecentList items={activityToItems(activity ?? [], fr)} />
+        </SectionCard>
+        <SectionCard title={fr ? "Résumé RH" : "HR Summary"}>
+          <div className="space-y-4">
+            {[
+              { label: fr ? "Employés actifs" : "Active employees", value: stats.totalEmployees ?? 0, color: "text-sky-600" },
+              { label: fr ? "Départements" : "Departments", value: stats.departments ?? 0, color: "text-blue-600" },
+              { label: fr ? "Congés en attente" : "Pending leaves", value: stats.pendingLeaves ?? 0, color: "text-amber-600" },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{item.label}</span>
+                <span className={cn("text-sm font-semibold", item.color)}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      </div>
     </>
   )
 }

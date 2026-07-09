@@ -10,7 +10,7 @@ import {
   GraduationCap, Users, BookOpen, ClipboardCheck, DollarSign, TrendingUp,
   AlertTriangle, Pill, Package, ShoppingCart, Clock, FileText, Receipt,
   BarChart3, Briefcase, ArrowUpRight, ArrowDownRight, PlayCircle, Eye,
-  Truck, CheckCircle, XCircle, Send
+  Truck, CheckCircle, XCircle, Send, Building2, UserCheck
 } from "lucide-react"
 import type { WorkspaceType } from "@/lib/supabase"
 import type { RoleKey } from "@/hooks/use-role"
@@ -106,6 +106,16 @@ const viewerConfig = (workspaceType: WorkspaceType, data: Record<string, number>
     quickActions: [],
     recentItems: [{ title: fr ? "Mode lecture seule" : "Read-only mode", subtitle: fr ? "Vous consultez les données" : "You are viewing data", time: "—", badge: fr ? "Observateur" : "Observer", badgeColor: "bg-slate-100 text-slate-700" }],
   }
+  if (workspaceType === "hr") return {
+    stats: [
+      { label: fr ? "Employés" : "Employees", value: data.employees ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-sky-500" },
+      { label: fr ? "Départements" : "Departments", value: data.departments ?? 0, icon: <Building2 className="size-5 text-white" />, color: "bg-blue-500" },
+      { label: fr ? "Congés en attente" : "Pending leaves", value: data.pendingLeaves ?? 0, icon: <Clock className="size-5 text-white" />, color: "bg-amber-500" },
+      { label: fr ? "Membres" : "Members", value: data.members ?? 0, icon: <UserCheck className="size-5 text-white" />, color: "bg-emerald-500" },
+    ],
+    quickActions: [],
+    recentItems: [{ title: fr ? "Mode lecture seule" : "Read-only mode", subtitle: fr ? "Vous consultez les données" : "You are viewing data", time: "—", badge: fr ? "Observateur" : "Observer", badgeColor: "bg-slate-100 text-slate-700" }],
+  }
   // gestion
   return {
     stats: [
@@ -175,6 +185,7 @@ export function EmployeeDashboard({ workspaceType, role, onNavigateToTab }: Empl
       else if (workspaceType === "pharmacy") setConfig(await loadPharm(wid, today, weekAgo))
       else if (workspaceType === "commerce") setConfig(await loadComm(wid, today, weekAgo))
       else if (workspaceType === "gestion") setConfig(await loadGest(wid, today, weekAgo))
+      else if (workspaceType === "hr") setConfig(await loadHR(wid))
     } catch { setConfig({ stats: [], quickActions: [], recentItems: [] }) }
   }
 
@@ -422,6 +433,18 @@ export function EmployeeDashboard({ workspaceType, role, onNavigateToTab }: Empl
       recentItems: toRecent(recentE, fr, "entry"),
     }
     return viewerConfig(workspaceType, { employees: emps, revenue: income, expenses, invoices: invs }, fr)
+  }
+
+  async function loadHR(wid: string): Promise<DashboardConfig> {
+    const [empR, deptR, leaveR] = await Promise.all([
+      insforge.database.from("hr_employees").select("id, status", { count: "exact", head: false }).eq("workspace_id", wid),
+      insforge.database.from("hr_departments").select("id", { count: "exact", head: true }).eq("workspace_id", wid),
+      insforge.database.from("hr_leave_requests").select("id, status").eq("workspace_id", wid).eq("status", "pending"),
+    ])
+    const totalEmp = (empR.data ?? []).length
+    const deptCount = deptR.count ?? 0
+    const pendingLeaves = (leaveR.data ?? []).length
+    return viewerConfig(workspaceType, { employees: totalEmp, departments: deptCount, pendingLeaves, members: 0 }, fr)
   }
 
   if (role === "admin") return <RoleDashboard />
