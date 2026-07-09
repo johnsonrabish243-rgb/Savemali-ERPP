@@ -485,9 +485,12 @@ export function HomePage({ onNavigate }: HomePageProps) {
           </div>
           <div className="my-10 h-px bg-[#e5e7eb] dark:bg-white/5" />
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <p className="text-xs text-[#9ca3af] dark:text-[#71717a]">
-              &copy; {new Date().getFullYear()} SaveMali {fr ? "SARL" : "LLC"} — {fr ? "Développé par John Mocket" : "Developed by John Mocket"}
-            </p>
+            <div className="flex items-center gap-2">
+              <Logo imgClassName="h-4" />
+              <p className="text-xs text-[#9ca3af] dark:text-[#71717a]">
+                &copy; {new Date().getFullYear()} {fr ? "SARL" : "LLC"} — {fr ? "Développé par John Mocket" : "Developed by John Mocket"}
+              </p>
+            </div>
             <div className="flex items-center gap-4">
               <span className="text-xs text-[#9ca3af] dark:text-[#71717a]">{fr ? "Besoin d'aide ?" : "Need help?"}</span>
               <a href="https://wa.me/243857599332" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-sm border border-[#e5e7eb] bg-[#f9fafb] px-4 py-2 text-xs font-medium text-[#6b7280] hover:text-[#111827] hover:bg-[#f3f4f6] transition-all no-underline dark:border-white/10 dark:bg-white/5 dark:text-[#a1a1aa] dark:hover:text-white dark:hover:bg-white/10">

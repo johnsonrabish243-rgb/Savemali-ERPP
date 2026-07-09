@@ -1,4 +1,5 @@
 import { useLanguage } from "@/lib/i18n"
+import { Logo } from "@/components/Logo"
 import { ShieldOff, Clock } from "lucide-react"
 
 interface Props {
@@ -37,8 +38,9 @@ export function LockoutPage({ until, remainingHours }: Props) {
             {fr ? `Réactivation à ${unlockTime}` : `Reactivation at ${unlockTime}`}
           </p>
         </div>
-        <div className="mt-4 text-[10px] text-muted-foreground/50">
-          © {new Date().getFullYear()} SaveMali. {fr ? "Tous droits réservés." : "All rights reserved."}
+        <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-muted-foreground/50">
+          <Logo imgClassName="h-3 opacity-50" />
+          <span>© {new Date().getFullYear()} {fr ? "Tous droits réservés." : "All rights reserved."}</span>
         </div>
       </div>
     </div>

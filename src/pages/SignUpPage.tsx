@@ -685,7 +685,10 @@ export function SignUpPage({ onNavigate }: Props) {
         </Card>
       )}
 
-      <p className="mt-4 text-xs text-muted-foreground text-center">&copy; {new Date().getFullYear()} SaveMali SARL &mdash; Développé par John Mocket</p>
+      <div className="mt-4 flex items-center justify-center gap-2">
+        <Logo imgClassName="h-4" />
+        <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} SARL &mdash; Développé par John Mocket</p>
+      </div>
     </div>
   )
 }

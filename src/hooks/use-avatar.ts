@@ -1,6 +1,19 @@
 import * as React from "react"
 import { insforge } from "@/lib/supabase"
 
+// Access the SDK's internal HTTP client auth token
+function getAccessToken(): string {
+  try {
+    // @ts-ignore - access internal http userToken
+    const http = (insforge as any).http
+    if (http?.userToken) return http.userToken
+    // @ts-ignore - access internal tokenManager
+    const tm = (insforge as any).tokenManager
+    if (tm?.accessToken) return tm.accessToken
+  } catch {}
+  return ""
+}
+
 const BUCKET = "avatars"
 const MAX_SIZE = 2 * 1024 * 1024 // 2MB
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp"]
@@ -104,11 +117,37 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
       try { await insforge.storage.from(BUCKET).remove(path) } catch {}
 
       setProgress(70)
-      const { data, error: uploadErr } = await insforge.storage.from(BUCKET).upload(path, compressed)
-      if (uploadErr) throw uploadErr
+
+      // Try SDK upload first; if presigned fails, fall back to direct upload via API
+      let uploadResult = await insforge.storage.from(BUCKET).upload(path, compressed)
+      if (uploadResult.error) {
+        console.warn("[Avatar] SDK upload failed, trying direct upload:", uploadResult.error)
+        // Direct upload via REST API with auth header
+        const formData = new FormData()
+        formData.append("file", compressed, `${userId}.jpg`)
+        const baseUrl = import.meta.env.VITE_INSFORGE_URL
+        const anonKey = import.meta.env.VITE_INSFORGE_ANON_KEY
+        const accessToken = getAccessToken()
+        const headers: Record<string, string> = {}
+        if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`
+        else if (anonKey) headers["Authorization"] = `Bearer ${anonKey}`
+        const directRes = await fetch(`${baseUrl}/api/storage/buckets/${BUCKET}/objects/${encodeURIComponent(path)}`, {
+          method: "PUT",
+          body: formData,
+          headers,
+          credentials: "include"
+        })
+        if (!directRes.ok) {
+          const errBody = await directRes.text().catch(() => "")
+          throw new Error(`Direct upload failed (${directRes.status}): ${errBody}`)
+        }
+        const directData = await directRes.json().catch(() => ({}))
+        uploadResult = { data: { url: directData?.url ?? "", key: directData?.key ?? path }, error: null }
+      }
+      if (uploadResult.error) throw uploadResult.error
 
       setProgress(90)
-      const publicUrl = data?.url ?? ""
+      const publicUrl = (uploadResult.data as any)?.url ?? ""
 
       // Update workspace_members
       const { error: dbErr } = await insforge.database

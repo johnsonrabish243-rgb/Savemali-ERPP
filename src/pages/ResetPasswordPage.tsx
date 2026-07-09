@@ -324,9 +324,10 @@ export function ResetPasswordPage({ onNavigate }: Props) {
         </CardContent>
       </Card>
 
-      <p className="mt-4 text-xs text-muted-foreground text-center">
-        © {new Date().getFullYear()} SaveMali. Développé par John Mocket
-      </p>
+      <div className="mt-4 flex items-center justify-center gap-2">
+        <Logo imgClassName="h-4" />
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} SARL &mdash; Développé par John Mocket</p>
+      </div>
     </div>
   )
 }
