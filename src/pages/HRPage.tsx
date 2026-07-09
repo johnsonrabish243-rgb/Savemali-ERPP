@@ -917,7 +917,7 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg sm:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{item ? fr ? "Modifier" : "Edit" : fr ? "Ajouter" : "Add"} {titles[type] || type}</DialogTitle>
         </DialogHeader>
@@ -926,11 +926,11 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
           <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
         )}
 
-        <div className="space-y-4 py-2">
+        <div className="space-y-4 py-2 px-1">
           {/* EMPLOYEE FORM */}
           {type === "employee" && (
             <>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div><Label>{fr ? "Prénom" : "First name"}</Label><Input value={form.first_name || ""} onChange={e => set("first_name", e.target.value)} /></div>
                 <div><Label>{fr ? "Nom" : "Last name"}</Label><Input value={form.last_name || ""} onChange={e => set("last_name", e.target.value)} /></div>
               </div>
@@ -946,7 +946,7 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div><Label>{fr ? "Date d'embauche" : "Hire date"}</Label><Input type="date" value={form.hire_date || ""} onChange={e => set("hire_date", e.target.value)} /></div>
                 <div><Label>{fr ? "Salaire" : "Salary"}</Label><Input type="number" value={form.salary || ""} onChange={e => set("salary", Number(e.target.value))} /></div>
               </div>
@@ -995,7 +995,7 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div><Label>{fr ? "Date de début" : "Start date"}</Label><Input type="date" value={form.start_date || ""} onChange={e => set("start_date", e.target.value)} /></div>
                 <div><Label>{fr ? "Date de fin" : "End date"}</Label><Input type="date" value={form.end_date || ""} onChange={e => set("end_date", e.target.value)} /></div>
               </div>
@@ -1029,7 +1029,7 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div><Label>{fr ? "Date de début" : "Start date"}</Label><Input type="date" value={form.start_date || ""} onChange={e => set("start_date", e.target.value)} /></div>
                 <div><Label>{fr ? "Date de fin" : "End date"}</Label><Input type="date" value={form.end_date || ""} onChange={e => set("end_date", e.target.value)} /></div>
               </div>
@@ -1079,7 +1079,7 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
               <div><Label>{fr ? "Titre" : "Title"}</Label><Input value={form.title || ""} onChange={e => set("title", e.target.value)} /></div>
               <div><Label>{fr ? "Description" : "Description"}</Label><Textarea value={form.description || ""} onChange={e => set("description", e.target.value)} /></div>
               <div><Label>{fr ? "Formateur" : "Instructor"}</Label><Input value={form.instructor || ""} onChange={e => set("instructor", e.target.value)} /></div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div><Label>{fr ? "Date de début" : "Start date"}</Label><Input type="date" value={form.start_date || ""} onChange={e => set("start_date", e.target.value)} /></div>
                 <div><Label>{fr ? "Date de fin" : "End date"}</Label><Input type="date" value={form.end_date || ""} onChange={e => set("end_date", e.target.value)} /></div>
               </div>
@@ -1099,7 +1099,7 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div><Label>{fr ? "Date de début" : "Start date"}</Label><Input type="date" value={form.start_date || ""} onChange={e => set("start_date", e.target.value)} /></div>
                 <div><Label>{fr ? "Date de fin" : "End date"}</Label><Input type="date" value={form.end_date || ""} onChange={e => set("end_date", e.target.value)} /></div>
               </div>
