@@ -138,35 +138,17 @@ export function SignInPage({ onNavigate }: Props) {
       sessionStorage.setItem("savemali_just_logged_in", "1")
       await logAudit({ action: "login", actor_email: email, metadata: { success: true } })
       await checkAuth()
-      // Check if email is verified before navigating away
-      const { data: freshUser } = await insforge.auth.getCurrentUser()
-      const verified = !!(freshUser as any)?.email_confirmed_at
-      if (!verified) {
-        setEmailNotVerified(true)
-        setShowVerifyCode(true)
-        setVerifyCode(["", "", "", "", "", ""])
-        setError(fr ? "Email non vérifié. Entrez le code reçu par email." : "Email not verified. Enter the code sent to your email.")
-        setLoading(false)
-        return
-      }
       onNavigate("dashboard")
     } catch (err: any) {
-      if (err?.statusCode === 403 || (err?.message || "").toLowerCase().includes("email not confirmed") || (err?.message || "").toLowerCase().includes("email not verified")) {
-        setEmailNotVerified(true)
-        setShowVerifyCode(true)
-        setVerifyCode(["", "", "", "", "", ""])
-        setError(fr ? "Email non vérifié. Entrez le code reçu par email." : "Email not verified. Enter the code sent to your email.")
+      const result = trackLoginAttempt(false)
+      if (result.blocked) {
+        setError(fr ? "Trop de tentatives. Réessayez dans 15 min." : "Too many attempts. Retry in 15 min.")
       } else {
-        const result = trackLoginAttempt(false)
-        if (result.blocked) {
-          setError(fr ? "Trop de tentatives. Réessayez dans 15 min." : "Too many attempts. Retry in 15 min.")
-        } else {
-          const remaining = result.remainingAttempts
-          const hint = remaining > 0
-            ? (fr ? ` (${remaining} tentative${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""})` : ` (${remaining} attempt${remaining > 1 ? "s" : ""} remaining)`)
-            : ""
-          setError((err.message || t.auth.error) + hint)
-        }
+        const remaining = result.remainingAttempts
+        const hint = remaining > 0
+          ? (fr ? ` (${remaining} tentative${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""})` : ` (${remaining} attempt${remaining > 1 ? "s" : ""} remaining)`)
+          : ""
+        setError((err.message || t.auth.error) + hint)
       }
     } finally {
       setLoading(false)

@@ -109,7 +109,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           try {
             await http.refreshAndSaveSession()
           } catch {
-            localStorage.removeItem("savemali_refresh_token")
+            // Don't remove the token — it may still be valid on next attempt
+            // The SDK's auto-refresh in request() will handle retries
           }
         }
 
@@ -128,7 +129,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (cancelled) return
 
         if (error || !data?.user) {
-          localStorage.removeItem("savemali_refresh_token")
+          // Only clear token if we had none to restore — otherwise keep for retry
+          if (!savedRefreshToken) {
+            localStorage.removeItem("savemali_refresh_token")
+          }
           setState({ user: null, workspace: null, loading: false, isOwner: false })
           return
         }
