@@ -47,13 +47,6 @@ export function DashboardPage({ onNavigate }: Props) {
     }
   }, [workspace])
 
-  // Redirect home if no workspace found after auth loaded
-  React.useEffect(() => {
-    if (!authLoading && !role.loading && !workspace) {
-      onNavigate("home")
-    }
-  }, [authLoading, role.loading, workspace, onNavigate])
-
   // Periodic suspension check — every 30s, verify member is still active
   React.useEffect(() => {
     if (!workspace || isOwner || !user) return

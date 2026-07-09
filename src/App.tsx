@@ -40,6 +40,7 @@ const HabitTrackerPage = React.lazy(() => import("@/pages/HabitTrackerPage").the
 const LockoutPage = React.lazy(() => import("@/pages/LockoutPage").then(m => ({ default: m.LockoutPage })))
 const AccessDeniedPage = React.lazy(() => import("@/pages/AccessDeniedPage").then(m => ({ default: m.AccessDeniedPage })))
 const ResetPasswordPage = React.lazy(() => import("@/pages/ResetPasswordPage").then(m => ({ default: m.ResetPasswordPage })))
+const CreateWorkspacePage = React.lazy(() => import("@/pages/CreateWorkspacePage").then(m => ({ default: m.CreateWorkspacePage })))
 
 const SavemaliWidget = React.lazy(() => import("@/components/SavemaliWidget").then(m => ({ default: m.SavemaliWidget })))
 
@@ -48,9 +49,9 @@ export type Page =
   | "dashboard" | "signin" | "signup" | "members" | "reports"
   | "privacy" | "terms" | "restricted" | "settings"
   | "landing-education" | "landing-pharmacy" | "landing-commerce" | "landing-gestion" | "landing-hr"
-  | "about" | "contact" | "security" | "habits" | "access-denied" | "reset-password"
+  | "about" | "contact" | "security" | "habits" | "access-denied" | "reset-password" | "create-workspace"
 
-const NO_NAV_PAGES: Page[] = ["dashboard", "signin", "signup", "members", "reports", "restricted", "settings", "security", "habits", "access-denied", "reset-password"]
+const NO_NAV_PAGES: Page[] = ["dashboard", "signin", "signup", "members", "reports", "restricted", "settings", "security", "habits", "access-denied", "reset-password", "create-workspace"]
 
 const WS_PAGE_MAP: Record<string, Page> = {
   education: "education",
@@ -131,10 +132,9 @@ function AppContent() {
     if (!loading && !user && !["home", "signin", "signup", "about", "contact", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion", "landing-hr"].includes(page)) {
       setPage("home")
     }
-    // If user is logged in but has no workspace, redirect workspace pages to dashboard
-    const WORKSPACE_PAGES: Page[] = ["pharmacy", "commerce", "education", "gestion", "hr"]
-    if (!loading && user && !workspace && WORKSPACE_PAGES.includes(page)) {
-      setPage("dashboard")
+    // If user is logged in but has no workspace, redirect to workspace creation
+    if (!loading && user && !workspace && page !== "create-workspace" && page !== "signup" && page !== "signin") {
+      setPage("create-workspace")
     }
   }, [user, loading, page, workspace])
 
@@ -256,6 +256,7 @@ function AppContent() {
         {page === "habits" && <HabitTrackerPage onNavigate={handleNavigate} />}
         {page === "access-denied" && <AccessDeniedPage onNavigate={handleNavigate} />}
         {page === "reset-password" && <ResetPasswordPage onNavigate={handleNavigate} />}
+        {page === "create-workspace" && <CreateWorkspacePage onNavigate={handleNavigate} />}
       </React.Suspense>
       <React.Suspense fallback={null}>
         <SavemaliWidget />
