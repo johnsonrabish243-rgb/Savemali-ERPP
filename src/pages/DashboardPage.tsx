@@ -16,6 +16,7 @@ const EducationPage = React.lazy(() => import("@/pages/EducationPage").then(m =>
 const PharmacyPage = React.lazy(() => import("@/pages/PharmacyPage").then(m => ({ default: m.PharmacyPage })))
 const CommercePage = React.lazy(() => import("@/pages/CommercePage").then(m => ({ default: m.CommercePage })))
 const GestionPage = React.lazy(() => import("@/pages/GestionPage").then(m => ({ default: m.GestionPage })))
+const HRPage = React.lazy(() => import("@/pages/HRPage").then(m => ({ default: m.HRPage })))
 
 const WS_MODULE: Record<string, React.LazyExoticComponent<any>> = {
   education: EducationPage,
@@ -79,7 +80,8 @@ export function DashboardPage({ onNavigate }: Props) {
   }
 
   const ModulePage = workspace ? WS_MODULE[workspace.type] : null
-  const isModuleTab = activeTab !== "dashboard" && activeTab !== "reports" && ModulePage
+  const isHRTab = activeTab.startsWith("hr_")
+  const isModuleTab = activeTab !== "dashboard" && activeTab !== "reports" && !isHRTab && ModulePage
   const isReportsTab = activeTab === "reports"
 
   return (
@@ -104,6 +106,15 @@ export function DashboardPage({ onNavigate }: Props) {
             ) : (
               <ModulePage onNavigate={onNavigate} initialTab={activeTab} />
             )}
+          </React.Suspense>
+        )}
+        {isHRTab && (
+          <React.Suspense fallback={
+            <div className="flex h-64 items-center justify-center">
+              <div className="size-8 animate-spin rounded-full border-4 border-accent border-t-transparent" />
+            </div>
+          }>
+            <HRPage onNavigate={onNavigate} initialTab={activeTab} />
           </React.Suspense>
         )}
       </DashboardLayout>

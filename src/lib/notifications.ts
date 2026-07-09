@@ -132,6 +132,15 @@ const NOTIFICATION_TYPES = {
   ATTENDANCE: "attendance",
   EXPENSE: "expense",
   REPORT: "report",
+  HR_RECRUITMENT: "hr_recruitment",
+  HR_LEAVE_REQUEST: "hr_leave_request",
+  HR_CONTRACT_EXPIRY: "hr_contract_expiry",
+  HR_EVALUATION: "hr_evaluation",
+  HR_ABSENCE: "hr_absence",
+  HR_TRAINING: "hr_training",
+  HR_PROMOTION: "hr_promotion",
+  HR_BIRTHDAY: "hr_birthday",
+  HR_DOCUMENT_MISSING: "hr_document_missing",
 } as const
 
 export const NotificationType = NOTIFICATION_TYPES
@@ -339,5 +348,158 @@ export function createReportNotification(
     module,
     link: link ?? "reports",
     actor_name: actorName,
+  }
+}
+
+// ─── HR Notifications ───────────────────────────────────
+
+export function createHRRecruitmentNotification(
+  workspaceId: string,
+  actorName: string,
+  position: string,
+  action: "created" | "closed",
+  module: string,
+  link?: string
+): NotificationPayload {
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.HR_RECRUITMENT,
+    title: action === "created" ? "Nouveau recrutement" : "Recrutement fermé",
+    message: action === "created"
+      ? `${actorName} a lancé un recrutement pour : ${position}`
+      : `${actorName} a fermé le recrutement : ${position}`,
+    module,
+    link: link ?? "hr",
+    actor_name: actorName,
+  }
+}
+
+export function createHRLeaveRequestNotification(
+  workspaceId: string,
+  actorName: string,
+  leaveType: string,
+  startDate: string,
+  status: "pending" | "approved" | "rejected",
+  module: string,
+  link?: string
+): NotificationPayload {
+  const titles = { pending: "Demande de congé", approved: "Congé approuvé", rejected: "Congé refusé" }
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.HR_LEAVE_REQUEST,
+    title: titles[status],
+    message: `${actorName} — ${leaveType} du ${startDate}`,
+    module,
+    link: link ?? "hr",
+    actor_name: actorName,
+  }
+}
+
+export function createHRContractExpiryNotification(
+  workspaceId: string,
+  employeeName: string,
+  endDate: string,
+  module: string,
+  link?: string
+): NotificationPayload {
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.HR_CONTRACT_EXPIRY,
+    title: "Contrat bientôt expiré",
+    message: `Le contrat de ${employeeName} expire le ${endDate}`,
+    module,
+    link: link ?? "hr",
+  }
+}
+
+export function createHREvaluationNotification(
+  workspaceId: string,
+  actorName: string,
+  employeeName: string,
+  period: string,
+  module: string,
+  link?: string
+): NotificationPayload {
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.HR_EVALUATION,
+    title: "Évaluation planifiée",
+    message: `${actorName} a planifié une évaluation pour ${employeeName} (${period})`,
+    module,
+    link: link ?? "hr",
+    actor_name: actorName,
+  }
+}
+
+export function createHRAbsenceNotification(
+  workspaceId: string,
+  employeeName: string,
+  date: string,
+  module: string,
+  link?: string
+): NotificationPayload {
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.HR_ABSENCE,
+    title: "Absence signalée",
+    message: `${employeeName} est absent(e) le ${date}`,
+    module,
+    link: link ?? "hr",
+  }
+}
+
+export function createHRTrainingNotification(
+  workspaceId: string,
+  actorName: string,
+  trainingTitle: string,
+  action: "scheduled" | "completed" | "cancelled",
+  module: string,
+  link?: string
+): NotificationPayload {
+  const titles = { scheduled: "Formation planifiée", completed: "Formation terminée", cancelled: "Formation annulée" }
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.HR_TRAINING,
+    title: titles[action],
+    message: `${actorName} : ${trainingTitle}`,
+    module,
+    link: link ?? "hr",
+    actor_name: actorName,
+  }
+}
+
+export function createHRPromotionNotification(
+  workspaceId: string,
+  actorName: string,
+  employeeName: string,
+  newPosition: string,
+  module: string,
+  link?: string
+): NotificationPayload {
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.HR_PROMOTION,
+    title: "Promotion",
+    message: `${employeeName} promu(e) au poste de ${newPosition}`,
+    module,
+    link: link ?? "hr",
+    actor_name: actorName,
+  }
+}
+
+export function createHRBirthdayNotification(
+  workspaceId: string,
+  employeeName: string,
+  date: string,
+  module: string,
+  link?: string
+): NotificationPayload {
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.HR_BIRTHDAY,
+    title: "Anniversaire",
+    message: `Joyeux anniversaire à ${employeeName} ! (${date})`,
+    module,
+    link: link ?? "hr",
   }
 }

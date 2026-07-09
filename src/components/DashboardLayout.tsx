@@ -56,6 +56,10 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
     "inventory", "sales", "stocks", "orders", "users", "prescriptions", "accounting", "expenses",
     "clients", "factures", "produits", "ventes", "comptabilite",
     "employees", "history", "reports",
+    "hr_dashboard", "hr_employees", "hr_recruitment", "hr_attendance", "hr_leave", "hr_absences",
+    "hr_contracts", "hr_departments", "hr_orgchart", "hr_training", "hr_evaluations",
+    "hr_skills", "hr_promotions", "hr_discipline", "hr_health_safety", "hr_documents",
+    "hr_communication", "hr_reports", "hr_audit_log", "hr_settings",
   ])
 
   const handleNav = (itemId: string) => {

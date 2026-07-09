@@ -130,3 +130,49 @@ export function hasErrors(errors: Record<string, string>): boolean {
 export function isRequired(fieldName: string, rules: Record<string, FieldRules>): boolean {
   return !!rules[fieldName]?.required
 }
+
+// ─── HR Validation Rules ────────────────────────────────
+
+export const HR_EMPLOYEE_RULES: Record<string, FieldRules> = {
+  first_name: { required: true, minLength: { value: 2 } },
+  last_name: { required: true, minLength: { value: 2 } },
+  email: { required: true, email: true },
+  phone: { phone: true },
+  position: { required: true },
+  department_id: { required: true },
+  hire_date: { required: true },
+  salary: { required: true, positive: true },
+}
+
+export const HR_DEPARTMENT_RULES: Record<string, FieldRules> = {
+  name: { required: true, minLength: { value: 2 } },
+}
+
+export const HR_CONTRACT_RULES: Record<string, FieldRules> = {
+  employee_id: { required: true },
+  contract_type: { required: true },
+  start_date: { required: true },
+  salary: { required: true, positive: true },
+}
+
+export const HR_LEAVE_RULES: Record<string, FieldRules> = {
+  employee_id: { required: true },
+  leave_type: { required: true },
+  start_date: { required: true },
+  end_date: { required: true },
+}
+
+export const HR_RECRUITMENT_RULES: Record<string, FieldRules> = {
+  position: { required: true, minLength: { value: 3 } },
+}
+
+export const HR_EVALUATION_RULES: Record<string, FieldRules> = {
+  employee_id: { required: true },
+  period: { required: true },
+  score: { required: true, min: { value: 0 }, max: { value: 20 } },
+}
+
+export const HR_TRAINING_RULES: Record<string, FieldRules> = {
+  title: { required: true, minLength: { value: 3 } },
+  start_date: { required: true },
+}
