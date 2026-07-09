@@ -98,7 +98,7 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
     fetchAvatar()
   }, [fetchAvatar])
 
-  // Upload avatar
+  // Upload avatar — always uses direct REST API upload (avoids presigned URL issues)
   const upload = React.useCallback(async (file: File): Promise<boolean> => {
     if (!userId || !workspaceId) return false
     const error = validateFile(file)
@@ -109,45 +109,40 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
     try {
       setProgress(20)
       const compressed = await compressImage(file)
-      setProgress(50)
+      setProgress(40)
 
       const path = `${workspaceId}/${userId}.jpg`
 
       // Remove old file if exists
       try { await insforge.storage.from(BUCKET).remove(path) } catch {}
 
-      setProgress(70)
+      setProgress(60)
 
-      // Try SDK upload first; if presigned fails, fall back to direct upload via API
-      let uploadResult = await insforge.storage.from(BUCKET).upload(path, compressed)
-      if (uploadResult.error) {
-        console.warn("[Avatar] SDK upload failed, trying direct upload:", uploadResult.error)
-        // Direct upload via REST API with auth header
-        const formData = new FormData()
-        formData.append("file", compressed, `${userId}.jpg`)
-        const baseUrl = import.meta.env.VITE_INSFORGE_URL
-        const anonKey = import.meta.env.VITE_INSFORGE_ANON_KEY
-        const accessToken = getAccessToken()
-        const headers: Record<string, string> = {}
-        if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`
-        else if (anonKey) headers["Authorization"] = `Bearer ${anonKey}`
-        const directRes = await fetch(`${baseUrl}/api/storage/buckets/${BUCKET}/objects/${encodeURIComponent(path)}`, {
-          method: "PUT",
-          body: formData,
-          headers,
-          credentials: "include"
-        })
-        if (!directRes.ok) {
-          const errBody = await directRes.text().catch(() => "")
-          throw new Error(`Direct upload failed (${directRes.status}): ${errBody}`)
-        }
-        const directData = await directRes.json().catch(() => ({}))
-        uploadResult = { data: { url: directData?.url ?? "", key: directData?.key ?? path }, error: null }
+      // Direct upload via REST API — bypasses SDK presigned URL strategy
+      const formData = new FormData()
+      formData.append("file", compressed, `${userId}.jpg`)
+      const baseUrl = import.meta.env.VITE_INSFORGE_URL
+      const anonKey = import.meta.env.VITE_INSFORGE_ANON_KEY
+      const accessToken = getAccessToken()
+      const headers: Record<string, string> = {}
+      if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`
+      else if (anonKey) headers["Authorization"] = `Bearer ${anonKey}`
+
+      setProgress(70)
+      const directRes = await fetch(`${baseUrl}/api/storage/buckets/${BUCKET}/objects/${encodeURIComponent(path)}`, {
+        method: "PUT",
+        body: formData,
+        headers,
+        credentials: "include"
+      })
+      if (!directRes.ok) {
+        const errBody = await directRes.text().catch(() => "")
+        throw new Error(`Upload failed (${directRes.status}): ${errBody}`)
       }
-      if (uploadResult.error) throw uploadResult.error
+      const directData = await directRes.json().catch(() => ({}))
+      const publicUrl = directData?.url ?? `${baseUrl}/api/storage/buckets/${BUCKET}/objects/${path}`
 
       setProgress(90)
-      const publicUrl = (uploadResult.data as any)?.url ?? ""
 
       // Update workspace_members
       const { error: dbErr } = await insforge.database
