@@ -69,8 +69,6 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
       onNavigate("settings")
     } else if (itemId === "security") {
       onNavigate("security")
-    } else if (itemId === "habits") {
-      onNavigate("habits")
     } else if (itemId === "dashboard" || WS_MODULE_IDS.has(itemId)) {
       setActiveTab(itemId)
     } else {

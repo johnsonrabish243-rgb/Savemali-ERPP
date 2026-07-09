@@ -135,12 +135,25 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
 
   React.useEffect(() => { fetchData() }, [fetchData])
   const wsKey = workspace?.id || "default"
-  React.useEffect(() => { const s = localStorage.getItem(`savemali_edu_schedule_${wsKey}`); if (s) try { setScheduleEntries(JSON.parse(s)) } catch {} }, [wsKey])
-  React.useEffect(() => { const s = localStorage.getItem(`savemali_edu_grades_${wsKey}`); if (s) try { setGradeEntries(JSON.parse(s)) } catch {} }, [wsKey])
-  React.useEffect(() => { const s = localStorage.getItem(`savemali_edu_discipline_${wsKey}`); if (s) try { setDisciplineEntries(JSON.parse(s)) } catch {} }, [wsKey])
-  React.useEffect(() => { const s = localStorage.getItem(`savemali_edu_incidents_${wsKey}`); if (s) try { setIncidentEntries(JSON.parse(s)) } catch {} }, [wsKey])
-  React.useEffect(() => { const s = localStorage.getItem(`savemali_edu_accounting_${wsKey}`); if (s) try { setAccountingEntries(JSON.parse(s)) } catch {} }, [wsKey])
-  React.useEffect(() => { const s = localStorage.getItem(`savemali_edu_history_${wsKey}`); if (s) try { setHistoryEntries(JSON.parse(s)) } catch {} }, [wsKey])
+
+  React.useEffect(() => {
+    if (!workspace) return
+    async function loadExtra() {
+      const [schRes, grRes, disRes, incRes] = await Promise.all([
+        insforge.database.from("edu_schedule").select("*").eq("workspace_id", workspace.id).order("day"),
+        insforge.database.from("edu_grades").select("*").eq("workspace_id", workspace.id).order("created_at", { ascending: false }),
+        insforge.database.from("edu_discipline").select("*").eq("workspace_id", workspace.id).order("created_at", { ascending: false }),
+        insforge.database.from("edu_incidents").select("*").eq("workspace_id", workspace.id).order("created_at", { ascending: false }),
+      ])
+      setScheduleEntries((schRes.data as any[]) ?? [])
+      setGradeEntries((grRes.data as any[]) ?? [])
+      setDisciplineEntries((disRes.data as any[]) ?? [])
+      setIncidentEntries((incRes.data as any[]) ?? [])
+      setAccountingEntries([])
+      setHistoryEntries([])
+    }
+    loadExtra()
+  }, [workspace?.id])
 
   const activeStudents = students.filter((s) => s.status === "active")
   const activeTeachers = teachers.filter((t) => t.status === "active")
@@ -528,67 +541,90 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
     ? { lundi: "Lun", mardi: "Mar", mercredi: "Mer", jeudi: "Jeu", vendredi: "Ven", samedi: "Sam" }[d] ?? d
     : { lundi: "Mon", mardi: "Tue", mercredi: "Wed", jeudi: "Thu", vendredi: "Fri", samedi: "Sat" }[d] ?? d
 
-  const saveScheduleEntry = () => {
-    const entry = { id: editScheduleId ?? genId(), ...scheduleForm }
-    const updated = editScheduleId ? scheduleEntries.map((e) => e.id === entry.id ? entry : e) : [...scheduleEntries, entry]
-    setScheduleEntries(updated); localStorage.setItem(`savemali_edu_schedule_${wsKey}`, JSON.stringify(updated))
+  const saveScheduleEntry = async () => {
+    if (!workspace) return
+    const entry = { ...scheduleForm }
+    if (editScheduleId) {
+      await insforge.database.from("edu_schedule").update({ day: entry.day, time: entry.time, class_name: entry.class_name, subject: entry.subject, teacher: entry.teacher }).eq("id", editScheduleId)
+      setScheduleEntries((prev) => prev.map((e) => e.id === editScheduleId ? { ...e, ...entry } : e))
+    } else {
+      const { data, error } = await insforge.database.from("edu_schedule").insert([{ workspace_id: workspace.id, ...entry }]).select().single()
+      if (!error && data) setScheduleEntries((prev) => [...prev, data as any])
+    }
     setScheduleDlg(false); setEditScheduleId(null)
   }
-  const deleteScheduleEntry = (id: string) => {
+  const deleteScheduleEntry = async (id: string) => {
     if (!confirm(fr ? "Supprimer cette entrée ?" : "Delete this entry?")) return
-    const updated = scheduleEntries.filter((e) => e.id !== id)
-    setScheduleEntries(updated); localStorage.setItem(`savemali_edu_schedule_${wsKey}`, JSON.stringify(updated))
+    await insforge.database.from("edu_schedule").delete().eq("id", id)
+    setScheduleEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
-  const saveGradeEntry = () => {
+  const saveGradeEntry = async () => {
+    if (!workspace) return
     const score = safeParseFloat(gradeForm.score) || 0
-    const entry = { id: editGradeId ?? genId(), ...gradeForm, score, grade: getNormalizedGrade(score, 100), date: gradeForm.date || new Date().toISOString().slice(0, 10) }
-    const updated = editGradeId ? gradeEntries.map((e) => e.id === entry.id ? entry : e) : [...gradeEntries, entry]
-    setGradeEntries(updated); localStorage.setItem(`savemali_edu_grades_${wsKey}`, JSON.stringify(updated))
+    const entry = { ...gradeForm, score, grade: getNormalizedGrade(score, 100), date: gradeForm.date || new Date().toISOString().slice(0, 10) }
+    if (editGradeId) {
+      await insforge.database.from("edu_grades").update({ student_name: entry.student_name, class_name: entry.class_name, subject: entry.subject, score: entry.score, grade: entry.grade, date: entry.date }).eq("id", editGradeId)
+      setGradeEntries((prev) => prev.map((e) => e.id === editGradeId ? { ...e, ...entry } : e))
+    } else {
+      const { data, error } = await insforge.database.from("edu_grades").insert([{ workspace_id: workspace.id, ...entry }]).select().single()
+      if (!error && data) setGradeEntries((prev) => [...prev, data as any])
+    }
     setGradeDlg(false); setEditGradeId(null)
   }
-  const deleteGradeEntry = (id: string) => {
+  const deleteGradeEntry = async (id: string) => {
     if (!confirm(fr ? "Supprimer cette note ?" : "Delete this grade?")) return
-    const updated = gradeEntries.filter((e) => e.id !== id)
-    setGradeEntries(updated); localStorage.setItem(`savemali_edu_grades_${wsKey}`, JSON.stringify(updated))
+    await insforge.database.from("edu_grades").delete().eq("id", id)
+    setGradeEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
-  const saveDisciplineEntry = () => {
-    const entry = { id: editDisciplineId ?? genId(), ...disciplineForm, date: disciplineForm.date || new Date().toISOString().slice(0, 10) }
-    const updated = editDisciplineId ? disciplineEntries.map((e) => e.id === entry.id ? entry : e) : [...disciplineEntries, entry]
-    setDisciplineEntries(updated); localStorage.setItem(`savemali_edu_discipline_${wsKey}`, JSON.stringify(updated))
+  const saveDisciplineEntry = async () => {
+    if (!workspace) return
+    const entry = { ...disciplineForm, date: disciplineForm.date || new Date().toISOString().slice(0, 10) }
+    if (editDisciplineId) {
+      await insforge.database.from("edu_discipline").update({ student_name: entry.student_name, class_name: entry.class_name, date: entry.date, reason: entry.reason, action: entry.action, status: entry.status }).eq("id", editDisciplineId)
+      setDisciplineEntries((prev) => prev.map((e) => e.id === editDisciplineId ? { ...e, ...entry } : e))
+    } else {
+      const { data, error } = await insforge.database.from("edu_discipline").insert([{ workspace_id: workspace.id, ...entry }]).select().single()
+      if (!error && data) setDisciplineEntries((prev) => [...prev, data as any])
+    }
     setDisciplineDlg(false); setEditDisciplineId(null)
   }
-  const deleteDisciplineEntry = (id: string) => {
+  const deleteDisciplineEntry = async (id: string) => {
     if (!confirm(fr ? "Supprimer ce cas ?" : "Delete this case?")) return
-    const updated = disciplineEntries.filter((e) => e.id !== id)
-    setDisciplineEntries(updated); localStorage.setItem(`savemali_edu_discipline_${wsKey}`, JSON.stringify(updated))
+    await insforge.database.from("edu_discipline").delete().eq("id", id)
+    setDisciplineEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
-  const saveIncidentEntry = () => {
-    const entry = { id: editIncidentId ?? genId(), ...incidentForm, date: incidentForm.date || new Date().toISOString().slice(0, 10) }
-    const updated = editIncidentId ? incidentEntries.map((e) => e.id === entry.id ? entry : e) : [...incidentEntries, entry]
-    setIncidentEntries(updated); localStorage.setItem(`savemali_edu_incidents_${wsKey}`, JSON.stringify(updated))
+  const saveIncidentEntry = async () => {
+    if (!workspace) return
+    const entry = { ...incidentForm, date: incidentForm.date || new Date().toISOString().slice(0, 10) }
+    if (editIncidentId) {
+      await insforge.database.from("edu_incidents").update({ date: entry.date, type: entry.type, description: entry.description, reported_by: entry.reported_by, status: entry.status }).eq("id", editIncidentId)
+      setIncidentEntries((prev) => prev.map((e) => e.id === editIncidentId ? { ...e, ...entry } : e))
+    } else {
+      const { data, error } = await insforge.database.from("edu_incidents").insert([{ workspace_id: workspace.id, ...entry }]).select().single()
+      if (!error && data) setIncidentEntries((prev) => [...prev, data as any])
+    }
     setIncidentDlg(false); setEditIncidentId(null)
   }
-  const deleteIncidentEntry = (id: string) => {
+  const deleteIncidentEntry = async (id: string) => {
     if (!confirm(fr ? "Supprimer cet incident ?" : "Delete this incident?")) return
-    const updated = incidentEntries.filter((e) => e.id !== id)
-    setIncidentEntries(updated); localStorage.setItem(`savemali_edu_incidents_${wsKey}`, JSON.stringify(updated))
+    await insforge.database.from("edu_incidents").delete().eq("id", id)
+    setIncidentEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
   const saveAccountingEntry = () => {
     if (!accountingForm.description || !accountingForm.amount) return
     const entry = { id: editAccountingId ?? genId(), ...accountingForm, amount: safeParseFloat(accountingForm.amount, 0, true) || 0, date: accountingForm.date || new Date().toISOString().slice(0, 10) }
     const updated = editAccountingId ? accountingEntries.map((e) => e.id === entry.id ? entry : e) : [...accountingEntries, entry]
-    setAccountingEntries(updated); localStorage.setItem(`savemali_edu_accounting_${wsKey}`, JSON.stringify(updated))
+    setAccountingEntries(updated)
     setAccountingDlg(false); setEditAccountingId(null)
     setAccountingForm({ date: "", description: "", type: "income", category: "", amount: "" })
   }
   const deleteAccountingEntry = (id: string) => {
     if (!confirm(fr ? "Supprimer cette entrée ?" : "Delete this entry?")) return
-    const updated = accountingEntries.filter((e) => e.id !== id)
-    setAccountingEntries(updated); localStorage.setItem(`savemali_edu_accounting_${wsKey}`, JSON.stringify(updated))
+    setAccountingEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
   const filteredGrades = gradeFilterClass ? gradeEntries.filter((e) => e.class_name === gradeFilterClass) : gradeEntries

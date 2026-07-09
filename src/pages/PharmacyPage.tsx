@@ -260,22 +260,19 @@ export function PharmacyPage({ onNavigate, initialTab }: Props) {
   }, [workspace?.id, sales.length, selectedPharmacy?.id])
 
   React.useEffect(() => {
-    try {
-      const p = localStorage.getItem("savemali_pharm_prescriptions")
-      if (p) setPrescriptions(JSON.parse(p))
-      const a = localStorage.getItem("savemali_pharm_accounting")
-      if (a) setAccountingEntries(JSON.parse(a))
-      const e = localStorage.getItem("savemali_pharm_expenses")
-      if (e) setExpenses(JSON.parse(e))
-      const h = localStorage.getItem("savemali_pharm_history")
-      if (h) setHistoryEntries(JSON.parse(h))
-    } catch {}
-  }, [])
-
-  React.useEffect(() => { try { localStorage.setItem("savemali_pharm_prescriptions", JSON.stringify(prescriptions)) } catch {} }, [prescriptions])
-  React.useEffect(() => { try { localStorage.setItem("savemali_pharm_accounting", JSON.stringify(accountingEntries)) } catch {} }, [accountingEntries])
-  React.useEffect(() => { try { localStorage.setItem("savemali_pharm_expenses", JSON.stringify(expenses)) } catch {} }, [expenses])
-  React.useEffect(() => { try { localStorage.setItem("savemali_pharm_history", JSON.stringify(historyEntries)) } catch {} }, [historyEntries])
+    if (!workspace) return
+    async function loadExtra() {
+      const [prescRes, expRes] = await Promise.all([
+        insforge.database.from("pharmacy_prescriptions").select("*").eq("workspace_id", workspace.id).order("created_at", { ascending: false }),
+        insforge.database.from("pharmacy_expenses").select("*").eq("workspace_id", workspace.id).order("created_at", { ascending: false }),
+      ])
+      setPrescriptions((prescRes.data as any[]) ?? [])
+      setExpenses((expRes.data as any[]) ?? [])
+      setAccountingEntries([])
+      setHistoryEntries([])
+    }
+    loadExtra()
+  }, [workspace?.id])
 
   const fetchSaleItems = async (saleId: string) => {
     if (saleItemsMap[saleId]) return
@@ -1244,9 +1241,10 @@ export function PharmacyPage({ onNavigate, initialTab }: Props) {
                   </Select>
                 </div>
                 <div className="flex justify-end">
-                  <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90 gap-1" onClick={() => {
-                    if (!prescForm.patient_name || !prescForm.medicine) return
-                    setPrescriptions((prev) => [...prev, { ...prescForm, id: crypto.randomUUID() }])
+                  <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90 gap-1" onClick={async () => {
+                    if (!prescForm.patient_name || !prescForm.medicine || !workspace) return
+                    const { data, error } = await insforge.database.from("pharmacy_prescriptions").insert([{ workspace_id: workspace.id, patient_name: prescForm.patient_name, medicine: prescForm.medicine, dosage: prescForm.dosage, doctor: prescForm.doctor, date: prescForm.date, status: prescForm.status }]).select().single()
+                    if (!error && data) setPrescriptions((prev) => [data as any, ...prev])
                     setPrescForm({ patient_name: "", medicine: "", dosage: "", doctor: "", date: new Date().toISOString().split("T")[0], status: "active" })
                   }}>
                     <Plus className="size-3.5" />{fr ? "Ajouter" : "Add"}
@@ -1281,7 +1279,7 @@ export function PharmacyPage({ onNavigate, initialTab }: Props) {
                         <td className="px-4 py-3">
                           <div className="flex gap-1.5 justify-end">
                             {(role === "admin" || role === "pharmacist" || role === "stock_manager") && (
-                              <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => setPrescriptions((prev) => prev.filter((x) => x.id !== p.id))}><Trash2 className="size-3.5" /></Button>
+                              <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={async () => { await insforge.database.from("pharmacy_prescriptions").delete().eq("id", p.id); setPrescriptions((prev) => prev.filter((x) => x.id !== p.id)) }}><Trash2 className="size-3.5" /></Button>
                             )}
                           </div>
                         </td>
@@ -1389,10 +1387,11 @@ export function PharmacyPage({ onNavigate, initialTab }: Props) {
                 <Input value={expForm.description} onChange={(e) => setExpForm((p) => ({ ...p, description: e.target.value }))} placeholder={fr ? "Description" : "Description"} className="h-9 text-sm" />
               </div>
               <div className="flex justify-end">
-                <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90 gap-1" onClick={() => {
+                <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90 gap-1" onClick={async () => {
                   const amt = safeParseFloat(expForm.amount)
-                  if (amt <= 0 || !expForm.category) return
-                  setExpenses((prev) => [...prev, { ...expForm, id: crypto.randomUUID(), amount: amt }])
+                  if (amt <= 0 || !expForm.category || !workspace) return
+                  const { data, error } = await insforge.database.from("pharmacy_expenses").insert([{ workspace_id: workspace.id, date: expForm.date, category: expForm.category, amount: amt, description: expForm.description }]).select().single()
+                  if (!error && data) setExpenses((prev) => [data as any, ...prev])
                   setExpForm({ date: new Date().toISOString().split("T")[0], category: "", amount: "", description: "" })
                 }}>
                   <Plus className="size-3.5" />{fr ? "Ajouter" : "Add"}
@@ -1429,7 +1428,7 @@ export function PharmacyPage({ onNavigate, initialTab }: Props) {
                           <td className="px-4 py-3 text-muted-foreground">{e.description || "—"}</td>
                           <td className="px-4 py-3">
                             {(role === "admin" || role === "pharmacist" || role === "stock_manager") && (
-                              <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => setExpenses((prev) => prev.filter((x) => x.id !== e.id))}><Trash2 className="size-3.5" /></Button>
+                              <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={async () => { await insforge.database.from("pharmacy_expenses").delete().eq("id", e.id); setExpenses((prev) => prev.filter((x) => x.id !== e.id)) }}><Trash2 className="size-3.5" /></Button>
                             )}
                           </td>
                         </tr>

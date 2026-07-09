@@ -113,21 +113,14 @@ export function GestionPage({ onNavigate, initialTab }: Props) {
   React.useEffect(() => { fetchData() }, [fetchData])
 
   React.useEffect(() => {
-    const wsKey = workspace?.id || "default"
-    const saved = localStorage.getItem(`savemali_gestion_payments_${wsKey}`)
-    if (saved) { try { setPayments(JSON.parse(saved)) } catch {} }
-    const savedHistory = localStorage.getItem(`savemali_gestion_history_${wsKey}`)
-    if (savedHistory) { try { setHistoryEntries(JSON.parse(savedHistory)) } catch {} }
+    if (!workspace) return
+    async function loadPayments() {
+      const { data } = await insforge.database.from("gestion_payments").select("*").eq("workspace_id", workspace.id).order("created_at", { ascending: false })
+      setPayments((data as any[]) ?? [])
+      setHistoryEntries([])
+    }
+    loadPayments()
   }, [workspace?.id])
-
-  React.useEffect(() => {
-    const wsKey = workspace?.id || "default"
-    localStorage.setItem(`savemali_gestion_payments_${wsKey}`, JSON.stringify(payments))
-  }, [payments, workspace?.id])
-  React.useEffect(() => {
-    const wsKey = workspace?.id || "default"
-    localStorage.setItem(`savemali_gestion_history_${wsKey}`, JSON.stringify(historyEntries))
-  }, [historyEntries, workspace?.id])
 
   const now = new Date()
   const currMonth = now.getMonth()
@@ -335,38 +328,40 @@ export function GestionPage({ onNavigate, initialTab }: Props) {
     fetchData()
   }
 
-  const addPayment = () => {
+  const addPayment = async () => {
     if (!paymentForm.employee_id || !paymentForm.amount) return
     const emp = employees.find((e) => e.id === paymentForm.employee_id)
-    if (!emp) return
+    if (!emp || !workspace) return
     const amount = parseFloat(paymentForm.amount) || 0
-    const newPayment: Payment = {
-      id: crypto.randomUUID(),
+    const empName = `${emp.first_name} ${emp.last_name}`
+    const { data, error } = await insforge.database.from("gestion_payments").insert([{
+      workspace_id: workspace.id,
       date: paymentForm.date,
       employee_id: paymentForm.employee_id,
-      employee_name: `${emp.first_name} ${emp.last_name}`,
+      employee_name: empName,
       amount,
       description: paymentForm.description,
-      status: paymentForm.status as "paid" | "pending" | "cancelled",
-    }
-    setPayments((prev) => [...prev, newPayment])
+      status: paymentForm.status,
+    }]).select().single()
+    if (!error && data) setPayments((prev) => [data as any, ...prev])
     if (workspace) {
-      publishNotification(createPaymentNotification(workspace.id, `${emp.first_name} ${emp.last_name}`, amount, "FC", "gestion", "payments"))
+      publishNotification(createPaymentNotification(workspace.id, empName, amount, "FC", "gestion", "payments"))
     }
     setPaymentForm({ employee_id: "", date: new Date().toISOString().slice(0, 10), amount: "", description: "", status: "paid" })
     setHistoryEntries((prev) => [{
       id: crypto.randomUUID(),
       date: new Date().toISOString(),
       type: "payment",
-      description: `${fr ? "Paiement ajouté" : "Payment added"}: ${newPayment.employee_name} — ${formatCurrency(amount)}`,
+      description: `${fr ? "Paiement ajouté" : "Payment added"}: ${empName} — ${formatCurrency(amount)}`,
       amount,
     }, ...prev])
   }
 
-  const deletePayment = (id: string) => {
+  const deletePayment = async (id: string) => {
     if (!confirm(fr ? "Supprimer ce paiement ?" : "Delete this payment?")) return
     const payment = payments.find((p) => p.id === id)
     if (!payment) return
+    await insforge.database.from("gestion_payments").delete().eq("id", id)
     setPayments((prev) => prev.filter((p) => p.id !== id))
     setHistoryEntries((prev) => [{
       id: crypto.randomUUID(),
