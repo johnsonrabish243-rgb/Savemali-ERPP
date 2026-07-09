@@ -30,14 +30,14 @@ export function Logo({ className, size = "md", imgClassName }: LogoProps) {
           }}
         />
         <div
-          className="hidden h-full w-full items-center justify-center bg-gradient-to-br from-brand to-accent rounded-xl"
+          className="hidden h-full w-full items-center justify-center bg-[#f97316] rounded-xl"
           aria-hidden
         >
           <span className={cn("font-extrabold text-white", s.text)}>S</span>
         </div>
       </div>
       <span className={cn("font-extrabold tracking-tight text-foreground", s.full)}>
-        Save<span className="text-accent">Mali</span>
+        Save<span className="text-[#f97316]">Mali</span>
       </span>
     </div>
   )

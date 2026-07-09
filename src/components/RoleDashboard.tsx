@@ -436,16 +436,16 @@ export function RoleDashboard() {
 
 function StatCardComponent({ stat }: { stat: StatCard }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5 transition-all hover:shadow-md">
+    <div className={cn("rounded-xl p-5 text-white transition-all hover:shadow-lg hover:scale-[1.02]", stat.color)}>
       <div className="flex items-start justify-between">
-        <div className={cn("flex size-10 items-center justify-center rounded-lg", stat.color)}>
+        <div className="flex size-10 items-center justify-center rounded-lg bg-white/20">
           {stat.icon}
         </div>
         {stat.change && (
           <span className={cn("flex items-center gap-0.5 text-xs font-medium",
-            stat.changeType === "up" && "text-emerald-600",
-            stat.changeType === "down" && "text-red-600",
-            stat.changeType === "neutral" && "text-muted-foreground"
+            stat.changeType === "up" && "text-emerald-100",
+            stat.changeType === "down" && "text-red-100",
+            stat.changeType === "neutral" && "text-white/70"
           )}>
             {stat.changeType === "up" && <ArrowUpRight className="size-3" />}
             {stat.changeType === "down" && <ArrowDownRight className="size-3" />}
@@ -453,8 +453,8 @@ function StatCardComponent({ stat }: { stat: StatCard }) {
           </span>
         )}
       </div>
-      <p className="mt-3 text-2xl font-bold text-foreground">{stat.value}</p>
-      <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+      <p className="mt-3 text-2xl font-bold text-white">{stat.value}</p>
+      <p className="text-xs text-white/80 mt-1">{stat.label}</p>
     </div>
   )
 }
@@ -614,10 +614,10 @@ function activityToItems(logs: any[], fr: boolean): RecentItem[] {
 
 function DirectorDashboard({ stats, chartData, fr, activity }: { stats: Record<string, number>; chartData: Record<string, any[]>; fr: boolean; activity?: any[] }) {
   const s: StatCard[] = [
-    { label: fr ? "Équipe" : "Team", value: stats.members ?? 0, icon: <Users className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-    { label: fr ? "Élèves" : "Students", value: stats.students ?? 0, icon: <GraduationCap className="size-5 text-indigo-600" />, color: "bg-indigo-50 dark:bg-indigo-950" },
-    { label: fr ? "Enseignants" : "Teachers", value: stats.teachers ?? 0, icon: <BookOpen className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
-    { label: fr ? "Frais collectés" : "Fees collected", value: formatCurrency(stats.totalFees ?? 0), icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
+    { label: fr ? "Équipe" : "Team", value: stats.members ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Élèves" : "Students", value: stats.students ?? 0, icon: <GraduationCap className="size-5 text-white" />, color: "bg-blue-500" },
+    { label: fr ? "Enseignants" : "Teachers", value: stats.teachers ?? 0, icon: <BookOpen className="size-5 text-white" />, color: "bg-teal-500" },
+    { label: fr ? "Frais collectés" : "Fees collected", value: formatCurrency(stats.totalFees ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-orange-500" },
   ]
 
   return (
@@ -665,10 +665,10 @@ function DirectorDashboard({ stats, chartData, fr, activity }: { stats: Record<s
 
 function TeacherDashboard({ stats, fr }: { stats: Record<string, number>; fr: boolean }) {
   const s: StatCard[] = [
-    { label: fr ? "Mes classes" : "My classes", value: stats.classes ?? 0, icon: <BookOpen className="size-5 text-indigo-600" />, color: "bg-indigo-50 dark:bg-indigo-950" },
-    { label: fr ? "Mes élèves" : "My students", value: stats.students ?? 0, icon: <GraduationCap className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-    { label: fr ? "Cours du jour" : "Today's classes", value: "—", icon: <Calendar className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
-    { label: fr ? "Bulletins à compléter" : "Reports to complete", value: "—", icon: <ClipboardList className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
+    { label: fr ? "Mes classes" : "My classes", value: stats.classes ?? 0, icon: <BookOpen className="size-5 text-white" />, color: "bg-blue-500" },
+    { label: fr ? "Mes élèves" : "My students", value: stats.students ?? 0, icon: <GraduationCap className="size-5 text-white" />, color: "bg-indigo-500" },
+    { label: fr ? "Cours du jour" : "Today's classes", value: "—", icon: <Calendar className="size-5 text-white" />, color: "bg-violet-500" },
+    { label: fr ? "Bulletins à compléter" : "Reports to complete", value: "—", icon: <ClipboardList className="size-5 text-white" />, color: "bg-amber-500" },
   ]
 
   return (
@@ -692,10 +692,10 @@ function TeacherDashboard({ stats, fr }: { stats: Record<string, number>; fr: bo
 
 function SupervisorDashboard({ stats, fr }: { stats: Record<string, number>; fr: boolean }) {
   const s: StatCard[] = [
-    { label: fr ? "Élèves présents" : "Present", value: stats.presentToday ?? 0, icon: <ClipboardCheck className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Élèves absents" : "Absent", value: stats.absentToday ?? 0, icon: <Users className="size-5 text-red-600" />, color: "bg-red-50 dark:bg-red-950" },
-    { label: fr ? "Retards" : "Lateness", value: stats.lateToday ?? 0, icon: <Clock className="size-5 text-orange-600" />, color: "bg-orange-50 dark:bg-orange-950" },
-    { label: fr ? "Total élèves" : "Total students", value: stats.students ?? 0, icon: <GraduationCap className="size-5 text-indigo-600" />, color: "bg-indigo-50 dark:bg-indigo-950" },
+    { label: fr ? "Élèves présents" : "Present", value: stats.presentToday ?? 0, icon: <ClipboardCheck className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Élèves absents" : "Absent", value: stats.absentToday ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-red-500" },
+    { label: fr ? "Retards" : "Lateness", value: stats.lateToday ?? 0, icon: <Clock className="size-5 text-white" />, color: "bg-orange-500" },
+    { label: fr ? "Total élèves" : "Total students", value: stats.students ?? 0, icon: <GraduationCap className="size-5 text-white" />, color: "bg-indigo-500" },
   ]
 
   return (
@@ -719,25 +719,25 @@ function SupervisorDashboard({ stats, fr }: { stats: Record<string, number>; fr:
 
 function ObserverDashboard({ stats, fr, ws }: { stats: Record<string, number>; fr: boolean; ws: string }) {
   const s: StatCard[] = ws === "education" ? [
-    { label: fr ? "Élèves" : "Students", value: stats.students ?? 0, icon: <GraduationCap className="size-5 text-indigo-600" />, color: "bg-indigo-50 dark:bg-indigo-950" },
-    { label: fr ? "Enseignants" : "Teachers", value: stats.teachers ?? 0, icon: <BookOpen className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-    { label: fr ? "Classes" : "Classes", value: stats.classes ?? 0, icon: <ClipboardCheck className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Frais collectés" : "Fees collected", value: formatCurrency(stats.totalFees ?? 0), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+    { label: fr ? "Élèves" : "Students", value: stats.students ?? 0, icon: <GraduationCap className="size-5 text-white" />, color: "bg-indigo-500" },
+    { label: fr ? "Enseignants" : "Teachers", value: stats.teachers ?? 0, icon: <BookOpen className="size-5 text-white" />, color: "bg-blue-500" },
+    { label: fr ? "Classes" : "Classes", value: stats.classes ?? 0, icon: <ClipboardCheck className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Frais collectés" : "Fees collected", value: formatCurrency(stats.totalFees ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
   ] : ws === "pharmacy" ? [
-    { label: fr ? "Médicaments" : "Medicines", value: stats.totalMedicines ?? 0, icon: <Package className="size-5 text-teal-600" />, color: "bg-teal-50 dark:bg-teal-950" },
-    { label: fr ? "Ventes" : "Sales", value: stats.salesCount ?? 0, icon: <ShoppingCart className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Stock faible" : "Low stock", value: stats.lowStock ?? 0, icon: <AlertTriangle className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
-    { label: fr ? "Revenus" : "Revenue", value: formatCurrency(stats.totalRevenue ?? 0), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+    { label: fr ? "Médicaments" : "Medicines", value: stats.totalMedicines ?? 0, icon: <Package className="size-5 text-white" />, color: "bg-teal-500" },
+    { label: fr ? "Ventes" : "Sales", value: stats.salesCount ?? 0, icon: <ShoppingCart className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Stock faible" : "Low stock", value: stats.lowStock ?? 0, icon: <AlertTriangle className="size-5 text-white" />, color: "bg-amber-500" },
+    { label: fr ? "Revenus" : "Revenue", value: formatCurrency(stats.totalRevenue ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
   ] : ws === "commerce" ? [
-    { label: fr ? "Produits" : "Products", value: stats.totalProducts ?? 0, icon: <Package className="size-5 text-orange-600" />, color: "bg-orange-50 dark:bg-orange-950" },
-    { label: fr ? "Ventes" : "Sales", value: stats.salesCount ?? 0, icon: <ShoppingCart className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Clients" : "Customers", value: stats.customers ?? 0, icon: <Users className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-    { label: fr ? "Revenus" : "Revenue", value: formatCurrency(stats.totalRevenue ?? 0), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+    { label: fr ? "Produits" : "Products", value: stats.totalProducts ?? 0, icon: <Package className="size-5 text-white" />, color: "bg-orange-500" },
+    { label: fr ? "Ventes" : "Sales", value: stats.salesCount ?? 0, icon: <ShoppingCart className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Clients" : "Customers", value: stats.customers ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-blue-500" },
+    { label: fr ? "Revenus" : "Revenue", value: formatCurrency(stats.totalRevenue ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
   ] : [
-    { label: fr ? "Employés" : "Employees", value: stats.totalEmployees ?? 0, icon: <Users className="size-5 text-purple-600" />, color: "bg-purple-50 dark:bg-purple-950" },
-    { label: fr ? "Départements" : "Departements", value: stats.departments ?? 0, icon: <Building2 className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-    { label: fr ? "Membres" : "Members", value: stats.totalUsers ?? 0, icon: <UserCheck className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Revenus" : "Revenue", value: formatCurrency(stats.income ?? 0), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+    { label: fr ? "Employés" : "Employees", value: stats.totalEmployees ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-purple-500" },
+    { label: fr ? "Départements" : "Departements", value: stats.departments ?? 0, icon: <Building2 className="size-5 text-white" />, color: "bg-blue-500" },
+    { label: fr ? "Membres" : "Members", value: stats.totalUsers ?? 0, icon: <UserCheck className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Revenus" : "Revenue", value: formatCurrency(stats.income ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
   ]
 
   return (
@@ -754,10 +754,10 @@ function ObserverDashboard({ stats, fr, ws }: { stats: Record<string, number>; f
 
 function EducationCashierDashboard({ stats, chartData, fr }: { stats: Record<string, number>; chartData: Record<string, any[]>; fr: boolean }) {
   const s: StatCard[] = [
-    { label: fr ? "Frais collectés" : "Fees collected", value: formatCurrency(stats.totalFees ?? 0), icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Total paiements" : "Total payments", value: stats.invoices ?? 0, icon: <Receipt className="size-5 text-sky-600" />, color: "bg-sky-50 dark:bg-sky-950" },
-    { label: fr ? "Élèves" : "Students", value: stats.students ?? 0, icon: <GraduationCap className="size-5 text-indigo-600" />, color: "bg-indigo-50 dark:bg-indigo-950" },
-    { label: fr ? "Classes" : "Classes", value: stats.classes ?? 0, icon: <BookOpen className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+    { label: fr ? "Frais collectés" : "Fees collected", value: formatCurrency(stats.totalFees ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Total paiements" : "Total payments", value: stats.invoices ?? 0, icon: <Receipt className="size-5 text-white" />, color: "bg-sky-500" },
+    { label: fr ? "Élèves" : "Students", value: stats.students ?? 0, icon: <GraduationCap className="size-5 text-white" />, color: "bg-indigo-500" },
+    { label: fr ? "Classes" : "Classes", value: stats.classes ?? 0, icon: <BookOpen className="size-5 text-white" />, color: "bg-violet-500" },
   ]
 
   return (
@@ -772,10 +772,10 @@ function EducationCashierDashboard({ stats, chartData, fr }: { stats: Record<str
 
 function EducationAccountantDashboard({ stats, chartData, fr }: { stats: Record<string, number>; chartData: Record<string, any[]>; fr: boolean }) {
   const s: StatCard[] = [
-    { label: fr ? "Frais collectés" : "Fees collected", value: formatCurrency(stats.totalFees ?? 0), icon: <TrendingUp className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(stats.expenses ?? 0), icon: <TrendingUp className="size-5 text-red-600 rotate-180" />, color: "bg-red-50 dark:bg-red-950" },
-    { label: fr ? "Profit" : "Profit", value: formatCurrency((stats.totalFees ?? 0) - (stats.expenses ?? 0)), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
-    { label: fr ? "Élèves" : "Students", value: stats.students ?? 0, icon: <GraduationCap className="size-5 text-indigo-600" />, color: "bg-indigo-50 dark:bg-indigo-950" },
+    { label: fr ? "Frais collectés" : "Fees collected", value: formatCurrency(stats.totalFees ?? 0), icon: <TrendingUp className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(stats.expenses ?? 0), icon: <TrendingUp className="size-5 text-white rotate-180" />, color: "bg-red-500" },
+    { label: fr ? "Profit" : "Profit", value: formatCurrency((stats.totalFees ?? 0) - (stats.expenses ?? 0)), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
+    { label: fr ? "Élèves" : "Students", value: stats.students ?? 0, icon: <GraduationCap className="size-5 text-white" />, color: "bg-indigo-500" },
   ]
 
   return (
@@ -790,10 +790,10 @@ function EducationAccountantDashboard({ stats, chartData, fr }: { stats: Record<
 
 function GestionCashierDashboard({ stats, chartData, fr }: { stats: Record<string, number>; chartData: Record<string, any[]>; fr: boolean }) {
   const s: StatCard[] = [
-    { label: fr ? "Revenus" : "Income", value: formatCurrency(stats.income ?? 0), icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Employés" : "Employees", value: stats.employees ?? 0, icon: <Briefcase className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-    { label: fr ? "Factures" : "Invoices", value: stats.invoices ?? 0, icon: <Receipt className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
-    { label: fr ? "Membres" : "Members", value: stats.members ?? 0, icon: <Users className="size-5 text-purple-600" />, color: "bg-purple-50 dark:bg-purple-950" },
+    { label: fr ? "Revenus" : "Income", value: formatCurrency(stats.income ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Employés" : "Employees", value: stats.employees ?? 0, icon: <Briefcase className="size-5 text-white" />, color: "bg-blue-500" },
+    { label: fr ? "Factures" : "Invoices", value: stats.invoices ?? 0, icon: <Receipt className="size-5 text-white" />, color: "bg-amber-500" },
+    { label: fr ? "Membres" : "Members", value: stats.members ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-purple-500" },
   ]
 
   return (
@@ -810,10 +810,10 @@ function GestionCashierDashboard({ stats, chartData, fr }: { stats: Record<strin
 
 function PharmacyManagerDashboard({ stats, chartData, fr, activity }: { stats: Record<string, number>; chartData: Record<string, any[]>; fr: boolean; activity?: any[] }) {
   const s: StatCard[] = [
-    { label: fr ? "Équipe" : "Team", value: stats.members ?? 0, icon: <Users className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Médicaments" : "Medicines", value: stats.medicines ?? 0, icon: <Pill className="size-5 text-teal-600" />, color: "bg-teal-50 dark:bg-teal-950" },
-    { label: fr ? "Stock faible" : "Low stock", value: stats.lowStock ?? 0, icon: <AlertTriangle className="size-5 text-red-600" />, color: "bg-red-50 dark:bg-red-950" },
-    { label: fr ? "Revenu total" : "Total revenue", value: formatCurrency(stats.totalRevenue ?? 0), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+    { label: fr ? "Équipe" : "Team", value: stats.members ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Médicaments" : "Medicines", value: stats.medicines ?? 0, icon: <Pill className="size-5 text-white" />, color: "bg-teal-500" },
+    { label: fr ? "Stock faible" : "Low stock", value: stats.lowStock ?? 0, icon: <AlertTriangle className="size-5 text-white" />, color: "bg-red-500" },
+    { label: fr ? "Revenu total" : "Total revenue", value: formatCurrency(stats.totalRevenue ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
   ]
 
   return (
@@ -853,10 +853,10 @@ function PharmacyManagerDashboard({ stats, chartData, fr, activity }: { stats: R
 
 function PharmacyCashierDashboard({ stats, fr }: { stats: Record<string, number>; fr: boolean }) {
   const s: StatCard[] = [
-    { label: fr ? "Ventes du jour" : "Today's sales", value: stats.todaySales ?? 0, icon: <ShoppingCart className="size-5 text-sky-600" />, color: "bg-sky-50 dark:bg-sky-950" },
-    { label: fr ? "Chiffre du jour" : "Today's total", value: formatCurrency(stats.todayRevenue ?? 0), icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Médicaments" : "Medicines", value: stats.medicines ?? 0, icon: <Pill className="size-5 text-teal-600" />, color: "bg-teal-50 dark:bg-teal-950" },
-    { label: fr ? "Stock faible" : "Low stock", value: stats.lowStock ?? 0, icon: <AlertTriangle className="size-5 text-red-600" />, color: "bg-red-50 dark:bg-red-950" },
+    { label: fr ? "Ventes du jour" : "Today's sales", value: stats.todaySales ?? 0, icon: <ShoppingCart className="size-5 text-white" />, color: "bg-sky-500" },
+    { label: fr ? "Chiffre du jour" : "Today's total", value: formatCurrency(stats.todayRevenue ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Médicaments" : "Medicines", value: stats.medicines ?? 0, icon: <Pill className="size-5 text-white" />, color: "bg-teal-500" },
+    { label: fr ? "Stock faible" : "Low stock", value: stats.lowStock ?? 0, icon: <AlertTriangle className="size-5 text-white" />, color: "bg-red-500" },
   ]
 
   return (
@@ -873,10 +873,10 @@ function PharmacyCashierDashboard({ stats, fr }: { stats: Record<string, number>
 
 function PharmacyAccountantDashboard({ stats, chartData, fr }: { stats: Record<string, number>; chartData: Record<string, any[]>; fr: boolean }) {
   const s: StatCard[] = [
-    { label: fr ? "Revenus" : "Revenue", value: formatCurrency(stats.totalRevenue ?? 0), icon: <TrendingUp className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(stats.expenses ?? 0), icon: <TrendingUp className="size-5 text-red-600 rotate-180" />, color: "bg-red-50 dark:bg-red-950" },
-    { label: fr ? "Profit" : "Profit", value: formatCurrency((stats.income ?? 0) - (stats.expenses ?? 0)), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
-    { label: fr ? "Factures" : "Invoices", value: stats.invoices ?? 0, icon: <Receipt className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
+    { label: fr ? "Revenus" : "Revenue", value: formatCurrency(stats.totalRevenue ?? 0), icon: <TrendingUp className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(stats.expenses ?? 0), icon: <TrendingUp className="size-5 text-white rotate-180" />, color: "bg-red-500" },
+    { label: fr ? "Profit" : "Profit", value: formatCurrency((stats.income ?? 0) - (stats.expenses ?? 0)), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
+    { label: fr ? "Factures" : "Invoices", value: stats.invoices ?? 0, icon: <Receipt className="size-5 text-white" />, color: "bg-amber-500" },
   ]
 
   return (
@@ -893,10 +893,10 @@ function PharmacyAccountantDashboard({ stats, chartData, fr }: { stats: Record<s
 
 function CommerceManagerDashboard({ stats, chartData, fr, activity }: { stats: Record<string, number>; chartData: Record<string, any[]>; fr: boolean; activity?: any[] }) {
   const s: StatCard[] = [
-    { label: fr ? "Équipe" : "Team", value: stats.members ?? 0, icon: <Users className="size-5 text-orange-600" />, color: "bg-orange-50 dark:bg-orange-950" },
-    { label: fr ? "Produits" : "Products", value: stats.products ?? 0, icon: <Package className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-    { label: fr ? "Stock faible" : "Low stock", value: stats.lowStock ?? 0, icon: <AlertTriangle className="size-5 text-red-600" />, color: "bg-red-50 dark:bg-red-950" },
-    { label: fr ? "Revenu total" : "Total revenue", value: formatCurrency(stats.totalRevenue ?? 0), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+    { label: fr ? "Équipe" : "Team", value: stats.members ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-orange-500" },
+    { label: fr ? "Produits" : "Products", value: stats.products ?? 0, icon: <Package className="size-5 text-white" />, color: "bg-blue-500" },
+    { label: fr ? "Stock faible" : "Low stock", value: stats.lowStock ?? 0, icon: <AlertTriangle className="size-5 text-white" />, color: "bg-red-500" },
+    { label: fr ? "Revenu total" : "Total revenue", value: formatCurrency(stats.totalRevenue ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
   ]
 
   return (
@@ -936,10 +936,10 @@ function CommerceManagerDashboard({ stats, chartData, fr, activity }: { stats: R
 
 function CommerceCashierDashboard({ stats, fr }: { stats: Record<string, number>; fr: boolean }) {
   const s: StatCard[] = [
-    { label: fr ? "Ventes du jour" : "Today's sales", value: stats.todaySales ?? 0, icon: <ShoppingCart className="size-5 text-sky-600" />, color: "bg-sky-50 dark:bg-sky-950" },
-    { label: fr ? "Chiffre du jour" : "Today's total", value: formatCurrency(stats.todayRevenue ?? 0), icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Produits" : "Products", value: stats.products ?? 0, icon: <Package className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-    { label: fr ? "Stock faible" : "Low stock", value: stats.lowStock ?? 0, icon: <AlertTriangle className="size-5 text-red-600" />, color: "bg-red-50 dark:bg-red-950" },
+    { label: fr ? "Ventes du jour" : "Today's sales", value: stats.todaySales ?? 0, icon: <ShoppingCart className="size-5 text-white" />, color: "bg-sky-500" },
+    { label: fr ? "Chiffre du jour" : "Today's total", value: formatCurrency(stats.todayRevenue ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Produits" : "Products", value: stats.products ?? 0, icon: <Package className="size-5 text-white" />, color: "bg-blue-500" },
+    { label: fr ? "Stock faible" : "Low stock", value: stats.lowStock ?? 0, icon: <AlertTriangle className="size-5 text-white" />, color: "bg-red-500" },
   ]
 
   return (
@@ -956,10 +956,10 @@ function CommerceCashierDashboard({ stats, fr }: { stats: Record<string, number>
 
 function CommerceAccountantDashboard({ stats, chartData, fr }: { stats: Record<string, number>; chartData: Record<string, any[]>; fr: boolean }) {
   const s: StatCard[] = [
-    { label: fr ? "Revenus" : "Revenue", value: formatCurrency(stats.income ?? 0), icon: <TrendingUp className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(stats.expenses ?? 0), icon: <TrendingUp className="size-5 text-red-600 rotate-180" />, color: "bg-red-50 dark:bg-red-950" },
-    { label: fr ? "Profit" : "Profit", value: formatCurrency((stats.income ?? 0) - (stats.expenses ?? 0)), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
-    { label: fr ? "Factures" : "Invoices", value: stats.invoices ?? 0, icon: <Receipt className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
+    { label: fr ? "Revenus" : "Revenue", value: formatCurrency(stats.income ?? 0), icon: <TrendingUp className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(stats.expenses ?? 0), icon: <TrendingUp className="size-5 text-white rotate-180" />, color: "bg-red-500" },
+    { label: fr ? "Profit" : "Profit", value: formatCurrency((stats.income ?? 0) - (stats.expenses ?? 0)), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
+    { label: fr ? "Factures" : "Invoices", value: stats.invoices ?? 0, icon: <Receipt className="size-5 text-white" />, color: "bg-amber-500" },
   ]
 
   return (
@@ -977,12 +977,12 @@ function CommerceAccountantDashboard({ stats, chartData, fr }: { stats: Record<s
 function GestionManagerDashboard({ stats, chartData, fr, activity }: { stats: Record<string, number>; chartData: Record<string, any[]>; fr: boolean; activity?: any[] }) {
   const netResult = (stats.income ?? 0) - (stats.expenses ?? 0)
   const s: StatCard[] = [
-    { label: fr ? "Équipe" : "Team", value: stats.members ?? 0, icon: <Users className="size-5 text-purple-600" />, color: "bg-purple-50 dark:bg-purple-950" },
-    { label: fr ? "Revenus" : "Income", value: formatCurrency(stats.income ?? 0), icon: <TrendingUp className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(stats.expenses ?? 0), icon: <TrendingUp className="size-5 text-red-600 rotate-180" />, color: "bg-red-50 dark:bg-red-950" },
-    { label: fr ? "Résultat net" : "Net result", value: formatCurrency(netResult), icon: <Briefcase className={`size-5 ${netResult >= 0 ? "text-emerald-600" : "text-red-600"}`} />, color: netResult >= 0 ? "bg-emerald-50 dark:bg-emerald-950" : "bg-red-50 dark:bg-red-950" },
-    { label: fr ? "Employés actifs" : "Active employees", value: stats.employees ?? 0, icon: <Briefcase className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-    { label: fr ? "Factures en attente" : "Pending invoices", value: stats.pendingInvoices ?? 0, icon: <Receipt className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
+    { label: fr ? "Équipe" : "Team", value: stats.members ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-purple-500" },
+    { label: fr ? "Revenus" : "Income", value: formatCurrency(stats.income ?? 0), icon: <TrendingUp className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(stats.expenses ?? 0), icon: <TrendingUp className="size-5 text-white rotate-180" />, color: "bg-red-500" },
+    { label: fr ? "Résultat net" : "Net result", value: formatCurrency(netResult), icon: <Briefcase className="size-5 text-white" />, color: netResult >= 0 ? "bg-emerald-500" : "bg-red-500" },
+    { label: fr ? "Employés actifs" : "Active employees", value: stats.employees ?? 0, icon: <Briefcase className="size-5 text-white" />, color: "bg-blue-500" },
+    { label: fr ? "Factures en attente" : "Pending invoices", value: stats.pendingInvoices ?? 0, icon: <Receipt className="size-5 text-white" />, color: "bg-amber-500" },
   ]
 
   return (
@@ -1022,10 +1022,10 @@ function GestionManagerDashboard({ stats, chartData, fr, activity }: { stats: Re
 
 function GestionAccountantDashboard({ stats, chartData, fr }: { stats: Record<string, number>; chartData: Record<string, any[]>; fr: boolean }) {
   const s: StatCard[] = [
-    { label: fr ? "Revenus" : "Income", value: formatCurrency(stats.income ?? 0), icon: <TrendingUp className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-    { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(stats.expenses ?? 0), icon: <TrendingUp className="size-5 text-red-600 rotate-180" />, color: "bg-red-50 dark:bg-red-950" },
-    { label: fr ? "Factures" : "Invoices", value: stats.invoices ?? 0, icon: <Receipt className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
-    { label: fr ? "Profit" : "Profit", value: formatCurrency((stats.income ?? 0) - (stats.expenses ?? 0)), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+    { label: fr ? "Revenus" : "Income", value: formatCurrency(stats.income ?? 0), icon: <TrendingUp className="size-5 text-white" />, color: "bg-emerald-500" },
+    { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(stats.expenses ?? 0), icon: <TrendingUp className="size-5 text-white rotate-180" />, color: "bg-red-500" },
+    { label: fr ? "Factures" : "Invoices", value: stats.invoices ?? 0, icon: <Receipt className="size-5 text-white" />, color: "bg-amber-500" },
+    { label: fr ? "Profit" : "Profit", value: formatCurrency((stats.income ?? 0) - (stats.expenses ?? 0)), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
   ]
 
   return (

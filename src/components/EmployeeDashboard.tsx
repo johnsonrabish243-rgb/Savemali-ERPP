@@ -23,17 +23,17 @@ interface DashboardConfig { stats: StatCard[]; quickActions: QuickAction[]; rece
 
 function Stat({ s }: { s: StatCard }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md">
+    <div className={cn("rounded-xl p-4 text-white transition-all hover:shadow-lg hover:scale-[1.02]", s.color)}>
       <div className="flex items-start justify-between">
-        <div className={cn("flex size-9 items-center justify-center rounded-lg", s.color)}>{s.icon}</div>
+        <div className="flex size-9 items-center justify-center rounded-lg bg-white/20">{s.icon}</div>
         {s.change && (
-          <span className={cn("flex items-center gap-0.5 text-xs font-medium", s.changeType === "up" && "text-emerald-600", s.changeType === "down" && "text-red-600")}>
+          <span className={cn("flex items-center gap-0.5 text-xs font-medium", s.changeType === "up" && "text-emerald-100", s.changeType === "down" && "text-red-100")}>
             {s.changeType === "up" && <ArrowUpRight className="size-3" />}{s.changeType === "down" && <ArrowDownRight className="size-3" />}{s.change}
           </span>
         )}
       </div>
-      <p className="mt-2.5 text-xl font-bold text-foreground">{s.value}</p>
-      <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
+      <p className="mt-2.5 text-xl font-bold text-white">{s.value}</p>
+      <p className="text-xs text-white/80 mt-1">{s.label}</p>
     </div>
   )
 }
@@ -78,30 +78,30 @@ function Recent({ items, fr }: { items: RecentItem[]; fr: boolean }) {
 const viewerConfig = (workspaceType: WorkspaceType, data: Record<string, number>, fr: boolean): DashboardConfig => {
   if (workspaceType === "education") return {
     stats: [
-      { label: fr ? "Élèves" : "Students", value: data.students ?? 0, icon: <GraduationCap className="size-5 text-indigo-600" />, color: "bg-indigo-50 dark:bg-indigo-950" },
-      { label: fr ? "Enseignants" : "Teachers", value: data.teachers ?? 0, icon: <Users className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-      { label: fr ? "Classes" : "Classes", value: data.classes ?? 0, icon: <BookOpen className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-      { label: fr ? "Revenus" : "Revenue", value: formatCurrency(data.revenue ?? 0), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+      { label: fr ? "Élèves" : "Students", value: data.students ?? 0, icon: <GraduationCap className="size-5 text-white" />, color: "bg-indigo-500" },
+      { label: fr ? "Enseignants" : "Teachers", value: data.teachers ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-blue-500" },
+      { label: fr ? "Classes" : "Classes", value: data.classes ?? 0, icon: <BookOpen className="size-5 text-white" />, color: "bg-emerald-500" },
+      { label: fr ? "Revenus" : "Revenue", value: formatCurrency(data.revenue ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
     ],
     quickActions: [],
     recentItems: [{ title: fr ? "Mode lecture seule" : "Read-only mode", subtitle: fr ? "Vous consultez les données" : "You are viewing data", time: "—", badge: fr ? "Observateur" : "Observer", badgeColor: "bg-slate-100 text-slate-700" }],
   }
   if (workspaceType === "pharmacy") return {
     stats: [
-      { label: fr ? "Médicaments" : "Medicines", value: data.medicines ?? 0, icon: <Pill className="size-5 text-teal-600" />, color: "bg-teal-50 dark:bg-teal-950" },
-      { label: fr ? "Ventes" : "Sales", value: data.sales ?? 0, icon: <ShoppingCart className="size-5 text-sky-600" />, color: "bg-sky-50 dark:bg-sky-950" },
-      { label: fr ? "Stock faible" : "Low stock", value: data.lowStock ?? 0, icon: <AlertTriangle className="size-5 text-red-600" />, color: "bg-red-50 dark:bg-red-950" },
-      { label: fr ? "Revenus" : "Revenue", value: formatCurrency(data.revenue ?? 0), icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
+      { label: fr ? "Médicaments" : "Medicines", value: data.medicines ?? 0, icon: <Pill className="size-5 text-white" />, color: "bg-teal-500" },
+      { label: fr ? "Ventes" : "Sales", value: data.sales ?? 0, icon: <ShoppingCart className="size-5 text-white" />, color: "bg-sky-500" },
+      { label: fr ? "Stock faible" : "Low stock", value: data.lowStock ?? 0, icon: <AlertTriangle className="size-5 text-white" />, color: "bg-red-500" },
+      { label: fr ? "Revenus" : "Revenue", value: formatCurrency(data.revenue ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-emerald-500" },
     ],
     quickActions: [],
     recentItems: [{ title: fr ? "Mode lecture seule" : "Read-only mode", subtitle: fr ? "Vous consultez les données" : "You are viewing data", time: "—", badge: fr ? "Observateur" : "Observer", badgeColor: "bg-slate-100 text-slate-700" }],
   }
   if (workspaceType === "commerce") return {
     stats: [
-      { label: fr ? "Produits" : "Products", value: data.products ?? 0, icon: <Package className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
-      { label: fr ? "Clients" : "Customers", value: data.customers ?? 0, icon: <Users className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-      { label: fr ? "Ventes" : "Sales", value: data.sales ?? 0, icon: <ShoppingCart className="size-5 text-sky-600" />, color: "bg-sky-50 dark:bg-sky-950" },
-      { label: fr ? "Revenus" : "Revenue", value: formatCurrency(data.revenue ?? 0), icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
+      { label: fr ? "Produits" : "Products", value: data.products ?? 0, icon: <Package className="size-5 text-white" />, color: "bg-violet-500" },
+      { label: fr ? "Clients" : "Customers", value: data.customers ?? 0, icon: <Users className="size-5 text-white" />, color: "bg-blue-500" },
+      { label: fr ? "Ventes" : "Sales", value: data.sales ?? 0, icon: <ShoppingCart className="size-5 text-white" />, color: "bg-sky-500" },
+      { label: fr ? "Revenus" : "Revenue", value: formatCurrency(data.revenue ?? 0), icon: <DollarSign className="size-5 text-white" />, color: "bg-emerald-500" },
     ],
     quickActions: [],
     recentItems: [{ title: fr ? "Mode lecture seule" : "Read-only mode", subtitle: fr ? "Vous consultez les données" : "You are viewing data", time: "—", badge: fr ? "Observateur" : "Observer", badgeColor: "bg-slate-100 text-slate-700" }],
@@ -109,10 +109,10 @@ const viewerConfig = (workspaceType: WorkspaceType, data: Record<string, number>
   // gestion
   return {
     stats: [
-      { label: fr ? "Employés" : "Employees", value: data.employees ?? 0, icon: <Briefcase className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
-      { label: fr ? "Revenus" : "Revenue", value: formatCurrency(data.revenue ?? 0), icon: <TrendingUp className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-      { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(data.expenses ?? 0), icon: <TrendingUp className="size-5 text-red-600 rotate-180" />, color: "bg-red-50 dark:bg-red-950" },
-      { label: fr ? "Factures" : "Invoices", value: data.invoices ?? 0, icon: <Receipt className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
+      { label: fr ? "Employés" : "Employees", value: data.employees ?? 0, icon: <Briefcase className="size-5 text-white" />, color: "bg-amber-500" },
+      { label: fr ? "Revenus" : "Revenue", value: formatCurrency(data.revenue ?? 0), icon: <TrendingUp className="size-5 text-white" />, color: "bg-emerald-500" },
+      { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(data.expenses ?? 0), icon: <TrendingUp className="size-5 text-white rotate-180" />, color: "bg-red-500" },
+      { label: fr ? "Factures" : "Invoices", value: data.invoices ?? 0, icon: <Receipt className="size-5 text-white" />, color: "bg-blue-500" },
     ],
     quickActions: [],
     recentItems: [{ title: fr ? "Mode lecture seule" : "Read-only mode", subtitle: fr ? "Vous consultez les données" : "You are viewing data", time: "—", badge: fr ? "Observateur" : "Observer", badgeColor: "bg-slate-100 text-slate-700" }],
@@ -203,10 +203,10 @@ export function EmployeeDashboard({ workspaceType, role, onNavigateToTab }: Empl
 
     if (role === "teacher") return {
       stats: [
-        { label: fr ? "Élèves" : "Students", value: sCount, icon: <GraduationCap className="size-5 text-indigo-600" />, color: "bg-indigo-50 dark:bg-indigo-950" },
-        { label: fr ? "Mes classes" : "My classes", value: cCount, icon: <BookOpen className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-        { label: fr ? "Présents" : "Present today", value: present, icon: <ClipboardCheck className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Absents" : "Absent today", value: absent, icon: <Clock className="size-5 text-red-600" />, color: "bg-red-50 dark:bg-red-950" },
+        { label: fr ? "Élèves" : "Students", value: sCount, icon: <GraduationCap className="size-5 text-white" />, color: "bg-indigo-500" },
+        { label: fr ? "Mes classes" : "My classes", value: cCount, icon: <BookOpen className="size-5 text-white" />, color: "bg-blue-500" },
+        { label: fr ? "Présents" : "Present today", value: present, icon: <ClipboardCheck className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Absents" : "Absent today", value: absent, icon: <Clock className="size-5 text-white" />, color: "bg-red-500" },
       ],
       quickActions: [
         { label: fr ? "Prendre présence" : "Take attendance", icon: <ClipboardCheck className="size-4 text-white" />, color: "bg-emerald-500", onClick: () => onNavigateToTab("attendance") },
@@ -216,40 +216,40 @@ export function EmployeeDashboard({ workspaceType, role, onNavigateToTab }: Empl
     }
     if (role === "manager") return {
       stats: [
-        { label: fr ? "Élèves" : "Students", value: sCount, icon: <GraduationCap className="size-5 text-indigo-600" />, color: "bg-indigo-50 dark:bg-indigo-950" },
-        { label: fr ? "Enseignants" : "Teachers", value: tCount, icon: <Users className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-        { label: fr ? "Taux présence" : "Attendance rate", value: `${rate}%`, icon: <BarChart3 className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(totalColl), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+        { label: fr ? "Élèves" : "Students", value: sCount, icon: <GraduationCap className="size-5 text-white" />, color: "bg-indigo-500" },
+        { label: fr ? "Enseignants" : "Teachers", value: tCount, icon: <Users className="size-5 text-white" />, color: "bg-blue-500" },
+        { label: fr ? "Taux présence" : "Attendance rate", value: `${rate}%`, icon: <BarChart3 className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(totalColl), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
       ],
       quickActions: [],
       recentItems: toRecent(recentFees, fr, "payment").length > 0 ? toRecent(recentFees, fr, "payment") : [{ title: fr ? "Aucune activité" : "No activity", subtitle: fr ? "Suivi opérationnel" : "Operational monitoring", time: "—" }],
     }
     if (role === "supervisor") return {
       stats: [
-        { label: fr ? "Élèves" : "Students", value: sCount, icon: <GraduationCap className="size-5 text-indigo-600" />, color: "bg-indigo-50 dark:bg-indigo-950" },
-        { label: fr ? "Présents" : "Present", value: present, icon: <ClipboardCheck className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Taux présence" : "Attendance rate", value: `${rate}%`, icon: <BarChart3 className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-        { label: fr ? "Absents" : "Absent", value: absent, icon: <AlertTriangle className="size-5 text-red-600" />, color: "bg-red-50 dark:bg-red-950" },
+        { label: fr ? "Élèves" : "Students", value: sCount, icon: <GraduationCap className="size-5 text-white" />, color: "bg-indigo-500" },
+        { label: fr ? "Présents" : "Present", value: present, icon: <ClipboardCheck className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Taux présence" : "Attendance rate", value: `${rate}%`, icon: <BarChart3 className="size-5 text-white" />, color: "bg-blue-500" },
+        { label: fr ? "Absents" : "Absent", value: absent, icon: <AlertTriangle className="size-5 text-white" />, color: "bg-red-500" },
       ],
       quickActions: [{ label: fr ? "Voir présence" : "View attendance", icon: <Eye className="size-4 text-white" />, color: "bg-blue-500", onClick: () => onNavigateToTab("attendance") }],
       recentItems: [{ title: `${present} ${fr ? "présents" : "present"}`, subtitle: `${absent} ${fr ? "absents" : "absent"}`, time: today, badge: fr ? "Aujourd'hui" : "Today", badgeColor: "bg-blue-50 text-blue-700" }],
     }
     if (role === "cashier") return {
       stats: [
-        { label: fr ? "Paiements aujourd'hui" : "Payments today", value: formatCurrency(todayFees), icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Factures en attente" : "Pending invoices", value: pending, icon: <Receipt className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
-        { label: fr ? "Total collecté" : "Total collected", value: formatCurrency(totalColl), icon: <TrendingUp className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-        { label: fr ? "Élèves" : "Students", value: sCount, icon: <GraduationCap className="size-5 text-indigo-600" />, color: "bg-indigo-50 dark:bg-indigo-950" },
+        { label: fr ? "Paiements aujourd'hui" : "Payments today", value: formatCurrency(todayFees), icon: <DollarSign className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Factures en attente" : "Pending invoices", value: pending, icon: <Receipt className="size-5 text-white" />, color: "bg-amber-500" },
+        { label: fr ? "Total collecté" : "Total collected", value: formatCurrency(totalColl), icon: <TrendingUp className="size-5 text-white" />, color: "bg-blue-500" },
+        { label: fr ? "Élèves" : "Students", value: sCount, icon: <GraduationCap className="size-5 text-white" />, color: "bg-indigo-500" },
       ],
       quickActions: [],
       recentItems: toRecent(recentFees, fr, "payment"),
     }
     if (role === "accountant") return {
       stats: [
-        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(income), icon: <TrendingUp className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(expenses), icon: <TrendingUp className="size-5 text-red-600 rotate-180" />, color: "bg-red-50 dark:bg-red-950" },
-        { label: fr ? "Solde" : "Balance", value: formatCurrency(income - expenses), icon: <DollarSign className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-        { label: fr ? "Écritures" : "Entries", value: ents.length, icon: <BarChart3 className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(income), icon: <TrendingUp className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(expenses), icon: <TrendingUp className="size-5 text-white rotate-180" />, color: "bg-red-500" },
+        { label: fr ? "Solde" : "Balance", value: formatCurrency(income - expenses), icon: <DollarSign className="size-5 text-white" />, color: "bg-blue-500" },
+        { label: fr ? "Écritures" : "Entries", value: ents.length, icon: <BarChart3 className="size-5 text-white" />, color: "bg-violet-500" },
       ],
       quickActions: [],
       recentItems: toRecent(recentEnts, fr, "entry"),
@@ -276,10 +276,10 @@ export function EmployeeDashboard({ workspaceType, role, onNavigateToTab }: Empl
 
     if (role === "pharmacist") return {
       stats: [
-        { label: fr ? "Médicaments" : "Medicines", value: meds.length, icon: <Pill className="size-5 text-teal-600" />, color: "bg-teal-50 dark:bg-teal-950" },
-        { label: fr ? "Stock faible" : "Low stock", value: lowStock, icon: <AlertTriangle className="size-5 text-red-600" />, color: "bg-red-50 dark:bg-red-950" },
-        { label: fr ? "Expirent bientôt" : "Expiring soon", value: expiring, icon: <Clock className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
-        { label: fr ? "Ventes du jour" : "Today's sales", value: todaySales.length, icon: <ShoppingCart className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
+        { label: fr ? "Médicaments" : "Medicines", value: meds.length, icon: <Pill className="size-5 text-white" />, color: "bg-teal-500" },
+        { label: fr ? "Stock faible" : "Low stock", value: lowStock, icon: <AlertTriangle className="size-5 text-white" />, color: "bg-red-500" },
+        { label: fr ? "Expirent bientôt" : "Expiring soon", value: expiring, icon: <Clock className="size-5 text-white" />, color: "bg-amber-500" },
+        { label: fr ? "Ventes du jour" : "Today's sales", value: todaySales.length, icon: <ShoppingCart className="size-5 text-white" />, color: "bg-blue-500" },
       ],
       quickActions: [
         { label: fr ? "Vérifier stock" : "Check stock", icon: <Eye className="size-4 text-white" />, color: "bg-teal-500", onClick: () => onNavigateToTab("inventory") },
@@ -289,20 +289,20 @@ export function EmployeeDashboard({ workspaceType, role, onNavigateToTab }: Empl
     }
     if (role === "manager") return {
       stats: [
-        { label: fr ? "Médicaments" : "Medicines", value: meds.length, icon: <Pill className="size-5 text-teal-600" />, color: "bg-teal-50 dark:bg-teal-950" },
-        { label: fr ? "Stock faible" : "Low stock", value: lowStock, icon: <AlertTriangle className="size-5 text-red-600" />, color: "bg-red-50 dark:bg-red-950" },
-        { label: fr ? "Revenus semaine" : "Weekly revenue", value: formatCurrency(totalRev), icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Ventes" : "Sales", value: sales.length, icon: <ShoppingCart className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
+        { label: fr ? "Médicaments" : "Medicines", value: meds.length, icon: <Pill className="size-5 text-white" />, color: "bg-teal-500" },
+        { label: fr ? "Stock faible" : "Low stock", value: lowStock, icon: <AlertTriangle className="size-5 text-white" />, color: "bg-red-500" },
+        { label: fr ? "Revenus semaine" : "Weekly revenue", value: formatCurrency(totalRev), icon: <DollarSign className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Ventes" : "Sales", value: sales.length, icon: <ShoppingCart className="size-5 text-white" />, color: "bg-blue-500" },
       ],
       quickActions: [],
       recentItems: toRecent(recentS, fr, "sale"),
     }
     if (role === "cashier") return {
       stats: [
-        { label: fr ? "Ventes du jour" : "Today's sales", value: todaySales.length, icon: <ShoppingCart className="size-5 text-sky-600" />, color: "bg-sky-50 dark:bg-sky-950" },
-        { label: fr ? "Transactions" : "Transactions", value: todaySales.length, icon: <Receipt className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-        { label: fr ? "Revenu du jour" : "Today's revenue", value: formatCurrency(todayRev), icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Médicaments" : "Medicines", value: meds.length, icon: <Pill className="size-5 text-teal-600" />, color: "bg-teal-50 dark:bg-teal-950" },
+        { label: fr ? "Ventes du jour" : "Today's sales", value: todaySales.length, icon: <ShoppingCart className="size-5 text-white" />, color: "bg-sky-500" },
+        { label: fr ? "Transactions" : "Transactions", value: todaySales.length, icon: <Receipt className="size-5 text-white" />, color: "bg-blue-500" },
+        { label: fr ? "Revenu du jour" : "Today's revenue", value: formatCurrency(todayRev), icon: <DollarSign className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Médicaments" : "Medicines", value: meds.length, icon: <Pill className="size-5 text-white" />, color: "bg-teal-500" },
       ],
       quickActions: [
         { label: fr ? "Nouvelle vente" : "New sale", icon: <PlayCircle className="size-4 text-white" />, color: "bg-emerald-500", onClick: () => onNavigateToTab("sales") },
@@ -313,10 +313,10 @@ export function EmployeeDashboard({ workspaceType, role, onNavigateToTab }: Empl
     }
     if (role === "accountant") return {
       stats: [
-        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(income), icon: <TrendingUp className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(expenses), icon: <TrendingUp className="size-5 text-red-600 rotate-180" />, color: "bg-red-50 dark:bg-red-950" },
-        { label: fr ? "Profit" : "Profit", value: formatCurrency(income - expenses), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
-        { label: fr ? "Écritures" : "Entries", value: ents.length, icon: <BarChart3 className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
+        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(income), icon: <TrendingUp className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(expenses), icon: <TrendingUp className="size-5 text-white rotate-180" />, color: "bg-red-500" },
+        { label: fr ? "Profit" : "Profit", value: formatCurrency(income - expenses), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
+        { label: fr ? "Écritures" : "Entries", value: ents.length, icon: <BarChart3 className="size-5 text-white" />, color: "bg-blue-500" },
       ],
       quickActions: [],
       recentItems: toRecent(recentE, fr, "entry"),
@@ -344,10 +344,10 @@ export function EmployeeDashboard({ workspaceType, role, onNavigateToTab }: Empl
 
     if (role === "cashier") return {
       stats: [
-        { label: fr ? "Ventes du jour" : "Today's sales", value: todaySales.length, icon: <ShoppingCart className="size-5 text-sky-600" />, color: "bg-sky-50 dark:bg-sky-950" },
-        { label: fr ? "Transactions" : "Transactions", value: todaySales.length, icon: <Receipt className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-        { label: fr ? "Revenu du jour" : "Today's revenue", value: formatCurrency(todayRev), icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Produits" : "Products", value: prods.length, icon: <Package className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+        { label: fr ? "Ventes du jour" : "Today's sales", value: todaySales.length, icon: <ShoppingCart className="size-5 text-white" />, color: "bg-sky-500" },
+        { label: fr ? "Transactions" : "Transactions", value: todaySales.length, icon: <Receipt className="size-5 text-white" />, color: "bg-blue-500" },
+        { label: fr ? "Revenu du jour" : "Today's revenue", value: formatCurrency(todayRev), icon: <DollarSign className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Produits" : "Products", value: prods.length, icon: <Package className="size-5 text-white" />, color: "bg-violet-500" },
       ],
       quickActions: [
         { label: fr ? "Vérifier stock" : "Check stock", icon: <Eye className="size-4 text-white" />, color: "bg-teal-500", onClick: () => onNavigateToTab("produits") },
@@ -357,20 +357,20 @@ export function EmployeeDashboard({ workspaceType, role, onNavigateToTab }: Empl
     }
     if (role === "manager") return {
       stats: [
-        { label: fr ? "Produits" : "Products", value: prods.length, icon: <Package className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
-        { label: fr ? "Clients" : "Customers", value: custs, icon: <Users className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-        { label: fr ? "Ventes semaine" : "Weekly sales", value: sales.length, icon: <ShoppingCart className="size-5 text-sky-600" />, color: "bg-sky-50 dark:bg-sky-950" },
-        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(totalRev), icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
+        { label: fr ? "Produits" : "Products", value: prods.length, icon: <Package className="size-5 text-white" />, color: "bg-violet-500" },
+        { label: fr ? "Clients" : "Customers", value: custs, icon: <Users className="size-5 text-white" />, color: "bg-blue-500" },
+        { label: fr ? "Ventes semaine" : "Weekly sales", value: sales.length, icon: <ShoppingCart className="size-5 text-white" />, color: "bg-sky-500" },
+        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(totalRev), icon: <DollarSign className="size-5 text-white" />, color: "bg-emerald-500" },
       ],
       quickActions: [],
       recentItems: toRecent(recentS, fr, "sale"),
     }
     if (role === "accountant") return {
       stats: [
-        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(income), icon: <TrendingUp className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(expenses), icon: <TrendingUp className="size-5 text-red-600 rotate-180" />, color: "bg-red-50 dark:bg-red-950" },
-        { label: fr ? "Profit" : "Profit", value: formatCurrency(income - expenses), icon: <DollarSign className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
-        { label: fr ? "Factures" : "Invoices", value: invs, icon: <Receipt className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
+        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(income), icon: <TrendingUp className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(expenses), icon: <TrendingUp className="size-5 text-white rotate-180" />, color: "bg-red-500" },
+        { label: fr ? "Profit" : "Profit", value: formatCurrency(income - expenses), icon: <DollarSign className="size-5 text-white" />, color: "bg-violet-500" },
+        { label: fr ? "Factures" : "Invoices", value: invs, icon: <Receipt className="size-5 text-white" />, color: "bg-amber-500" },
       ],
       quickActions: [],
       recentItems: toRecent(recentE, fr, "entry"),
@@ -393,30 +393,30 @@ export function EmployeeDashboard({ workspaceType, role, onNavigateToTab }: Empl
 
     if (role === "accountant") return {
       stats: [
-        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(income), icon: <TrendingUp className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(expenses), icon: <TrendingUp className="size-5 text-red-600 rotate-180" />, color: "bg-red-50 dark:bg-red-950" },
-        { label: fr ? "Solde" : "Balance", value: formatCurrency(income - expenses), icon: <DollarSign className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-        { label: fr ? "Écritures" : "Entries", value: ents.length, icon: <BarChart3 className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
+        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(income), icon: <TrendingUp className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(expenses), icon: <TrendingUp className="size-5 text-white rotate-180" />, color: "bg-red-500" },
+        { label: fr ? "Solde" : "Balance", value: formatCurrency(income - expenses), icon: <DollarSign className="size-5 text-white" />, color: "bg-blue-500" },
+        { label: fr ? "Écritures" : "Entries", value: ents.length, icon: <BarChart3 className="size-5 text-white" />, color: "bg-violet-500" },
       ],
       quickActions: [],
       recentItems: toRecent(recentE, fr, "entry"),
     }
     if (role === "cashier") return {
       stats: [
-        { label: fr ? "Paiements aujourd'hui" : "Payments today", value: todayPay.length, icon: <DollarSign className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Transactions" : "Transactions", value: ents.length, icon: <Receipt className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
-        { label: fr ? "Montant du jour" : "Today's amount", value: formatCurrency(todayAmt), icon: <TrendingUp className="size-5 text-violet-600" />, color: "bg-violet-50 dark:bg-violet-950" },
-        { label: fr ? "Employés" : "Employees", value: emps, icon: <Briefcase className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
+        { label: fr ? "Paiements aujourd'hui" : "Payments today", value: todayPay.length, icon: <DollarSign className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Transactions" : "Transactions", value: ents.length, icon: <Receipt className="size-5 text-white" />, color: "bg-blue-500" },
+        { label: fr ? "Montant du jour" : "Today's amount", value: formatCurrency(todayAmt), icon: <TrendingUp className="size-5 text-white" />, color: "bg-violet-500" },
+        { label: fr ? "Employés" : "Employees", value: emps, icon: <Briefcase className="size-5 text-white" />, color: "bg-amber-500" },
       ],
       quickActions: [],
       recentItems: toRecent(recentE, fr, "entry"),
     }
     if (role === "manager") return {
       stats: [
-        { label: fr ? "Employés actifs" : "Active employees", value: emps, icon: <Briefcase className="size-5 text-amber-600" />, color: "bg-amber-50 dark:bg-amber-950" },
-        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(income), icon: <TrendingUp className="size-5 text-emerald-600" />, color: "bg-emerald-50 dark:bg-emerald-950" },
-        { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(expenses), icon: <TrendingUp className="size-5 text-red-600 rotate-180" />, color: "bg-red-50 dark:bg-red-950" },
-        { label: fr ? "Factures" : "Invoices", value: invs, icon: <Receipt className="size-5 text-blue-600" />, color: "bg-blue-50 dark:bg-blue-950" },
+        { label: fr ? "Employés actifs" : "Active employees", value: emps, icon: <Briefcase className="size-5 text-white" />, color: "bg-amber-500" },
+        { label: fr ? "Revenus" : "Revenue", value: formatCurrency(income), icon: <TrendingUp className="size-5 text-white" />, color: "bg-emerald-500" },
+        { label: fr ? "Dépenses" : "Expenses", value: formatCurrency(expenses), icon: <TrendingUp className="size-5 text-white rotate-180" />, color: "bg-red-500" },
+        { label: fr ? "Factures" : "Invoices", value: invs, icon: <Receipt className="size-5 text-white" />, color: "bg-blue-500" },
       ],
       quickActions: [],
       recentItems: toRecent(recentE, fr, "entry"),
