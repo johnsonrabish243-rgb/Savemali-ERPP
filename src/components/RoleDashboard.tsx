@@ -12,7 +12,7 @@ import {
   GraduationCap, Users, BookOpen, ClipboardCheck, DollarSign, TrendingUp,
   AlertTriangle, Pill, Package, ShoppingCart, Clock, FileText, Receipt,
   BarChart3, Briefcase, ArrowUpRight, ArrowDownRight, Search, Zap,
-  ClipboardList, Calendar, Filter, X, Send, CheckCircle, Archive, Eye, XCircle
+  ClipboardList, Calendar, Filter, X, Send, CheckCircle, Archive, Eye, XCircle, Building2
 } from "lucide-react"
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
