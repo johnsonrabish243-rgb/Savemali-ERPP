@@ -257,7 +257,14 @@ export function SignInPage({ onNavigate }: Props) {
         setVerifying(false)
         return
       }
-      // Create workspace if pending from signup
+
+      if (password) {
+        const { data: signInData } = await insforge.auth.signInWithPassword({ email, password })
+        if (signInData?.refreshToken) {
+          localStorage.setItem("savemali_refresh_token", signInData.refreshToken)
+        }
+      }
+
       try {
         const raw = localStorage.getItem("savemali_pending_ws")
         if (raw) {
@@ -277,7 +284,6 @@ export function SignInPage({ onNavigate }: Props) {
           return
         }
       } catch {}
-      // Fallback: just redirect to dashboard
       await checkAuth()
       setRedirectTarget("dashboard")
       setShowTransition(true)

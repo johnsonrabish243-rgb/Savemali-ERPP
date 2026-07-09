@@ -121,6 +121,8 @@ export const translations = {
       title: "Tableau de bord",
       welcome: "Bienvenue sur SaveMali",
       overview: "Vue d'ensemble",
+      welcomeTitle: "Bienvenue, {name}",
+      welcomeSubtitle: "Vue d'ensemble de vos opérations logistiques",
     },
     settings: {
       title: "Paramètres",
@@ -384,6 +386,8 @@ export const translations = {
       title: "Dashboard",
       welcome: "Welcome to SaveMali",
       overview: "Overview",
+      welcomeTitle: "Welcome, {name}",
+      welcomeSubtitle: "An overview of your logistics operations",
     },
     settings: {
       title: "Settings",

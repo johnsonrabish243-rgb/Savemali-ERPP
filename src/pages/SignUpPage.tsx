@@ -247,11 +247,18 @@ export function SignUpPage({ onNavigate }: Props) {
         setVerifying(false)
         return
       }
+
       const uid = data?.user?.id || (data as any)?.id || ""
       if (uid) {
         const { error: wsError } = await insforge.database.from("workspaces").insert([{ owner_id: uid, name: workspaceName.trim(), type: workspaceType }])
         if (wsError) console.error("Workspace creation error:", wsError)
       }
+
+      const { data: signInData } = await insforge.auth.signInWithPassword({ email: verificationEmail, password })
+      if (signInData?.refreshToken) {
+        localStorage.setItem("savemali_refresh_token", signInData.refreshToken)
+      }
+
       localStorage.removeItem("savemali_pending_ws")
       await checkAuth()
       setCreatedWsType(workspaceType)

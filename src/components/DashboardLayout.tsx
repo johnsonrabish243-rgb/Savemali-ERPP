@@ -22,7 +22,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab }: DashboardLayoutProps) {
   const { user, workspace, signOut } = useAuth()
   const role = useRole()
-  const { lang } = useLanguage()
+  const { lang, t } = useLanguage()
   const fr = lang === "fr"
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const [notifOpen, setNotifOpen] = React.useState(false)
@@ -331,6 +331,16 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
             </div>
           </div>
         </header>
+
+        {/* Welcome Banner */}
+        <div className="border-b border-border bg-gradient-to-r from-[#f97316]/5 via-[#f97316]/10 to-transparent px-4 lg:px-6 py-4">
+          <h1 className="text-lg font-bold text-foreground">
+            {t.dashboard.welcomeTitle.replace("{name}", user?.email?.split("@")[0] ?? "")}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {t.dashboard.welcomeSubtitle} — {format(new Date(), "d MMMM yyyy", { locale: fr ? frLocale : enUS })}
+          </p>
+        </div>
 
         <main className="flex-1 overflow-y-auto">
           {children}
