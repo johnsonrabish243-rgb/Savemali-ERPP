@@ -71,18 +71,18 @@ export function SignInPage({ onNavigate }: Props) {
   // Auto-redirect countdown
   React.useEffect(() => {
     if (!showTransition) return
-    const interval = setInterval(() => {
-      setRedirectCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval)
-          checkAuth().then(() => onNavigate(redirectTarget as Page))
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [showTransition, redirectTarget])
+    const timeout = setTimeout(() => {
+      onNavigate(redirectTarget as Page)
+    }, 3500)
+    return () => clearTimeout(timeout)
+  }, [showTransition, redirectTarget, onNavigate])
+
+  // Countdown timer for transition card
+  React.useEffect(() => {
+    if (!showTransition || redirectCountdown <= 0) return
+    const timer = setTimeout(() => setRedirectCountdown((p) => p - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [showTransition, redirectCountdown])
 
   const containerRef = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {

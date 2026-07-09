@@ -125,7 +125,7 @@ function AppContent() {
   }, [page])
 
   React.useEffect(() => {
-    if (!loading && user && (page === "signin" || page === "signup")) {
+    if (!loading && user && page === "signin") {
       setPage("dashboard")
     }
     if (!loading && !user && !["home", "signin", "signup", "about", "contact", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion"].includes(page)) {

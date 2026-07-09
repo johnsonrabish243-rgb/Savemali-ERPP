@@ -126,19 +126,19 @@ export function SignUpPage({ onNavigate }: Props) {
   // Auto-redirect after transition
   React.useEffect(() => {
     if (!showTransition) return
-    const interval = setInterval(() => {
-      setRedirectCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval)
-          const target = createdWsType === "pharmacy" ? "pharmacy" : "dashboard"
-          checkAuth().then(() => onNavigate(target))
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [showTransition, createdWsType])
+    const target = createdWsType === "pharmacy" ? "pharmacy" : "dashboard"
+    const timeout = setTimeout(() => {
+      onNavigate(target)
+    }, 3500)
+    return () => clearTimeout(timeout)
+  }, [showTransition, createdWsType, onNavigate])
+
+  // Countdown timer for transition card
+  React.useEffect(() => {
+    if (!showTransition || redirectCountdown <= 0) return
+    const timer = setTimeout(() => setRedirectCountdown((p) => p - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [showTransition, redirectCountdown])
 
   // Invite flow
   const [inviteToken, setInviteToken] = React.useState<string | null>(null)
