@@ -131,7 +131,12 @@ function AppContent() {
     if (!loading && !user && !["home", "signin", "signup", "about", "contact", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion", "landing-hr"].includes(page)) {
       setPage("home")
     }
-  }, [user, loading, page])
+    // If user is logged in but has no workspace, redirect workspace pages to dashboard
+    const WORKSPACE_PAGES: Page[] = ["pharmacy", "commerce", "education", "gestion", "hr"]
+    if (!loading && user && !workspace && WORKSPACE_PAGES.includes(page)) {
+      setPage("dashboard")
+    }
+  }, [user, loading, page, workspace])
 
   const showNav = !NO_NAV_PAGES.includes(page)
 

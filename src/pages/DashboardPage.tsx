@@ -47,6 +47,13 @@ export function DashboardPage({ onNavigate }: Props) {
     }
   }, [workspace])
 
+  // Redirect home if no workspace found after auth loaded
+  React.useEffect(() => {
+    if (!authLoading && !role.loading && !workspace) {
+      onNavigate("home")
+    }
+  }, [authLoading, role.loading, workspace, onNavigate])
+
   // Periodic suspension check — every 30s, verify member is still active
   React.useEffect(() => {
     if (!workspace || isOwner || !user) return
@@ -75,6 +82,16 @@ export function DashboardPage({ onNavigate }: Props) {
         <div className="flex flex-col items-center gap-4">
           <div className="size-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
           <p className="text-sm text-muted-foreground font-medium">{fr ? "Chargement..." : "Loading..."}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!workspace) {
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-sm text-muted-foreground font-medium">{fr ? "Aucun espace de travail trouvé. Redirection..." : "No workspace found. Redirecting..."}</p>
         </div>
       </div>
     )

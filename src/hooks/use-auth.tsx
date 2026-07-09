@@ -2,7 +2,7 @@ import * as React from "react"
 import { insforge, type Workspace } from "@/lib/supabase"
 import { useSession } from "@/hooks/use-session"
 import { logAudit } from "@/lib/audit"
-import { getDeviceInfo, initSession, clearSession, startActivityTracking, isSessionExpired } from "@/lib/security"
+import { getDeviceInfo, initSession, clearSession, startActivityTracking, isSessionExpired, getSession } from "@/lib/security"
 import { clearAbuseLogs, clearAbuseLockout } from "@/lib/abuse-protection"
 
 interface AuthUser {
@@ -179,7 +179,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!state.user) return
     const stopTracking = startActivityTracking()
     const interval = setInterval(() => {
-      if (isSessionExpired()) {
+      const session = getSession()
+      if (session && isSessionExpired()) {
         signOut()
       }
     }, 60_000)
