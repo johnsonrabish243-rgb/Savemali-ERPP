@@ -214,6 +214,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const user = data.user as AuthUser
       const emailVerified = (user as any).email_verified !== false && (user as any).email_confirmed_at != null
       setState({ user, workspace: result.workspace, loading: false, isOwner: result.isOwner, emailVerified })
+      initSession()
     } catch (err) {
       setState({ user: null, workspace: null, loading: false, isOwner: false, emailVerified: true })
     }

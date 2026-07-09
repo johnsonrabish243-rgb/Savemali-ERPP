@@ -153,6 +153,10 @@ export function SignInPage({ onNavigate }: Props) {
       await checkAuth()
       onNavigate("dashboard")
     } catch (err: any) {
+      const msg = (err?.message || "").toLowerCase()
+      if (msg.includes("email") && (msg.includes("verified") || msg.includes("confirm"))) {
+        setEmailNotVerified(true)
+      }
       const result = trackLoginAttempt(false)
       if (result.blocked) {
         setError(fr ? "Trop de tentatives. Réessayez dans 15 min." : "Too many attempts. Retry in 15 min.")

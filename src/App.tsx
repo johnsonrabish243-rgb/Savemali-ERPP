@@ -128,7 +128,7 @@ function AppContent() {
     if (!loading && user && page === "signin") {
       setPage("dashboard")
     }
-    if (!loading && !user && !["home", "signin", "signup", "about", "contact", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion"].includes(page)) {
+    if (!loading && !user && !["home", "signin", "signup", "about", "contact", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion", "landing-hr"].includes(page)) {
       setPage("home")
     }
   }, [user, loading, page])

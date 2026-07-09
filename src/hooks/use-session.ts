@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from "react"
-import { initSession, updateActivity, isSessionExpired, clearSession, getDeviceInfo } from "@/lib/security"
+import { initSession, updateActivity, isSessionExpired, clearSession, getSession, getDeviceInfo } from "@/lib/security"
 
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000
 const CHECK_INTERVAL = 60 * 1000
@@ -8,6 +8,8 @@ const GRACE_PERIOD = 5 * 1000
 export function useSession(signOut: () => Promise<void>) {
   const warned = useRef(false)
   const startedAt = useRef(Date.now())
+  const signOutRef = useRef(signOut)
+  signOutRef.current = signOut
 
   const handleActivity = useCallback(() => {
     updateActivity()
@@ -26,11 +28,12 @@ export function useSession(signOut: () => Promise<void>) {
       const elapsed = Date.now() - startedAt.current
       if (elapsed < GRACE_PERIOD) return
 
-      if (isSessionExpired()) {
+      const session = getSession()
+      if (session && isSessionExpired()) {
         if (!warned.current) {
           warned.current = true
         }
-        try { await signOut() } catch {}
+        try { await signOutRef.current() } catch {}
       }
     }, CHECK_INTERVAL)
 
@@ -39,7 +42,7 @@ export function useSession(signOut: () => Promise<void>) {
       document.removeEventListener("visibilitychange", handleActivity)
       clearInterval(interval)
     }
-  }, [signOut, handleActivity])
+  }, [handleActivity])
 }
 
 export function useDeviceFingerprint() {
