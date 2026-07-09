@@ -41,10 +41,29 @@ export function CreateWorkspacePage({ onNavigate }: Props) {
     setLoading(true)
     setError(null)
     try {
-      const { error: wsError } = await insforge.database
+      // 1. Create workspace
+      const { data: wsData, error: wsError } = await insforge.database
         .from("workspaces")
         .insert([{ owner_id: user.id, name: name.trim(), type }])
+        .select("id")
+        .single()
       if (wsError) throw wsError
+
+      // 2. Add owner as workspace member
+      if (wsData?.id) {
+        await insforge.database
+          .from("workspace_members")
+          .insert([{
+            workspace_id: wsData.id,
+            user_id: user.id,
+            email: user.email ?? "",
+            display_name: user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "",
+            role: "admin",
+            status: "active",
+            owner_id: user.id
+          }])
+          .catch(() => {})
+      }
 
       trackModuleOpen(type)
       await checkAuth()

@@ -206,7 +206,6 @@ export const ROLE_CONFIGS: Record<WorkspaceType, Record<RoleKey, RoleConfig>> = 
     },
     teacher: { label: { fr: "Enseignant", en: "Teacher" }, accent: "text-indigo-600", accentBg: "bg-indigo-500", menu: [] },
     supervisor: { label: { fr: "Surveillant", en: "Supervisor" }, accent: "text-amber-600", accentBg: "bg-amber-500", menu: [] },
-    pharmacist: { label: { fr: "Pharmacien", en: "Pharmacist" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [] },
     payroll: { label: { fr: "Paie", en: "Payroll" }, accent: "text-pink-600", accentBg: "bg-pink-500", menu: [] },
     hr: {
       label: { fr: "RH", en: "HR" },

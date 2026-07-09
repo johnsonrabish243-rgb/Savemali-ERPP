@@ -5,7 +5,7 @@ import type { WorkspaceType } from "@/lib/supabase"
 
 export type RoleKey =
   | "admin" | "manager" | "teacher" | "cashier" | "accountant" | "supervisor" | "viewer"
-  | "pharmacist" | "stock_manager" | "seller" | "hr" | "payroll"
+  | "pharmacist" | "stock_manager" | "seller" | "hr" | "payroll" | "employee"
 
 export interface UserRole {
   role: RoleKey
@@ -28,6 +28,7 @@ const ROLE_MAP: Record<string, RoleKey> = {
   seller: "seller",
   hr: "hr",
   payroll: "payroll",
+  employee: "employee",
 }
 
 export function useRole(): UserRole {

@@ -268,7 +268,9 @@ export function PharmacyPage({ onNavigate, initialTab }: Props) {
       ])
       setPrescriptions((prescRes.data as any[]) ?? [])
       setExpenses((expRes.data as any[]) ?? [])
-      setAccountingEntries([])
+      // Fetch accounting from DB
+      const { data: accData } = await insforge.database.from("pharmacy_accounting").select("*").eq("workspace_id", workspace.id).order("entry_date", { ascending: false })
+      setAccountingEntries((accData as any[]) ?? [])
       setHistoryEntries([])
     }
     loadExtra()
@@ -1323,10 +1325,12 @@ export function PharmacyPage({ onNavigate, initialTab }: Props) {
                 <Input value={acctForm.description} onChange={(e) => setAcctForm((p) => ({ ...p, description: e.target.value }))} placeholder={fr ? "Description" : "Description"} className="h-9 text-sm" />
               </div>
               <div className="flex justify-end">
-                <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90 gap-1" onClick={() => {
+                <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90 gap-1" onClick={async () => {
                   const amt = safeParseFloat(acctForm.amount)
-                  if (amt <= 0 || !acctForm.category) return
-                  setAccountingEntries((prev) => [...prev, { ...acctForm, id: crypto.randomUUID(), amount: amt }])
+                  if (amt <= 0 || !acctForm.category || !workspace) return
+                  const payload = { workspace_id: workspace.id, type: acctForm.type, category: acctForm.category, amount: amt, description: acctForm.description, entry_date: acctForm.date || new Date().toISOString().split("T")[0] }
+                  const { data, error } = await insforge.database.from("pharmacy_accounting").insert([payload]).select().single()
+                  if (!error && data) setAccountingEntries((prev) => [data, ...prev])
                   setAcctForm({ date: new Date().toISOString().split("T")[0], type: "income", category: "", amount: "", description: "" })
                 }}>
                   <Plus className="size-3.5" />{fr ? "Ajouter" : "Add"}
@@ -1348,14 +1352,14 @@ export function PharmacyPage({ onNavigate, initialTab }: Props) {
                   <tbody className="divide-y divide-border">
                     {accountingEntries.map((e) => (
                       <tr key={e.id} className="bg-card hover:bg-muted/30 transition-colors">
-                        <td className="px-4 py-3 text-muted-foreground">{e.date}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{e.entry_date || e.date}</td>
                         <td className="px-4 py-3"><Badge variant={e.type === "income" ? "secondary" : "destructive"}>{e.type === "income" ? (fr ? "Revenu" : "Income") : (fr ? "Dépense" : "Expense")}</Badge></td>
                         <td className="px-4 py-3 text-foreground">{e.category}</td>
                          <td className="px-4 py-3 font-medium text-foreground">{formatCurrency(e.amount, undefined, true)}</td>
                         <td className="px-4 py-3 text-muted-foreground">{e.description || "—"}</td>
                         <td className="px-4 py-3">
                           {(role === "admin" || role === "pharmacist" || role === "stock_manager") && (
-                            <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => setAccountingEntries((prev) => prev.filter((x) => x.id !== e.id))}><Trash2 className="size-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={async () => { await insforge.database.from("pharmacy_accounting").delete().eq("id", e.id); setAccountingEntries((prev) => prev.filter((x) => x.id !== e.id)) }}><Trash2 className="size-3.5" /></Button>
                           )}
                         </td>
                       </tr>

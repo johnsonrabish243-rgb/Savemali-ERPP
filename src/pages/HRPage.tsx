@@ -75,6 +75,39 @@ interface HRTraining {
   instructor?: string; start_date: string; end_date?: string;
   status: string; participants_count: number; created_at: string;
 }
+interface HRAttendance {
+  id: string; workspace_id: string; employee_id: string; date: string;
+  check_in: string; check_out?: string; status: string; notes?: string; created_at: string;
+}
+interface HRAbsence {
+  id: string; workspace_id: string; employee_id: string; start_date: string;
+  end_date: string; reason: string; status: string; created_at: string;
+}
+interface HRSkill {
+  id: string; workspace_id: string; employee_id: string; skill_name: string;
+  level: string; notes?: string; created_at: string;
+}
+interface HRPromotion {
+  id: string; workspace_id: string; employee_id: string; old_position: string;
+  new_position: string; effective_date: string; notes?: string; created_at: string;
+}
+interface HRDiscipline {
+  id: string; workspace_id: string; employee_id: string; type: string;
+  description: string; action_taken: string; date: string; created_at: string;
+}
+interface HRHealthSafety {
+  id: string; workspace_id: string; incident_type: string; date: string;
+  description: string; location?: string; severity: string; status: string;
+  reported_by?: string; created_at: string;
+}
+interface HRDocument {
+  id: string; workspace_id: string; employee_id?: string; title: string;
+  doc_type: string; file_name?: string; notes?: string; created_at: string;
+}
+interface HRCommunication {
+  id: string; workspace_id: string; sender_id?: string; subject: string;
+  message: string; priority: string; created_at: string;
+}
 
 // ─── Helpers ────────────────────────────────────────────
 function EmptyState({ icon: Icon, title, desc }: { icon: any; title: string; desc: string }) {
@@ -118,6 +151,16 @@ export function HRPage({ onNavigate, initialTab }: Props) {
   const [recruitments, setRecruitments] = React.useState<HRRecruitment[]>([])
   const [evaluations, setEvaluations] = React.useState<HREvaluation[]>([])
   const [trainings, setTrainings] = React.useState<HRTraining[]>([])
+  const [attendanceList, setAttendanceList] = React.useState<HRAttendance[]>([])
+  const [absences, setAbsences] = React.useState<HRAbsence[]>([])
+  const [skills, setSkills] = React.useState<HRSkill[]>([])
+  const [promotions, setPromotions] = React.useState<HRPromotion[]>([])
+  const [disciplines, setDisciplines] = React.useState<HRDiscipline[]>([])
+  const [healthIncidents, setHealthIncidents] = React.useState<HRHealthSafety[]>([])
+  const [documents, setDocuments] = React.useState<HRDocument[]>([])
+  const [communications, setCommunications] = React.useState<HRCommunication[]>([])
+  const [auditLogs, setAuditLogs] = React.useState<any[]>([])
+  const [notifPrefs, setNotifPrefs] = React.useState({ email: true, annual_days: 30, attendance_policy: "standard" })
 
   // Dialog states
   const [dialogOpen, setDialogOpen] = React.useState(false)
@@ -142,7 +185,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
     setLoading(true)
     try {
       const wid = workspace.id
-      const [empR, deptR, contR, leaveR, recR, evalR, trainR] = await Promise.all([
+      const [empR, deptR, contR, leaveR, recR, evalR, trainR, attR, absR, skillR, promoR, discR, hsR, docR, commR, auditR] = await Promise.all([
         insforge.database.from("hr_employees").select("*").eq("workspace_id", wid).order("last_name"),
         insforge.database.from("hr_departments").select("*").eq("workspace_id", wid).order("name"),
         insforge.database.from("hr_contracts").select("*").eq("workspace_id", wid).order("start_date", { ascending: false }),
@@ -150,6 +193,15 @@ export function HRPage({ onNavigate, initialTab }: Props) {
         insforge.database.from("hr_recruitments").select("*").eq("workspace_id", wid).order("created_at", { ascending: false }),
         insforge.database.from("hr_evaluations").select("*").eq("workspace_id", wid).order("created_at", { ascending: false }),
         insforge.database.from("hr_trainings").select("*").eq("workspace_id", wid).order("start_date", { ascending: false }),
+        insforge.database.from("hr_attendance").select("*").eq("workspace_id", wid).order("date", { ascending: false }),
+        insforge.database.from("hr_absences").select("*").eq("workspace_id", wid).order("created_at", { ascending: false }),
+        insforge.database.from("hr_skills").select("*").eq("workspace_id", wid).order("skill_name"),
+        insforge.database.from("hr_promotions").select("*").eq("workspace_id", wid).order("effective_date", { ascending: false }),
+        insforge.database.from("hr_discipline").select("*").eq("workspace_id", wid).order("date", { ascending: false }),
+        insforge.database.from("hr_health_safety").select("*").eq("workspace_id", wid).order("date", { ascending: false }),
+        insforge.database.from("hr_documents").select("*").eq("workspace_id", wid).order("created_at", { ascending: false }),
+        insforge.database.from("hr_communication").select("*").eq("workspace_id", wid).order("created_at", { ascending: false }),
+        insforge.database.from("audit_logs").select("*").eq("workspace_id", wid).order("created_at", { ascending: false }).limit(200),
       ])
       setEmployees((empR.data as any[]) || [])
       setDepartments((deptR.data as any[]) || [])
@@ -158,6 +210,15 @@ export function HRPage({ onNavigate, initialTab }: Props) {
       setRecruitments((recR.data as any[]) || [])
       setEvaluations((evalR.data as any[]) || [])
       setTrainings((trainR.data as any[]) || [])
+      setAttendanceList((attR.data as any[]) || [])
+      setAbsences((absR.data as any[]) || [])
+      setSkills((skillR.data as any[]) || [])
+      setPromotions((promoR.data as any[]) || [])
+      setDisciplines((discR.data as any[]) || [])
+      setHealthIncidents((hsR.data as any[]) || [])
+      setDocuments((docR.data as any[]) || [])
+      setCommunications((commR.data as any[]) || [])
+      setAuditLogs((auditR.data as any[]) || [])
     } catch (err) {
       console.error("HR load error:", err)
     }
@@ -185,7 +246,9 @@ export function HRPage({ onNavigate, initialTab }: Props) {
       const tableMap: Record<string, string> = {
         employee: "hr_employees", department: "hr_departments", contract: "hr_contracts",
         leave: "hr_leave_requests", recruitment: "hr_recruitments", evaluation: "hr_evaluations",
-        training: "hr_trainings",
+        training: "hr_trainings", absence: "hr_absences", attendance: "hr_attendance",
+        skill: "hr_skills", promotion: "hr_promotions", discipline: "hr_discipline",
+        health_safety: "hr_health_safety", document: "hr_documents", communication: "hr_communication",
       }
       const table = tableMap[dialogType]
       if (!table) return
@@ -635,8 +698,46 @@ export function HRPage({ onNavigate, initialTab }: Props) {
 
       {/* ─── ATTENDANCE ────────────────────────────────── */}
       {tab === "hr_attendance" && (
-        <SectionCard title={t("Présence", "Attendance")}>
-          <EmptyState icon={ClipboardCheck} title={t("Pointage quotidien", "Daily attendance")} desc={t("Suivi des présences des employés", "Employee attendance tracking")} />
+        <SectionCard
+          title={t("Présence", "Attendance")}
+          action={<Button size="sm" onClick={() => openDialog("attendance")}><Plus className="size-4 mr-1" />{fr ? "Pointer" : "Clock in"}</Button>}
+        >
+          {attendanceList.length === 0 ? (
+            <EmptyState icon={ClipboardCheck} title={t("Aucune présence", "No attendance records")} desc={t("Enregistrez les présences des employés", "Record employee attendance")} />
+          ) : (
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
+                  <TableHead>{fr ? "Date" : "Date"}</TableHead>
+                  <TableHead>{fr ? "Arrivée" : "Check In"}</TableHead>
+                  <TableHead>{fr ? "Départ" : "Check Out"}</TableHead>
+                  <TableHead>{fr ? "Statut" : "Status"}</TableHead>
+                  <TableHead className="w-20"></TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {attendanceList.map((a) => {
+                    const emp = employees.find(e => e.id === a.employee_id)
+                    return (
+                      <TableRow key={a.id}>
+                        <TableCell className="text-sm font-medium">{emp ? `${emp.first_name} ${emp.last_name}` : a.employee_id}</TableCell>
+                        <TableCell className="text-sm">{a.date}</TableCell>
+                        <TableCell className="text-sm">{a.check_in || "—"}</TableCell>
+                        <TableCell className="text-sm">{a.check_out || "—"}</TableCell>
+                        <TableCell className="text-sm"><Badge variant={a.status === "present" ? "secondary" : a.status === "late" ? "outline" : "destructive"}>{a.status}</Badge></TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="ghost" className="size-7" onClick={() => openDialog("attendance", a)}><Pencil className="size-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => handleDelete("hr_attendance", a.id)}><Trash2 className="size-3.5" /></Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </SectionCard>
       )}
 
@@ -764,29 +865,174 @@ export function HRPage({ onNavigate, initialTab }: Props) {
 
       {/* ─── SKILLS ────────────────────────────────────── */}
       {tab === "hr_skills" && (
-        <SectionCard title={t("Compétences", "Skills")}>
-          <EmptyState icon={Zap} title={t("Gestion des compétences", "Skills management")} desc={t("Évaluez et suivez les compétences", "Track and evaluate skills")} />
+        <SectionCard
+          title={t("Compétences", "Skills")}
+          action={<Button size="sm" onClick={() => openDialog("skill")}><Plus className="size-4 mr-1" />{fr ? "Ajouter" : "Add"}</Button>}
+        >
+          {skills.length === 0 ? (
+            <EmptyState icon={Zap} title={t("Aucune compétence", "No skills")} desc={t("Évaluez et suivez les compétences", "Track and evaluate skills")} />
+          ) : (
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
+                  <TableHead>{fr ? "Compétence" : "Skill"}</TableHead>
+                  <TableHead>{fr ? "Niveau" : "Level"}</TableHead>
+                  <TableHead>{fr ? "Notes" : "Notes"}</TableHead>
+                  <TableHead className="w-20"></TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {skills.map((s) => {
+                    const emp = employees.find(e => e.id === s.employee_id)
+                    return (
+                      <TableRow key={s.id}>
+                        <TableCell className="text-sm font-medium">{emp ? `${emp.first_name} ${emp.last_name}` : s.employee_id}</TableCell>
+                        <TableCell className="text-sm">{s.skill_name}</TableCell>
+                        <TableCell className="text-sm"><Badge variant="outline">{s.level}</Badge></TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{s.notes || "—"}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="ghost" className="size-7" onClick={() => openDialog("skill", s)}><Pencil className="size-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => handleDelete("hr_skills", s.id)}><Trash2 className="size-3.5" /></Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </SectionCard>
       )}
 
       {/* ─── PROMOTIONS ────────────────────────────────── */}
       {tab === "hr_promotions" && (
-        <SectionCard title={t("Promotions", "Promotions")}>
-          <EmptyState icon={ArrowUpRight} title={t("Promotions", "Promotions")} desc={t("Historique des promotions", "Promotion history")} />
+        <SectionCard
+          title={t("Promotions", "Promotions")}
+          action={<Button size="sm" onClick={() => openDialog("promotion")}><Plus className="size-4 mr-1" />{fr ? "Nouvelle promotion" : "New promotion"}</Button>}
+        >
+          {promotions.length === 0 ? (
+            <EmptyState icon={ArrowUpRight} title={t("Aucune promotion", "No promotions")} desc={t("Historique des promotions", "Promotion history")} />
+          ) : (
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
+                  <TableHead>{fr ? "Ancien poste" : "Old position"}</TableHead>
+                  <TableHead>{fr ? "Nouveau poste" : "New position"}</TableHead>
+                  <TableHead>{fr ? "Date" : "Date"}</TableHead>
+                  <TableHead className="w-20"></TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {promotions.map((p) => {
+                    const emp = employees.find(e => e.id === p.employee_id)
+                    return (
+                      <TableRow key={p.id}>
+                        <TableCell className="text-sm font-medium">{emp ? `${emp.first_name} ${emp.last_name}` : p.employee_id}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{p.old_position}</TableCell>
+                        <TableCell className="text-sm font-medium">{p.new_position}</TableCell>
+                        <TableCell className="text-sm">{p.effective_date}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="ghost" className="size-7" onClick={() => openDialog("promotion", p)}><Pencil className="size-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => handleDelete("hr_promotions", p.id)}><Trash2 className="size-3.5" /></Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </SectionCard>
       )}
 
       {/* ─── DISCIPLINE ────────────────────────────────── */}
       {tab === "hr_discipline" && (
-        <SectionCard title={t("Discipline", "Discipline")}>
-          <EmptyState icon={Shield} title={t("Discipline", "Discipline")} desc={t("Gestion disciplinaire", "Disciplinary management")} />
+        <SectionCard
+          title={t("Discipline", "Discipline")}
+          action={<Button size="sm" onClick={() => openDialog("discipline")}><Plus className="size-4 mr-1" />{fr ? "Nouvel incident" : "New incident"}</Button>}
+        >
+          {disciplines.length === 0 ? (
+            <EmptyState icon={Shield} title={t("Aucun incident", "No incidents")} desc={t("Gestion disciplinaire", "Disciplinary management")} />
+          ) : (
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
+                  <TableHead>{fr ? "Type" : "Type"}</TableHead>
+                  <TableHead>{fr ? "Description" : "Description"}</TableHead>
+                  <TableHead>{fr ? "Action" : "Action taken"}</TableHead>
+                  <TableHead>{fr ? "Date" : "Date"}</TableHead>
+                  <TableHead className="w-20"></TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {disciplines.map((d) => {
+                    const emp = employees.find(e => e.id === d.employee_id)
+                    return (
+                      <TableRow key={d.id}>
+                        <TableCell className="text-sm font-medium">{emp ? `${emp.first_name} ${emp.last_name}` : d.employee_id}</TableCell>
+                        <TableCell className="text-sm"><Badge variant="outline">{d.type}</Badge></TableCell>
+                        <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">{d.description}</TableCell>
+                        <TableCell className="text-sm">{d.action_taken}</TableCell>
+                        <TableCell className="text-sm">{d.date}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="ghost" className="size-7" onClick={() => openDialog("discipline", d)}><Pencil className="size-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => handleDelete("hr_discipline", d.id)}><Trash2 className="size-3.5" /></Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </SectionCard>
       )}
 
       {/* ─── HEALTH & SAFETY ───────────────────────────── */}
       {tab === "hr_health_safety" && (
-        <SectionCard title={t("Santé et sécurité", "Health & Safety")}>
-          <EmptyState icon={Heart} title={t("Santé et sécurité", "Health & Safety")} desc={t("Incidents et mesures de sécurité", "Incidents and safety measures")} />
+        <SectionCard
+          title={t("Santé et sécurité", "Health & Safety")}
+          action={<Button size="sm" onClick={() => openDialog("health_safety")}><Plus className="size-4 mr-1" />{fr ? "Signaler" : "Report"}</Button>}
+        >
+          {healthIncidents.length === 0 ? (
+            <EmptyState icon={Heart} title={t("Aucun incident", "No incidents")} desc={t("Incidents et mesures de sécurité", "Incidents and safety measures")} />
+          ) : (
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>{fr ? "Type" : "Type"}</TableHead>
+                  <TableHead>{fr ? "Date" : "Date"}</TableHead>
+                  <TableHead>{fr ? "Lieu" : "Location"}</TableHead>
+                  <TableHead>{fr ? "Gravité" : "Severity"}</TableHead>
+                  <TableHead>{fr ? "Statut" : "Status"}</TableHead>
+                  <TableHead className="w-20"></TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {healthIncidents.map((h) => (
+                    <TableRow key={h.id}>
+                      <TableCell className="text-sm font-medium">{h.incident_type}</TableCell>
+                      <TableCell className="text-sm">{h.date}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{h.location || "—"}</TableCell>
+                      <TableCell className="text-sm"><Badge variant={h.severity === "high" ? "destructive" : "outline"}>{h.severity}</Badge></TableCell>
+                      <TableCell className="text-sm"><Badge variant={h.status === "resolved" ? "secondary" : "outline"}>{h.status}</Badge></TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button size="icon" variant="ghost" className="size-7" onClick={() => openDialog("health_safety", h)}><Pencil className="size-3.5" /></Button>
+                          <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => handleDelete("hr_health_safety", h.id)}><Trash2 className="size-3.5" /></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </SectionCard>
       )}
 
@@ -794,16 +1040,82 @@ export function HRPage({ onNavigate, initialTab }: Props) {
       {tab === "hr_documents" && (
         <SectionCard
           title={t("Documents RH", "HR Documents")}
-          action={<Button size="sm"><Upload className="size-4 mr-1" />{t("Importer", "Upload")}</Button>}
+          action={<Button size="sm" onClick={() => openDialog("document")}><Plus className="size-4 mr-1" />{fr ? "Ajouter" : "Add"}</Button>}
         >
-          <EmptyState icon={FolderOpen} title={t("Aucun document", "No documents")} desc={t("Uploadez des documents RH", "Upload HR documents")} />
+          {documents.length === 0 ? (
+            <EmptyState icon={FolderOpen} title={t("Aucun document", "No documents")} desc={t("Uploadez des documents RH", "Upload HR documents")} />
+          ) : (
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>{fr ? "Titre" : "Title"}</TableHead>
+                  <TableHead>{fr ? "Type" : "Type"}</TableHead>
+                  <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
+                  <TableHead>{fr ? "Date" : "Date"}</TableHead>
+                  <TableHead className="w-20"></TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {documents.map((doc) => {
+                    const emp = doc.employee_id ? employees.find(e => e.id === doc.employee_id) : null
+                    return (
+                      <TableRow key={doc.id}>
+                        <TableCell className="text-sm font-medium">{doc.title}</TableCell>
+                        <TableCell className="text-sm"><Badge variant="outline">{doc.doc_type}</Badge></TableCell>
+                        <TableCell className="text-sm">{emp ? `${emp.first_name} ${emp.last_name}` : "—"}</TableCell>
+                        <TableCell className="text-sm">{new Date(doc.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="ghost" className="size-7" onClick={() => openDialog("document", doc)}><Pencil className="size-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => handleDelete("hr_documents", doc.id)}><Trash2 className="size-3.5" /></Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </SectionCard>
       )}
 
       {/* ─── COMMUNICATION ─────────────────────────────── */}
       {tab === "hr_communication" && (
-        <SectionCard title={t("Communication interne", "Internal Communication")}>
-          <EmptyState icon={MessageSquare} title={t("Messages internes", "Internal messages")} desc={t("Communiquez avec l'équipe", "Communicate with the team")} />
+        <SectionCard
+          title={t("Communication interne", "Internal Communication")}
+          action={<Button size="sm" onClick={() => openDialog("communication")}><Plus className="size-4 mr-1" />{fr ? "Nouveau message" : "New message"}</Button>}
+        >
+          {communications.length === 0 ? (
+            <EmptyState icon={MessageSquare} title={t("Aucun message", "No messages")} desc={t("Communiquez avec l'équipe", "Communicate with the team")} />
+          ) : (
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>{fr ? "Sujet" : "Subject"}</TableHead>
+                  <TableHead>{fr ? "Message" : "Message"}</TableHead>
+                  <TableHead>{fr ? "Priorité" : "Priority"}</TableHead>
+                  <TableHead>{fr ? "Date" : "Date"}</TableHead>
+                  <TableHead className="w-20"></TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {communications.map((c) => (
+                    <TableRow key={c.id}>
+                      <TableCell className="text-sm font-medium">{c.subject}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground max-w-[250px] truncate">{c.message}</TableCell>
+                      <TableCell className="text-sm"><Badge variant={c.priority === "high" ? "destructive" : c.priority === "low" ? "outline" : "secondary"}>{c.priority}</Badge></TableCell>
+                      <TableCell className="text-sm">{new Date(c.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button size="icon" variant="ghost" className="size-7" onClick={() => openDialog("communication", c)}><Pencil className="size-3.5" /></Button>
+                          <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => handleDelete("hr_communication", c.id)}><Trash2 className="size-3.5" /></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </SectionCard>
       )}
 
@@ -837,7 +1149,32 @@ export function HRPage({ onNavigate, initialTab }: Props) {
       {/* ─── AUDIT LOG ─────────────────────────────────── */}
       {tab === "hr_audit_log" && (
         <SectionCard title={t("Journal d'audit", "Audit Log")}>
-          <EmptyState icon={Clipboard} title={t("Journal d'audit RH", "HR Audit Log")} desc={t("Toutes les actions sont enregistrées", "All actions are recorded")} />
+          {auditLogs.length === 0 ? (
+            <EmptyState icon={Clipboard} title={t("Aucune activité", "No activity")} desc={t("Les actions seront enregistrées ici", "Actions will be recorded here")} />
+          ) : (
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>{fr ? "Action" : "Action"}</TableHead>
+                  <TableHead>{fr ? "Utilisateur" : "User"}</TableHead>
+                  <TableHead>{fr ? "Email" : "Email"}</TableHead>
+                  <TableHead>{fr ? "Date" : "Date"}</TableHead>
+                  <TableHead>{fr ? "Détails" : "Details"}</TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {auditLogs.map((a) => (
+                    <TableRow key={a.id}>
+                      <TableCell className="text-sm"><Badge variant={a.action === "delete" ? "destructive" : "secondary"}>{a.action}</Badge></TableCell>
+                      <TableCell className="text-sm">{a.actor_id || "—"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{a.actor_email || "—"}</TableCell>
+                      <TableCell className="text-sm">{new Date(a.created_at).toLocaleString()}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">{typeof a.metadata === "object" ? JSON.stringify(a.metadata) : a.metadata || "—"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </SectionCard>
       )}
 
@@ -850,21 +1187,30 @@ export function HRPage({ onNavigate, initialTab }: Props) {
                 <p className="text-sm font-medium">{t("Notifications par email", "Email notifications")}</p>
                 <p className="text-xs text-muted-foreground">{t("Recevoir les notifications RH par email", "Receive HR notifications by email")}</p>
               </div>
-              <Button variant="outline" size="sm">{t("Configurer", "Configure")}</Button>
+              <Button variant={notifPrefs.email ? "default" : "outline"} size="sm" onClick={() => setNotifPrefs(p => ({ ...p, email: !p.email }))}>
+                {notifPrefs.email ? (fr ? "Activé" : "On") : (fr ? "Désactivé" : "Off")}
+              </Button>
             </div>
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
                 <p className="text-sm font-medium">{t("Durée de congé annuel", "Annual leave days")}</p>
                 <p className="text-xs text-muted-foreground">{t("Nombre de jours de congé par an", "Number of leave days per year")}</p>
               </div>
-              <Button variant="outline" size="sm">{t("Modifier", "Edit")}</Button>
+              <Input type="number" min={1} max={60} className="w-20 h-8 text-center" value={notifPrefs.annual_days} onChange={e => setNotifPrefs(p => ({ ...p, annual_days: Number(e.target.value) }))} />
             </div>
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
                 <p className="text-sm font-medium">{t("Politique de pointage", "Attendance policy")}</p>
                 <p className="text-xs text-muted-foreground">{t("Horaires et règles de présence", "Working hours and attendance rules")}</p>
               </div>
-              <Button variant="outline" size="sm">{t("Configurer", "Configure")}</Button>
+              <Select value={notifPrefs.attendance_policy} onValueChange={v => setNotifPrefs(p => ({ ...p, attendance_policy: v }))}>
+                <SelectTrigger className="w-40 h-8"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">{fr ? "Standard (8h)" : "Standard (8h)"}</SelectItem>
+                  <SelectItem value="flexible">{fr ? "Flexible" : "Flexible"}</SelectItem>
+                  <SelectItem value="shift">{fr ? "Travail par équipes" : "Shift work"}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </SectionCard>
@@ -913,6 +1259,13 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
     evaluation: fr ? "Évaluation" : "Evaluation",
     training: fr ? "Formation" : "Training",
     absence: fr ? "Absence" : "Absence",
+    attendance: fr ? "Présence" : "Attendance",
+    skill: fr ? "Compétence" : "Skill",
+    promotion: fr ? "Promotion" : "Promotion",
+    discipline: fr ? "Discipline" : "Discipline",
+    health_safety: fr ? "Incident santé/sécurité" : "Health & Safety incident",
+    document: fr ? "Document RH" : "HR Document",
+    communication: fr ? "Message" : "Message",
   }
 
   return (
@@ -1104,6 +1457,216 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                 <div><Label>{fr ? "Date de fin" : "End date"}</Label><Input type="date" value={form.end_date || ""} onChange={e => set("end_date", e.target.value)} /></div>
               </div>
               <div><Label>{fr ? "Raison" : "Reason"}</Label><Textarea value={form.reason || ""} onChange={e => set("reason", e.target.value)} /></div>
+            </>
+          )}
+
+          {/* ATTENDANCE FORM */}
+          {type === "attendance" && (
+            <>
+              <div>
+                <Label>{fr ? "Employé" : "Employee"}</Label>
+                <Select value={form.employee_id || ""} onValueChange={v => set("employee_id", v)}>
+                  <SelectTrigger><SelectValue placeholder={fr ? "Sélectionner..." : "Select..."} /></SelectTrigger>
+                  <SelectContent>
+                    {employees.map(e => <SelectItem key={e.id} value={e.id}>{e.first_name} {e.last_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>{fr ? "Date" : "Date"}</Label><Input type="date" value={form.date || ""} onChange={e => set("date", e.target.value)} /></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div><Label>{fr ? "Arrivée" : "Check in"}</Label><Input type="time" value={form.check_in || ""} onChange={e => set("check_in", e.target.value)} /></div>
+                <div><Label>{fr ? "Départ" : "Check out"}</Label><Input type="time" value={form.check_out || ""} onChange={e => set("check_out", e.target.value)} /></div>
+              </div>
+              <div>
+                <Label>{fr ? "Statut" : "Status"}</Label>
+                <Select value={form.status || "present"} onValueChange={v => set("status", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="present">{fr ? "Présent" : "Present"}</SelectItem>
+                    <SelectItem value="late">{fr ? "En retard" : "Late"}</SelectItem>
+                    <SelectItem value="absent">{fr ? "Absent" : "Absent"}</SelectItem>
+                    <SelectItem value="half_day">{fr ? "Demi-journée" : "Half day"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>{fr ? "Notes" : "Notes"}</Label><Input value={form.notes || ""} onChange={e => set("notes", e.target.value)} /></div>
+            </>
+          )}
+
+          {/* SKILL FORM */}
+          {type === "skill" && (
+            <>
+              <div>
+                <Label>{fr ? "Employé" : "Employee"}</Label>
+                <Select value={form.employee_id || ""} onValueChange={v => set("employee_id", v)}>
+                  <SelectTrigger><SelectValue placeholder={fr ? "Sélectionner..." : "Select..."} /></SelectTrigger>
+                  <SelectContent>
+                    {employees.map(e => <SelectItem key={e.id} value={e.id}>{e.first_name} {e.last_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>{fr ? "Compétence" : "Skill name"}</Label><Input value={form.skill_name || ""} onChange={e => set("skill_name", e.target.value)} /></div>
+              <div>
+                <Label>{fr ? "Niveau" : "Level"}</Label>
+                <Select value={form.level || "beginner"} onValueChange={v => set("level", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">{fr ? "Débutant" : "Beginner"}</SelectItem>
+                    <SelectItem value="intermediate">{fr ? "Intermédiaire" : "Intermediate"}</SelectItem>
+                    <SelectItem value="advanced">{fr ? "Avancé" : "Advanced"}</SelectItem>
+                    <SelectItem value="expert">{fr ? "Expert" : "Expert"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>{fr ? "Notes" : "Notes"}</Label><Textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} /></div>
+            </>
+          )}
+
+          {/* PROMOTION FORM */}
+          {type === "promotion" && (
+            <>
+              <div>
+                <Label>{fr ? "Employé" : "Employee"}</Label>
+                <Select value={form.employee_id || ""} onValueChange={v => set("employee_id", v)}>
+                  <SelectTrigger><SelectValue placeholder={fr ? "Sélectionner..." : "Select..."} /></SelectTrigger>
+                  <SelectContent>
+                    {employees.map(e => <SelectItem key={e.id} value={e.id}>{e.first_name} {e.last_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div><Label>{fr ? "Ancien poste" : "Old position"}</Label><Input value={form.old_position || ""} onChange={e => set("old_position", e.target.value)} /></div>
+                <div><Label>{fr ? "Nouveau poste" : "New position"}</Label><Input value={form.new_position || ""} onChange={e => set("new_position", e.target.value)} /></div>
+              </div>
+              <div><Label>{fr ? "Date d'effet" : "Effective date"}</Label><Input type="date" value={form.effective_date || ""} onChange={e => set("effective_date", e.target.value)} /></div>
+              <div><Label>{fr ? "Notes" : "Notes"}</Label><Textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} /></div>
+            </>
+          )}
+
+          {/* DISCIPLINE FORM */}
+          {type === "discipline" && (
+            <>
+              <div>
+                <Label>{fr ? "Employé" : "Employee"}</Label>
+                <Select value={form.employee_id || ""} onValueChange={v => set("employee_id", v)}>
+                  <SelectTrigger><SelectValue placeholder={fr ? "Sélectionner..." : "Select..."} /></SelectTrigger>
+                  <SelectContent>
+                    {employees.map(e => <SelectItem key={e.id} value={e.id}>{e.first_name} {e.last_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>{fr ? "Type" : "Type"}</Label>
+                <Select value={form.type || "warning"} onValueChange={v => set("type", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="warning">{fr ? "Avertissement" : "Warning"}</SelectItem>
+                    <SelectItem value="reprimand">{fr ? "Blâme" : "Reprimand"}</SelectItem>
+                    <SelectItem value="suspension">{fr ? "Suspension" : "Suspension"}</SelectItem>
+                    <SelectItem value="termination">{fr ? "Licenciement" : "Termination"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>{fr ? "Description" : "Description"}</Label><Textarea value={form.description || ""} onChange={e => set("description", e.target.value)} /></div>
+              <div><Label>{fr ? "Action prise" : "Action taken"}</Label><Input value={form.action_taken || ""} onChange={e => set("action_taken", e.target.value)} /></div>
+              <div><Label>{fr ? "Date" : "Date"}</Label><Input type="date" value={form.date || ""} onChange={e => set("date", e.target.value)} /></div>
+            </>
+          )}
+
+          {/* HEALTH & SAFETY FORM */}
+          {type === "health_safety" && (
+            <>
+              <div>
+                <Label>{fr ? "Type d'incident" : "Incident type"}</Label>
+                <Select value={form.incident_type || ""} onValueChange={v => set("incident_type", v)}>
+                  <SelectTrigger><SelectValue placeholder={fr ? "Sélectionner..." : "Select..."} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="accident">{fr ? "Accident de travail" : "Workplace accident"}</SelectItem>
+                    <SelectItem value="near_miss">{fr ? "Presqu'accident" : "Near miss"}</SelectItem>
+                    <SelectItem value="hazard">{fr ? "Danger identifié" : "Hazard identified"}</SelectItem>
+                    <SelectItem value="equipment">{fr ? "Défaut équipement" : "Equipment failure"}</SelectItem>
+                    <SelectItem value="other">{fr ? "Autre" : "Other"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div><Label>{fr ? "Date" : "Date"}</Label><Input type="date" value={form.date || ""} onChange={e => set("date", e.target.value)} /></div>
+                <div><Label>{fr ? "Lieu" : "Location"}</Label><Input value={form.location || ""} onChange={e => set("location", e.target.value)} /></div>
+              </div>
+              <div><Label>{fr ? "Description" : "Description"}</Label><Textarea value={form.description || ""} onChange={e => set("description", e.target.value)} /></div>
+              <div>
+                <Label>{fr ? "Gravité" : "Severity"}</Label>
+                <Select value={form.severity || "low"} onValueChange={v => set("severity", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">{fr ? "Faible" : "Low"}</SelectItem>
+                    <SelectItem value="medium">{fr ? "Moyen" : "Medium"}</SelectItem>
+                    <SelectItem value="high">{fr ? "Élevé" : "High"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>{fr ? "Statut" : "Status"}</Label>
+                <Select value={form.status || "open"} onValueChange={v => set("status", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="open">{fr ? "Ouvert" : "Open"}</SelectItem>
+                    <SelectItem value="investigating">{fr ? "En cours" : "Investigating"}</SelectItem>
+                    <SelectItem value="resolved">{fr ? "Résolu" : "Resolved"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>{fr ? "Signalé par" : "Reported by"}</Label><Input value={form.reported_by || ""} onChange={e => set("reported_by", e.target.value)} /></div>
+            </>
+          )}
+
+          {/* DOCUMENT FORM */}
+          {type === "document" && (
+            <>
+              <div><Label>{fr ? "Titre" : "Title"}</Label><Input value={form.title || ""} onChange={e => set("title", e.target.value)} /></div>
+              <div>
+                <Label>{fr ? "Type" : "Type"}</Label>
+                <Select value={form.doc_type || ""} onValueChange={v => set("doc_type", v)}>
+                  <SelectTrigger><SelectValue placeholder={fr ? "Sélectionner..." : "Select..."} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="contract">{fr ? "Contrat" : "Contract"}</SelectItem>
+                    <SelectItem value="id">{fr ? "Pièce d'identité" : "ID document"}</SelectItem>
+                    <SelectItem value="certificate">{fr ? "Certificat" : "Certificate"}</SelectItem>
+                    <SelectItem value="report">{fr ? "Rapport" : "Report"}</SelectItem>
+                    <SelectItem value="other">{fr ? "Autre" : "Other"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>{fr ? "Employé" : "Employee"}</Label>
+                <Select value={form.employee_id || ""} onValueChange={v => set("employee_id", v)}>
+                  <SelectTrigger><SelectValue placeholder={fr ? "Non assigné" : "Unassigned"} /></SelectTrigger>
+                  <SelectContent>
+                    {employees.map(e => <SelectItem key={e.id} value={e.id}>{e.first_name} {e.last_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>{fr ? "Notes" : "Notes"}</Label><Textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} /></div>
+            </>
+          )}
+
+          {/* COMMUNICATION FORM */}
+          {type === "communication" && (
+            <>
+              <div><Label>{fr ? "Sujet" : "Subject"}</Label><Input value={form.subject || ""} onChange={e => set("subject", e.target.value)} /></div>
+              <div><Label>{fr ? "Message" : "Message"}</Label><Textarea rows={4} value={form.message || ""} onChange={e => set("message", e.target.value)} /></div>
+              <div>
+                <Label>{fr ? "Priorité" : "Priority"}</Label>
+                <Select value={form.priority || "normal"} onValueChange={v => set("priority", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">{fr ? "Basse" : "Low"}</SelectItem>
+                    <SelectItem value="normal">{fr ? "Normale" : "Normal"}</SelectItem>
+                    <SelectItem value="high">{fr ? "Haute" : "High"}</SelectItem>
+                    <SelectItem value="urgent">{fr ? "Urgente" : "Urgent"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </>
           )}
         </div>

@@ -69,8 +69,9 @@ export function SettingsPage({ onNavigate }: Props) {
   const [clearing, setClearing] = React.useState(false)
   const [sendingPwd, setSendingPwd] = React.useState(false)
   const [backingUp, setBackingUp] = React.useState(false)
+  const [lastBackupDate, setLastBackupDate] = React.useState<string | null>(getLastBackup())
 
-  const lastBackup = getLastBackup()
+  const lastBackup = lastBackupDate
 
   // Fetch avatar
   React.useEffect(() => {
@@ -139,17 +140,42 @@ export function SettingsPage({ onNavigate }: Props) {
 
   const handleBackup = async () => {
     setBackingUp(true)
-    const csrfToken = generateCsrfToken()
-    if (!validateCsrfToken(csrfToken)) {
-      toast.error(fr ? "Erreur de sécurité CSRF" : "CSRF security error")
-      setBackingUp(false)
-      return
+    if (!workspace) { setBackingUp(false); return }
+    try {
+      const wid = workspace.id
+      const tables = [
+        "pharmacies", "pharmacy_products", "pharmacy_sales", "pharmacy_alerts",
+        "commerce_clients", "commerce_invoices", "commerce_invoice_items", "commerce_payments", "commerce_products",
+        "edu_students", "edu_teachers", "edu_classes", "edu_grades", "edu_fees", "edu_fee_payments", "edu_accounting",
+        "staff_employees", "staff_leave_requests", "staff_payroll", "staff_contracts", "staff_recruitments",
+        "hr_employees", "hr_departments", "hr_contracts", "hr_leave_requests", "hr_recruitments",
+        "hr_evaluations", "hr_trainings", "hr_attendance", "hr_absences", "hr_skills",
+        "hr_promotions", "hr_discipline", "hr_health_safety", "hr_documents", "hr_communication",
+        "gestion_suppliers", "gestion_purchase_orders", "gestion_purchase_items", "gestion_products", "gestion_alerts", "gestion_accounting",
+        "pharmacy_accounting",
+      ]
+      const backup: Record<string, any[]> = {}
+      await Promise.all(tables.map(async (tbl) => {
+        try {
+          const { data } = await insforge.database.from(tbl).select("*").eq("workspace_id", wid)
+          backup[tbl] = (data as any[]) || []
+        } catch { backup[tbl] = [] }
+      }))
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `savemali-backup-${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      const now = new Date().toISOString()
+      localStorage.setItem("savemali_last_backup", now)
+      setLastBackupDate(now)
+      toast.success(fr ? "Sauvegarde téléchargée" : "Backup downloaded")
+    } catch (err) {
+      toast.error(fr ? "Erreur de sauvegarde" : "Backup failed")
     }
-    await new Promise((r) => setTimeout(r, 2000))
-    const now = new Date().toISOString()
-    localStorage.setItem("savemali_last_backup", now)
     setBackingUp(false)
-    toast.success(fr ? "Sauvegarde terminée" : "Backup complete")
   }
 
   const userInitials = user?.email ? user.email.slice(0, 2).toUpperCase() : "U"

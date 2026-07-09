@@ -149,7 +149,9 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
       setGradeEntries((grRes.data as any[]) ?? [])
       setDisciplineEntries((disRes.data as any[]) ?? [])
       setIncidentEntries((incRes.data as any[]) ?? [])
-      setAccountingEntries([])
+      // Fetch accounting from DB
+      const { data: accData } = await insforge.database.from("edu_accounting").select("*").eq("workspace_id", workspace.id).order("entry_date", { ascending: false })
+      setAccountingEntries((accData as any[]) ?? [])
       setHistoryEntries([])
     }
     loadExtra()
@@ -614,16 +616,26 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
     setIncidentEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
-  const saveAccountingEntry = () => {
-    if (!accountingForm.description || !accountingForm.amount) return
-    const entry = { id: editAccountingId ?? genId(), ...accountingForm, amount: safeParseFloat(accountingForm.amount, 0, true) || 0, date: accountingForm.date || new Date().toISOString().slice(0, 10) }
-    const updated = editAccountingId ? accountingEntries.map((e) => e.id === entry.id ? entry : e) : [...accountingEntries, entry]
-    setAccountingEntries(updated)
+  const saveAccountingEntry = async () => {
+    if (!accountingForm.description || !accountingForm.amount || !workspace) return
+    const amount = safeParseFloat(accountingForm.amount, 0, true) || 0
+    const entryDate = accountingForm.date || new Date().toISOString().slice(0, 10)
+    const payload = { workspace_id: workspace.id, type: accountingForm.type, category: accountingForm.category, amount, description: accountingForm.description, entry_date: entryDate }
+    if (editAccountingId) {
+      const { error } = await insforge.database.from("edu_accounting").update(payload).eq("id", editAccountingId)
+      if (error) return
+      setAccountingEntries((prev) => prev.map((e) => e.id === editAccountingId ? { ...e, ...payload } : e))
+    } else {
+      const { data, error } = await insforge.database.from("edu_accounting").insert([payload]).select().single()
+      if (error) return
+      setAccountingEntries((prev) => [data, ...prev])
+    }
     setAccountingDlg(false); setEditAccountingId(null)
     setAccountingForm({ date: "", description: "", type: "income", category: "", amount: "" })
   }
-  const deleteAccountingEntry = (id: string) => {
+  const deleteAccountingEntry = async (id: string) => {
     if (!confirm(fr ? "Supprimer cette entrée ?" : "Delete this entry?")) return
+    await insforge.database.from("edu_accounting").delete().eq("id", id)
     setAccountingEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
@@ -1389,16 +1401,16 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50"><tr><th className="px-4 py-3 text-left font-medium text-muted-foreground">{fr ? "Date" : "Date"}</th><th className="px-4 py-3 text-left font-medium text-muted-foreground">{fr ? "Description" : "Description"}</th><th className="px-4 py-3 text-center font-medium text-muted-foreground">{fr ? "Type" : "Type"}</th><th className="px-4 py-3 text-left font-medium text-muted-foreground">{fr ? "Catégorie" : "Category"}</th><th className="px-4 py-3 text-right font-medium text-muted-foreground">{fr ? "Montant (FC)" : "Amount (FC)"}</th><th className="px-4 py-3" /></tr></thead>
                   <tbody className="divide-y divide-border">
-                    {accountingEntries.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((e) => (
+                    {accountingEntries.slice().sort((a, b) => new Date(b.entry_date || b.date).getTime() - new Date(a.entry_date || a.date).getTime()).map((e) => (
                       <tr key={e.id} className="bg-card hover:bg-muted/30">
-                        <td className="px-4 py-3 text-muted-foreground">{e.date ? new Date(e.date).toLocaleDateString(fr ? "fr-FR" : "en-US") : "—"}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{(e.entry_date || e.date) ? new Date(e.entry_date || e.date).toLocaleDateString(fr ? "fr-FR" : "en-US") : "—"}</td>
                         <td className="px-4 py-3 font-medium text-foreground">{e.description}</td>
                         <td className="px-4 py-3 text-center"><Badge variant={e.type === "income" ? "secondary" : "destructive"}>{e.type === "income" ? (fr ? "Revenu" : "Income") : (fr ? "Dépense" : "Expense")}</Badge></td>
                         <td className="px-4 py-3 text-muted-foreground capitalize">{e.category || "—"}</td>
                         <td className="px-4 py-3 text-right font-medium text-foreground">{e.type === "income" ? "+" : "-"}{formatCurrency(Number(e.amount), undefined, true)}</td>
                         <td className="px-4 py-3">
                           <div className="flex gap-1.5 justify-end">
-                            <Button size="icon" variant="ghost" className="size-7" onClick={() => { setAccountingForm({ date: e.date, description: e.description, type: e.type, category: e.category, amount: String(e.amount) }); setEditAccountingId(e.id); setAccountingDlg(true) }}><Edit2 className="size-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="size-7" onClick={() => { setAccountingForm({ date: e.entry_date || e.date || "", description: e.description, type: e.type, category: e.category, amount: String(e.amount) }); setEditAccountingId(e.id); setAccountingDlg(true) }}><Edit2 className="size-3.5" /></Button>
                             <Button size="icon" variant="ghost" className="size-7 text-destructive hover:text-destructive" onClick={() => deleteAccountingEntry(e.id)}><Trash2 className="size-3.5" /></Button>
                           </div>
                         </td>
