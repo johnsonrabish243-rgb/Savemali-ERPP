@@ -248,13 +248,25 @@ export function SignUpPage({ onNavigate }: Props) {
         return
       }
 
-      const { data: signInData, error: signInError } = await insforge.auth.signInWithPassword({ email: verificationEmail, password })
-      if (signInError) throw signInError
-      if (signInData?.refreshToken) {
-        localStorage.setItem("savemali_refresh_token", signInData.refreshToken)
+      // Try to establish session and get user ID
+      let uid = ""
+      try {
+        const { data: signInData } = await insforge.auth.signInWithPassword({ email: verificationEmail, password })
+        if (signInData?.refreshToken) {
+          localStorage.setItem("savemali_refresh_token", signInData.refreshToken)
+        }
+        uid = signInData?.user?.id || ""
+      } catch {
+        // signInWithPassword may fail if verifyEmail already established a session
+        // Fall back to getCurrentUser
+      }
+      if (!uid) {
+        try {
+          const { data: userData } = await insforge.auth.getCurrentUser()
+          uid = userData?.user?.id || ""
+        } catch {}
       }
 
-      const uid = signInData?.user?.id || ""
       if (uid) {
         const { data: existing } = await insforge.database.from("workspaces").select("id").eq("owner_id", uid).maybeSingle()
         if (!existing) {

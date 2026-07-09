@@ -258,20 +258,30 @@ export function SignInPage({ onNavigate }: Props) {
         return
       }
 
+      // Try to establish session and get user ID
       let uid = ""
       if (password) {
-        const { data: signInData } = await insforge.auth.signInWithPassword({ email, password })
-        if (signInData?.refreshToken) {
-          localStorage.setItem("savemali_refresh_token", signInData.refreshToken)
+        try {
+          const { data: signInData } = await insforge.auth.signInWithPassword({ email, password })
+          if (signInData?.refreshToken) {
+            localStorage.setItem("savemali_refresh_token", signInData.refreshToken)
+          }
+          uid = signInData?.user?.id || ""
+        } catch {
+          // signInWithPassword may fail if verifyEmail already established a session
         }
-        uid = signInData?.user?.id || ""
+      }
+      if (!uid) {
+        try {
+          const { data: userData } = await insforge.auth.getCurrentUser()
+          uid = userData?.user?.id || ""
+        } catch {}
       }
 
       try {
         const raw = localStorage.getItem("savemali_pending_ws")
         if (raw) {
           const pending = JSON.parse(raw)
-          if (!uid) uid = (await insforge.auth.getCurrentUser()).data?.user?.id || ""
           if (uid) {
             const { data: existing } = await insforge.database.from("workspaces").select("id").eq("owner_id", uid).maybeSingle()
             if (!existing) {
