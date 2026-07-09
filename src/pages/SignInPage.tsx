@@ -251,25 +251,27 @@ export function SignInPage({ onNavigate }: Props) {
     setVerifying(true)
     setVerifyError(null)
     try {
-      const { data, error: verifyError } = await insforge.auth.verifyEmail({ email, otp: code })
+      const { error: verifyError } = await insforge.auth.verifyEmail({ email, otp: code })
       if (verifyError) {
         setVerifyError(verifyError.message || (fr ? "Code invalide ou expiré" : "Invalid or expired code"))
         setVerifying(false)
         return
       }
 
+      let uid = ""
       if (password) {
         const { data: signInData } = await insforge.auth.signInWithPassword({ email, password })
         if (signInData?.refreshToken) {
           localStorage.setItem("savemali_refresh_token", signInData.refreshToken)
         }
+        uid = signInData?.user?.id || ""
       }
 
       try {
         const raw = localStorage.getItem("savemali_pending_ws")
         if (raw) {
           const pending = JSON.parse(raw)
-          const uid = data?.user?.id || (data as any)?.id || ""
+          if (!uid) uid = (await insforge.auth.getCurrentUser()).data?.user?.id || ""
           if (uid) {
             const { data: existing } = await insforge.database.from("workspaces").select("id").eq("owner_id", uid).maybeSingle()
             if (!existing) {

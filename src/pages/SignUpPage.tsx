@@ -241,22 +241,26 @@ export function SignUpPage({ onNavigate }: Props) {
     setVerifying(true)
     setError(null)
     try {
-      const { data, error: verifyError } = await insforge.auth.verifyEmail({ email: verificationEmail, otp: code })
+      const { error: verifyError } = await insforge.auth.verifyEmail({ email: verificationEmail, otp: code })
       if (verifyError) {
         setError(verifyError.message || (fr ? "Code invalide ou expire" : "Invalid or expired code"))
         setVerifying(false)
         return
       }
 
-      const uid = data?.user?.id || (data as any)?.id || ""
-      if (uid) {
-        const { error: wsError } = await insforge.database.from("workspaces").insert([{ owner_id: uid, name: workspaceName.trim(), type: workspaceType }])
-        if (wsError) console.error("Workspace creation error:", wsError)
-      }
-
-      const { data: signInData } = await insforge.auth.signInWithPassword({ email: verificationEmail, password })
+      const { data: signInData, error: signInError } = await insforge.auth.signInWithPassword({ email: verificationEmail, password })
+      if (signInError) throw signInError
       if (signInData?.refreshToken) {
         localStorage.setItem("savemali_refresh_token", signInData.refreshToken)
+      }
+
+      const uid = signInData?.user?.id || ""
+      if (uid) {
+        const { data: existing } = await insforge.database.from("workspaces").select("id").eq("owner_id", uid).maybeSingle()
+        if (!existing) {
+          const { error: wsError } = await insforge.database.from("workspaces").insert([{ owner_id: uid, name: workspaceName.trim(), type: workspaceType }])
+          if (wsError) console.error("Workspace creation error:", wsError)
+        }
       }
 
       localStorage.removeItem("savemali_pending_ws")
