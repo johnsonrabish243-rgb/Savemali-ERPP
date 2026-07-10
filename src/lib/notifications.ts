@@ -141,6 +141,10 @@ const NOTIFICATION_TYPES = {
   HR_PROMOTION: "hr_promotion",
   HR_BIRTHDAY: "hr_birthday",
   HR_DOCUMENT_MISSING: "hr_document_missing",
+  HR_PAYSLIP: "hr_payslip",
+  HR_PAYMENT: "hr_payment",
+  HR_PAYROLL_PERIOD: "hr_payroll_period",
+  HR_SALARY_ADVANCE: "hr_salary_advance",
 } as const
 
 export const NotificationType = NOTIFICATION_TYPES
@@ -501,5 +505,85 @@ export function createHRBirthdayNotification(
     message: `Joyeux anniversaire à ${employeeName} ! (${date})`,
     module,
     link: link ?? "hr",
+  }
+}
+
+// ─── Payroll / Payment Notifications ─────────────────────
+
+export function createHRPayslipNotification(
+  workspaceId: string,
+  employeeName: string,
+  payslipNumber: string,
+  netPay: number,
+  module: string,
+  link?: string
+): NotificationPayload {
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.HR_PAYSLIP,
+    title: "Fiche de paie disponible",
+    message: `Fiche de paie ${payslipNumber} — ${employeeName} : ${formatCurrency(netPay)}`,
+    module,
+    link: link ?? "hr_payroll",
+  }
+}
+
+export function createHRPaymentNotification(
+  workspaceId: string,
+  actorName: string,
+  employeeName: string,
+  amount: number,
+  module: string,
+  link?: string
+): NotificationPayload {
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.HR_PAYMENT,
+    title: "Paiement effectué",
+    message: `${actorName} a effectué un paiement de ${formatCurrency(amount)} à ${employeeName}`,
+    module,
+    link: link ?? "hr_payroll",
+    actor_name: actorName,
+  }
+}
+
+export function createHRPayrollPeriodNotification(
+  workspaceId: string,
+  actorName: string,
+  periodLabel: string,
+  status: "created" | "completed" | "cancelled",
+  module: string,
+  link?: string
+): NotificationPayload {
+  const titles = { created: "Période de paie créée", completed: "Paie finalisée", cancelled: "Période annulée" }
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.HR_PAYROLL_PERIOD,
+    title: titles[status],
+    message: `${actorName} — ${titles[status]} : ${periodLabel}`,
+    module,
+    link: link ?? "hr_payroll",
+    actor_name: actorName,
+  }
+}
+
+export function createHRSalaryAdvanceNotification(
+  workspaceId: string,
+  actorName: string,
+  employeeName: string,
+  amount: number,
+  action: "approved" | "paid" | "cancelled",
+  module: string,
+  link?: string
+): NotificationPayload {
+  const titles = { approved: "Avance salariale approuvée", paid: "Avance salariale payée", cancelled: "Avance annulée" }
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.HR_SALARY_ADVANCE,
+    title: titles[action],
+    message: `${actorName} — ${employeeName} : ${formatCurrency(amount)}`,
+    module,
+    link: link ?? "hr_payroll",
+    actor_name: actorName,
   }
 }

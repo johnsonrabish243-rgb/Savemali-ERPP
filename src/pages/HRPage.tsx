@@ -9,6 +9,8 @@ import { detectInjection, logSecurityEvent } from "@/lib/security"
 import { formatCurrency } from "@/lib/currency"
 import { UserAvatar } from "@/components/UserAvatar"
 import { PageFooter } from "@/components/PageFooter"
+import { HRPayrollEngine } from "@/components/hr/HRPayrollEngine"
+import { HRPayrollFinancial } from "@/components/hr/HRPayrollFinancial"
 import {
   Users, UserPlus, ClipboardCheck, Plane, FileWarning, FileCheck,
   Building2, Network, GraduationCap, Star, Zap, ArrowUpRight,
@@ -17,7 +19,8 @@ import {
   Download, Upload, Filter, RefreshCw, CheckCircle, XCircle,
   Clock, Calendar, DollarSign, Briefcase, Mail, Phone,
   ChevronDown, ChevronRight, AlertTriangle, Save, Send,
-  TrendingUp, FileText, Settings, LayoutDashboard, Package
+  TrendingUp, FileText, Settings, LayoutDashboard, Package,
+  Wallet, Landmark
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -412,6 +415,8 @@ export function HRPage({ onNavigate, initialTab }: Props) {
     { id: "hr_communication", label: t("Communication", "Communication"), icon: MessageSquare },
     { id: "hr_reports", label: t("Rapports", "Reports"), icon: BarChart3 },
     { id: "hr_audit_log", label: t("Journal d'audit", "Audit Log"), icon: Clipboard },
+    { id: "hr_payroll", label: t("Paie", "Payroll"), icon: Wallet },
+    { id: "hr_financial", label: t("Finance", "Financial"), icon: Landmark },
     { id: "hr_settings", label: t("Paramètres RH", "HR Settings"), icon: Sliders },
   ]
 
@@ -1256,6 +1261,16 @@ export function HRPage({ onNavigate, initialTab }: Props) {
             </div>
           )}
         </SectionCard>
+      )}
+
+      {/* ─── PAYROLL ───────────────────────────────────── */}
+      {tab === "hr_payroll" && (
+        <HRPayrollEngine workspace={workspace} user={user} employees={employees} />
+      )}
+
+      {/* ─── FINANCIAL ──────────────────────────────────── */}
+      {tab === "hr_financial" && (
+        <HRPayrollFinancial workspace={workspace} employees={employees} />
       )}
 
       {/* ─── REPORTS ───────────────────────────────────── */}

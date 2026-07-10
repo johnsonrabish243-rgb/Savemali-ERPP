@@ -1126,12 +1126,109 @@ export function buildHRReport(
     contracts: any[]
     leaves: any[]
     members: any[]
+    payslips?: any[]
+    paymentTransactions?: any[]
+    payrollPeriods?: any[]
   },
   fr: boolean
 ): ReportData {
   const activeEmployees = data.employees.filter((e) => e.status === "active")
   const pendingLeaves = data.leaves.filter((l) => l.status === "pending")
   const activeContracts = data.contracts.filter((c) => c.status === "active")
+  const totalPayroll = (data.payslips || []).filter((p) => p.status !== "cancelled").reduce((s, p) => s + Number(p.net_pay || 0), 0)
+  const totalPaid = (data.payslips || []).filter((p) => p.status === "paid").reduce((s, p) => s + Number(p.net_pay || 0), 0)
+  const totalTransactions = (data.paymentTransactions || []).reduce((s, p) => s + Number(p.amount || 0), 0)
+
+  const sections: ReportSection[] = [
+    buildTeamSection(data.members, fr),
+    {
+      title: "Employés",
+      titleEn: "Employees",
+      headers: ["Nom", "Poste", "Départ.", "Salaire", "Tél.", "Statut"],
+      rows: data.employees.map((e) => [
+        `${e.first_name} ${e.last_name}`,
+        e.position ?? "—",
+        data.departments.find((d) => d.id === e.department_id)?.name ?? "—",
+        e.salary ? formatCurrency(Number(e.salary)) : "—",
+        e.phone ?? "—",
+        e.status ?? "—",
+      ]),
+    },
+    {
+      title: "Départements",
+      titleEn: "Departments",
+      headers: ["Nom", "Description", "Responsable"],
+      rows: data.departments.map((d) => [
+        d.name,
+        d.description ?? "—",
+        data.employees.find((e) => e.id === d.manager_id)
+          ? `${data.employees.find((e) => e.id === d.manager_id)?.first_name} ${data.employees.find((e) => e.id === d.manager_id)?.last_name}`
+          : "—",
+      ]),
+    },
+    {
+      title: "Contrats",
+      titleEn: "Contracts",
+      headers: ["Employé", "Type", "Début", "Fin", "Salaire", "Statut"],
+      rows: data.contracts.map((c) => {
+        const emp = data.employees.find((e) => e.id === c.employee_id)
+        return [
+          emp ? `${emp.first_name} ${emp.last_name}` : "—",
+          c.contract_type ?? "—",
+          c.start_date ?? "—",
+          c.end_date ?? "—",
+          c.salary ? formatCurrency(Number(c.salary)) : "—",
+          c.status ?? "—",
+        ]
+      }),
+    },
+    {
+      title: "Demandes de congé",
+      titleEn: "Leave Requests",
+      headers: ["Employé", "Type", "Début", "Fin", "Statut"],
+      rows: data.leaves.map((l) => {
+        const emp = data.employees.find((e) => e.id === l.employee_id)
+        return [
+          emp ? `${emp.first_name} ${emp.last_name}` : "—",
+          l.leave_type ?? "—",
+          l.start_date ?? "—",
+          l.end_date ?? "—",
+          l.status ?? "—",
+        ]
+      }),
+    },
+  ]
+
+  if (data.payslips && data.payslips.length > 0) {
+    sections.push({
+      title: "Bulletins de paie",
+      titleEn: "Payslips",
+      headers: ["Employé", "N° Bulletin", "Salaire base", "Net", "Statut"],
+      rows: data.payslips.map((ps) => [
+        `${ps.first_name || ""} ${ps.last_name || ""}`.trim() || "—",
+        ps.payslip_number || "—",
+        formatCurrency(Number(ps.base_salary || 0)),
+        formatCurrency(Number(ps.net_pay || 0)),
+        ps.status || "—",
+      ]),
+    })
+  }
+
+  if (data.paymentTransactions && data.paymentTransactions.length > 0) {
+    sections.push({
+      title: "Transactions de paiement",
+      titleEn: "Payment Transactions",
+      headers: ["Employé", "Montant", "Méthode", "Référence", "Statut", "Date"],
+      rows: data.paymentTransactions.map((pt) => [
+        `${pt.first_name || ""} ${pt.last_name || ""}`.trim() || "—",
+        formatCurrency(Number(pt.amount || 0)),
+        pt.payment_method || "—",
+        pt.reference || "—",
+        pt.status || "—",
+        pt.processed_at ? new Date(pt.processed_at).toLocaleDateString() : "—",
+      ]),
+    })
+  }
 
   return {
     workspaceName: workspace.name,
@@ -1143,67 +1240,12 @@ export function buildHRReport(
       { label: "Départements", labelEn: "Departments", value: data.departments.length },
       { label: "Contrats actifs", labelEn: "Active contracts", value: activeContracts.length },
       { label: "Congés en attente", labelEn: "Pending leaves", value: pendingLeaves.length },
+      { label: "Masse salariale", labelEn: "Total payroll", value: formatCurrency(totalPayroll) },
+      { label: "Payé", labelEn: "Paid", value: formatCurrency(totalPaid) },
+      { label: "Transactions", labelEn: "Transactions", value: formatCurrency(totalTransactions) },
       { label: "Membres équipe", labelEn: "Team members", value: data.members.length },
     ],
-    sections: [
-      buildTeamSection(data.members, fr),
-      {
-        title: "Employés",
-        titleEn: "Employees",
-        headers: ["Nom", "Poste", "Départ.", "Salaire", "Tél.", "Statut"],
-        rows: data.employees.map((e) => [
-          `${e.first_name} ${e.last_name}`,
-          e.position ?? "—",
-          data.departments.find((d) => d.id === e.department_id)?.name ?? "—",
-          e.salary ? formatCurrency(Number(e.salary)) : "—",
-          e.phone ?? "—",
-          e.status ?? "—",
-        ]),
-      },
-      {
-        title: "Départements",
-        titleEn: "Departments",
-        headers: ["Nom", "Description", "Responsable"],
-        rows: data.departments.map((d) => [
-          d.name,
-          d.description ?? "—",
-          data.employees.find((e) => e.id === d.manager_id)
-            ? `${data.employees.find((e) => e.id === d.manager_id)?.first_name} ${data.employees.find((e) => e.id === d.manager_id)?.last_name}`
-            : "—",
-        ]),
-      },
-      {
-        title: "Contrats",
-        titleEn: "Contracts",
-        headers: ["Employé", "Type", "Début", "Fin", "Salaire", "Statut"],
-        rows: data.contracts.map((c) => {
-          const emp = data.employees.find((e) => e.id === c.employee_id)
-          return [
-            emp ? `${emp.first_name} ${emp.last_name}` : "—",
-            c.contract_type ?? "—",
-            c.start_date ?? "—",
-            c.end_date ?? "—",
-            c.salary ? formatCurrency(Number(c.salary)) : "—",
-            c.status ?? "—",
-          ]
-        }),
-      },
-      {
-        title: "Demandes de congé",
-        titleEn: "Leave Requests",
-        headers: ["Employé", "Type", "Début", "Fin", "Statut"],
-        rows: data.leaves.map((l) => {
-          const emp = data.employees.find((e) => e.id === l.employee_id)
-          return [
-            emp ? `${emp.first_name} ${emp.last_name}` : "—",
-            l.leave_type ?? "—",
-            l.start_date ?? "—",
-            l.end_date ?? "—",
-            l.status ?? "—",
-          ]
-        }),
-      },
-    ],
+    sections,
   }
 }
 
