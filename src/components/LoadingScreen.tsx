@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { LogoIcon } from "@/components/Logo"
 
 interface Props {
   onDone: () => void
@@ -45,39 +46,20 @@ export function LoadingScreen({ onDone }: Props) {
       }`}
       style={{ background: "linear-gradient(160deg, #0a0a0a 0%, #1a1025 50%, #0a0a0a 100%)" }}
     >
-      {/* Ambient glow behind logo */}
       <div
         className="absolute w-[300px] h-[300px] rounded-full blur-[120px] opacity-20"
         style={{ background: "radial-gradient(circle, #c8399c 0%, transparent 70%)" }}
       />
 
-      {/* Center content */}
       <div className="relative z-10 flex flex-col items-center">
-        {/* Logo */}
-        <div className="relative mb-8">
-          <img
-            src="/SaveMali_Logo.png"
-            alt="SaveMali"
-            className="w-24 h-24 rounded-2xl object-cover shadow-2xl"
-            style={{ animation: "splash-logo-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
-            onError={(e) => {
-              const img = e.currentTarget
-              img.style.display = "none"
-              const fallback = document.createElement("div")
-              fallback.className =
-                "w-24 h-24 rounded-2xl bg-gradient-to-br from-[#c8399c] to-[#7c3aed] flex items-center justify-center shadow-2xl"
-              fallback.innerHTML = '<span class="text-4xl font-bold text-white">S</span>'
-              img.parentNode?.insertBefore(fallback, img)
-            }}
-          />
-          {/* Ring pulse */}
+        <div className="relative mb-8" style={{ animation: "splash-logo-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}>
+          <LogoIcon size={96} className="shadow-2xl" />
           <div
-            className="absolute inset-0 rounded-2xl"
+            className="absolute inset-0 rounded-[32%]"
             style={{ animation: "splash-ring 2s ease-out infinite" }}
           />
         </div>
 
-        {/* Name */}
         <h1
           className="text-[32px] font-semibold tracking-tight text-white mb-2 opacity-0"
           style={{ animation: "splash-fade-up 0.6s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
@@ -85,7 +67,6 @@ export function LoadingScreen({ onDone }: Props) {
           SaveMali
         </h1>
 
-        {/* Tagline */}
         <p
           className="text-[13px] tracking-wide uppercase text-white/40 mb-12 opacity-0"
           style={{ animation: "splash-fade-up 0.6s 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
@@ -93,7 +74,6 @@ export function LoadingScreen({ onDone }: Props) {
           {fr ? "Gestion intelligente" : "Smart Management"}
         </p>
 
-        {/* Progress bar */}
         <div className="w-48 opacity-0" style={{ animation: "splash-fade-up 0.6s 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}>
           <div className="relative w-full h-[2px] overflow-hidden rounded-full bg-white/10">
             <div
@@ -111,7 +91,6 @@ export function LoadingScreen({ onDone }: Props) {
         </div>
       </div>
 
-      {/* Footer */}
       <div className="absolute bottom-8 left-0 right-0 text-center opacity-0" style={{ animation: "splash-fade-up 0.6s 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}>
         <p className="text-[11px] text-white/25">
           © {new Date().getFullYear()} SaveMali SARL

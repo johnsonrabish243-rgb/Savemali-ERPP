@@ -5,6 +5,7 @@ import { useLanguage } from "@/lib/i18n"
 import { insforge } from "@/lib/supabase"
 import { ROLE_CONFIGS, WORKSPACE_TYPE_LABELS } from "@/lib/role-config"
 import { UserAvatar } from "@/components/UserAvatar"
+import { LogoIcon } from "@/components/Logo"
 import { LogOut, Menu, X, ChevronRight, Bell, Check, X as XIcon, ExternalLink } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Page } from "@/App"
@@ -115,10 +116,8 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
         sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
       )}>
         {/* Logo */}
-        <div className="flex h-16 items-center gap-3 px-5 border-b border-sidebar-border">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-strong shadow-sm">
-            <span className="text-sm font-extrabold text-white">S</span>
-          </div>
+        <div className="flex h-16 items-center gap-3 px-4 border-b border-sidebar-border">
+          <LogoIcon size={32} />
           <span className="text-lg font-extrabold tracking-tight text-white">
             Save<span className="text-brand">Mali</span>
           </span>
@@ -212,9 +211,7 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
             <Menu className="size-5" />
           </button>
           <div className="flex items-center gap-2.5">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-strong shadow-xs">
-              <span className="text-xs font-extrabold text-white">S</span>
-            </div>
+            <LogoIcon size={28} />
             <span className="text-base font-bold tracking-tight text-foreground hidden sm:block">
               Save<span className="text-brand">Mali</span>
             </span>

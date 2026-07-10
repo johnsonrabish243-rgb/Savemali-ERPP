@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { UserAvatar } from "@/components/UserAvatar"
 import { AvatarUpload } from "@/components/AvatarUpload"
 import { DialogFooterBrand } from "@/components/DialogFooterBrand"
+import { LogoIcon } from "@/components/Logo"
 import { PageFooter } from "@/components/PageFooter"
 import { EmptyState } from "@/components/EmptyState"
 import { useLanguage } from "@/lib/i18n"
@@ -501,7 +502,7 @@ export function WorkspaceMembersPage({ onNavigate }: Props) {
       <Dialog open={!!createdCredentials} onOpenChange={() => { setCreatedCredentials(null); setCopied(false) }}>
         <DialogContent className="ag-dialog max-w-sm p-0">
           <div className="flex flex-col items-center px-6 pt-6 pb-2">
-            <img src="/SaveMali_Logo.png" alt="SaveMali" className="size-14 rounded-xl object-cover shadow-lg mb-3" onError={(e) => { e.currentTarget.style.display = "none" }} />
+            <LogoIcon size={56} className="mb-3 shadow-lg" />
             <div className="flex size-10 items-center justify-center rounded-full bg-success/10 mb-2">
               <UserCheck className="size-5 text-success" />
             </div>

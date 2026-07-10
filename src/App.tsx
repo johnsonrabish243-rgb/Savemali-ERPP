@@ -185,20 +185,11 @@ function AppContent() {
       >
         <div className="absolute w-[300px] h-[300px] rounded-full blur-[120px] opacity-20" style={{ background: "radial-gradient(circle, #c8399c 0%, transparent 70%)" }} />
         <div className="relative z-10 flex flex-col items-center">
-          <img
-            src="/SaveMali_Logo.png"
-            alt="SaveMali"
-            className="w-20 h-20 rounded-2xl object-cover shadow-2xl mb-6"
-            style={{ animation: "splash-logo-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
-            onError={(e) => {
-              const img = e.currentTarget
-              img.style.display = "none"
-              const fallback = document.createElement("div")
-              fallback.className = "w-20 h-20 rounded-2xl bg-gradient-to-br from-[#c8399c] to-[#7c3aed] flex items-center justify-center shadow-2xl mb-6"
-              fallback.innerHTML = '<span class="text-3xl font-bold text-white">S</span>'
-              img.parentNode?.insertBefore(fallback, img)
-            }}
-          />
+          <div className="mb-6" style={{ animation: "splash-logo-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}>
+            <div className="w-20 h-20 rounded-[32%] bg-gradient-to-br from-[#f97316] to-[#c2410c] flex items-center justify-center shadow-2xl">
+              <span className="text-3xl font-extrabold text-white">S</span>
+            </div>
+          </div>
           <div className="w-48 flex flex-col items-center gap-3">
             <div className="relative w-full h-[2px] overflow-hidden rounded-full bg-white/10">
               <div className="absolute top-0 left-0 h-full w-[40%] rounded-full bg-gradient-to-r from-[#c8399c] to-[#7c3aed]" style={{ animation: "loading-sweep-auth 1.4s ease-in-out infinite" }} />

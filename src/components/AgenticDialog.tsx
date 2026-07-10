@@ -8,6 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
+import { LogoIcon } from "@/components/Logo"
 import { useLanguage } from "@/lib/i18n"
 
 interface AgenticDialogProps {
@@ -137,15 +138,7 @@ export function AgenticDialog({
         <div className="border-t border-border/30 bg-muted/10 px-6 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <img
-                src="/SaveMali_Logo.png"
-                alt="SaveMali"
-                className="size-4 rounded object-cover"
-                onError={(e) => {
-                  const img = e.currentTarget
-                  img.style.display = "none"
-                }}
-              />
+              <LogoIcon size={16} className="rounded" />
               <span className="text-[10px] font-semibold text-muted-foreground/60">
                 SaveMali
               </span>

@@ -1,44 +1,72 @@
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface LogoProps {
   className?: string
-  size?: "sm" | "md" | "lg"
+  size?: "sm" | "md" | "lg" | "xl"
+  showText?: boolean
   imgClassName?: string
 }
 
 const sizeMap = {
-  sm: { container: "size-7", text: "text-xs", full: "text-sm" },
-  md: { container: "size-9", text: "text-sm", full: "text-base" },
-  lg: { container: "size-12", text: "text-base", full: "text-xl" },
+  sm: { box: 28, full: "text-sm" },
+  md: { box: 36, full: "text-base" },
+  lg: { box: 48, full: "text-xl" },
+  xl: { box: 64, full: "text-2xl" },
 }
 
-export function Logo({ className, size = "md", imgClassName }: LogoProps) {
+function LogoSvg({ w }: { w: number }) {
+  return (
+    <svg width={w} height={w} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`lg-${w}`} x1="0" y1="0" x2="64" y2="64">
+          <stop offset="0%" stopColor="#f97316" />
+          <stop offset="100%" stopColor="#c2410c" />
+        </linearGradient>
+        <filter id={`ls-${w}`}>
+          <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="rgba(0,0,0,0.2)" />
+        </filter>
+      </defs>
+      <rect x="0" y="0" width="64" height="64" rx="16" fill={`url(#lg-${w})`} filter={`url(#ls-${w})`} />
+      <rect x="3" y="3" width="58" height="58" rx="14" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+      <text x="32" y="44" textAnchor="middle" fill="white" fontSize="34" fontWeight="800" fontFamily="system-ui, sans-serif">S</text>
+    </svg>
+  )
+}
+
+export function Logo({ className, size = "md", showText = true, imgClassName }: LogoProps) {
   const s = sizeMap[size]
+  const [imgFailed, setImgFailed] = useState(false)
 
   return (
     <div className={cn("flex items-center gap-2.5 shrink-0", className)}>
-      <div className={cn("relative shrink-0 overflow-hidden rounded-xl shadow-sm", s.container)}>
+      <div className="relative shrink-0" style={{ width: s.box, height: s.box }}>
+        {!imgFailed && (
           <img
             src="/SaveMali_Logo.png"
             alt="SaveMali"
-            className={cn("h-full w-full object-cover", imgClassName)}
-          onError={(e) => {
-            const img = e.currentTarget
-            img.style.display = "none"
-            const fallback = img.nextElementSibling as HTMLElement
-            if (fallback) fallback.style.display = "flex"
-          }}
-        />
-        <div
-          className="hidden h-full w-full items-center justify-center bg-[#f97316] rounded-xl"
-          aria-hidden
-        >
-          <span className={cn("font-extrabold text-white", s.text)}>S</span>
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ borderRadius: "32%" }}
+            onError={() => setImgFailed(true)}
+          />
+        )}
+        <div className="absolute inset-0" style={{ opacity: imgFailed ? 1 : 0 }}>
+          <LogoSvg w={s.box} />
         </div>
       </div>
-      <span className={cn("font-extrabold tracking-tight text-foreground", s.full)}>
-        Save<span className="text-[#f97316]">Mali</span>
-      </span>
+      {showText && (
+        <span className={cn("font-extrabold tracking-tight text-foreground", s.full)}>
+          Save<span className="text-[#f97316]">Mali</span>
+        </span>
+      )}
+    </div>
+  )
+}
+
+export function LogoIcon({ size = 36, className }: { size?: number; className?: string }) {
+  return (
+    <div className={cn("shrink-0", className)} style={{ width: size, height: size }}>
+      <LogoSvg w={size} />
     </div>
   )
 }
