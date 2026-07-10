@@ -186,8 +186,8 @@ function AppContent() {
         <div className="absolute w-[300px] h-[300px] rounded-full blur-[120px] opacity-20" style={{ background: "radial-gradient(circle, #c8399c 0%, transparent 70%)" }} />
         <div className="relative z-10 flex flex-col items-center">
           <div className="mb-6" style={{ animation: "splash-logo-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}>
-            <div className="w-20 h-20 rounded-[32%] bg-gradient-to-br from-[#f97316] to-[#c2410c] flex items-center justify-center shadow-2xl">
-              <span className="text-3xl font-extrabold text-white">S</span>
+            <div className="w-20 h-20 rounded-[32%] overflow-hidden shadow-2xl bg-gradient-to-br from-orange-500 to-orange-700">
+              <img src="/SaveMali_Logo.png" alt="SaveMali" className="h-full w-full object-cover" />
             </div>
           </div>
           <div className="w-48 flex flex-col items-center gap-3">
