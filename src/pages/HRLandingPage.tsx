@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Users, UserPlus, ClipboardCheck, Plane, Building2, GraduationCap, Star, Briefcase, TrendingUp, FileText } from "lucide-react"
+import { Users, ClipboardCheck, Plane, Building2, GraduationCap, Star, TrendingUp, FileText } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
 import { Logo } from "@/components/Logo"
 import { SpiralButton } from "@/components/SpiralButton"

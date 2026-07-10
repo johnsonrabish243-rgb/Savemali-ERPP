@@ -1,6 +1,6 @@
 import * as React from "react"
 import { gsap } from "gsap"
-import { Building2, Target, Users, Shield, ArrowRight, ChevronDown } from "lucide-react"
+import { Building2, Target, Users, Shield, ArrowRight } from "lucide-react"
 import { Logo } from "@/components/Logo"
 import { useLanguage } from "@/lib/i18n"
 import type { Page } from "@/App"

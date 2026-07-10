@@ -73,16 +73,27 @@ export function SettingsPage({ onNavigate }: Props) {
 
   const lastBackup = lastBackupDate
 
-  // Fetch avatar
+  // Fetch avatar and notification prefs
   React.useEffect(() => {
     if (!user || !workspace) return
     insforge.database
       .from("workspace_members")
-      .select("avatar_url")
+      .select("avatar_url, email_notifications, whatsapp_notifications, product_updates, security_alerts")
       .eq("workspace_id", workspace.id)
       .eq("user_id", user.id)
       .maybeSingle()
-      .then(({ data }) => setAvatarUrl((data as any)?.avatar_url ?? null))
+      .then(({ data }) => {
+        const d = data as any
+        if (d) {
+          setAvatarUrl(d.avatar_url ?? null)
+          setNotifs({
+            email_notifications: d.email_notifications !== false,
+            whatsapp_notifications: d.whatsapp_notifications !== false,
+            product_updates: d.product_updates !== false,
+            security_alerts: d.security_alerts !== false,
+          })
+        }
+      })
       .catch(() => {})
   }, [user, workspace])
 
@@ -95,6 +106,14 @@ export function SettingsPage({ onNavigate }: Props) {
   const toggleNotif = (key: NotifKey, val: boolean) => {
     setNotifs((prev) => ({ ...prev, [key]: val }))
     localStorage.setItem(`savemali_notif_${key}`, String(val))
+    if (user?.id && workspace?.id) {
+      insforge.database
+        .from("workspace_members")
+        .update({ [key]: val })
+        .eq("workspace_id", workspace.id)
+        .eq("user_id", user.id)
+        .then(({ error }) => { if (error) console.error("Failed to save notif pref:", error) })
+    }
   }
 
   const handleClearCache = async () => {

@@ -1,5 +1,5 @@
 import * as React from "react"
-import { BarChart3, Calculator, Users, PieChart, Briefcase, TrendingUp, ArrowUpCircle, ArrowDownCircle, FileText } from "lucide-react"
+import { BarChart3, Calculator, Users, PieChart, Briefcase, TrendingUp, FileText } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
 import { Logo } from "@/components/Logo"
 import { SpiralButton } from "@/components/SpiralButton"

@@ -102,7 +102,7 @@ interface HRHealthSafety {
 }
 interface HRDocument {
   id: string; workspace_id: string; employee_id?: string; title: string;
-  doc_type: string; file_name?: string; notes?: string; created_at: string;
+  doc_type: string; file_url?: string; notes?: string; created_at: string;
 }
 interface HRCommunication {
   id: string; workspace_id: string; sender_id?: string; title: string;
@@ -169,6 +169,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
   const [saving, setSaving] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [success, setSuccess] = React.useState<string | null>(null)
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null)
 
   // Sync initialTab
   React.useEffect(() => {
@@ -270,6 +271,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
     setDialogType(type)
     setEditingItem(item || null)
     setError(null)
+    setSelectedFile(null)
     setDialogOpen(true)
   }
 
@@ -320,11 +322,30 @@ export function HRPage({ onNavigate, initialTab }: Props) {
         return
       }
 
+      let fileUrl: string | null = null
+      if (dialogType === "document" && selectedFile && !editingItem?.id) {
+        const formData = new FormData()
+        formData.append("file", selectedFile)
+        const baseUrl = import.meta.env.VITE_INSFORGE_URL
+        const token = (insforge as any).http?.userToken || (insforge as any).tokenManager?.accessToken || ""
+        const path = `${wid}/${Date.now()}_${selectedFile.name}`
+        const headers: Record<string, string> = {}
+        if (token) headers["Authorization"] = `Bearer ${token}`
+        const upRes = await fetch(`${baseUrl}/api/storage/buckets/hr_documents/objects/${encodeURIComponent(path)}`, {
+          method: "PUT", body: formData, headers, credentials: "include",
+        })
+        if (!upRes.ok) throw new Error(fr ? "Échec du téléchargement du fichier" : "File upload failed")
+        const { data: urlData } = insforge.storage.from("hr_documents").getPublicUrl(path)
+        fileUrl = urlData?.publicUrl ?? `${baseUrl}/api/storage/buckets/hr_documents/objects/${path}`
+      }
+
       if (editingItem?.id) {
         const { error: updErr } = await insforge.database.from(table).update(data).eq("id", editingItem.id)
         if (updErr) throw updErr
       } else {
-        const { error: insErr } = await insforge.database.from(table).insert([{ ...data, workspace_id: wid }])
+        const payload = { ...data, workspace_id: wid }
+        if (fileUrl) payload.file_url = fileUrl
+        const { error: insErr } = await insforge.database.from(table).insert([payload])
         if (insErr) throw insErr
       }
 
@@ -350,6 +371,13 @@ export function HRPage({ onNavigate, initialTab }: Props) {
     if (!workspace) return
     if (!confirm(fr ? "Supprimer cet élément ?" : "Delete this item?")) return
     try {
+      if (table === "hr_documents") {
+        const doc = documents.find(d => d.id === id)
+        if (doc?.file_url) {
+          const path = doc.file_url.split("/objects/").pop()
+          if (path) await insforge.storage.from("hr_documents").remove(path).catch(() => {})
+        }
+      }
       await insforge.database.from(table).delete().eq("id", id)
       await logAudit({
         action: "delete", workspace_id: workspace.id, actor_id: user?.id,
@@ -1177,6 +1205,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
                         <TableCell className="text-sm">{new Date(doc.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
+                            {doc.file_url && <Button size="icon" variant="ghost" className="size-7" asChild><a href={doc.file_url} target="_blank" rel="noopener noreferrer"><Download className="size-3.5" /></a></Button>}
                             <Button size="icon" variant="ghost" className="size-7" onClick={() => openDialog("document", doc)}><Pencil className="size-3.5" /></Button>
                             <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => handleDelete("hr_documents", doc.id)}><Trash2 className="size-3.5" /></Button>
                           </div>
@@ -1752,6 +1781,8 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                   </SelectContent>
                 </Select>
               </div>
+              <div><Label>{fr ? "Fichier" : "File"}</Label><Input type="file" onChange={e => setSelectedFile(e.target.files?.[0] ?? null)} /></div>
+              {selectedFile && <p className="text-xs text-muted-foreground">{selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)</p>}
               <div><Label>{fr ? "Notes" : "Notes"}</Label><Textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} /></div>
             </>
           )}

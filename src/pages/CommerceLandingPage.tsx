@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ShoppingCart, CreditCard, Package, BarChart3, Star, TrendingUp, Users, Receipt } from "lucide-react"
+import { ShoppingCart, CreditCard, Package, BarChart3, Star, Users, Receipt } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
 import { Logo } from "@/components/Logo"
 import { SpiralButton } from "@/components/SpiralButton"
