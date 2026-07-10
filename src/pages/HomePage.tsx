@@ -133,19 +133,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
           <div className="mb-6 flex justify-center">
             <div className="relative">
               <div className="absolute -inset-4 rounded-full bg-gradient-to-r from-[#C8399C]/20 via-[#7C3AED]/20 to-[#1e3a5f]/20 blur-xl" />
-              <img
-                src="/SaveMali_Logo.png"
-                alt="SaveMali"
-                className="relative size-16 rounded-2xl object-cover shadow-2xl sm:size-20"
-                onError={(e) => {
-                  const img = e.currentTarget
-                  img.style.display = "none"
-                  const fallback = img.nextElementSibling as HTMLElement
-                  if (fallback) fallback.style.display = "flex"
-                }}
-              />
-              <div className="hidden size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#C8399C] to-[#7C3AED] shadow-2xl sm:size-20">
-                <span className="text-2xl font-extrabold text-white">S</span>
+              <div className="relative size-16 sm:size-20">
+                <Logo size="xl" showText={false} />
               </div>
             </div>
           </div>

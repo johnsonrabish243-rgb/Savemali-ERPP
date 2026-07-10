@@ -1,6 +1,7 @@
 import * as React from "react"
 import { useLanguage } from "@/lib/i18n"
 import { Shield, ArrowLeft, Clock, AlertTriangle, Lock } from "lucide-react"
+import { LogoIcon } from "@/components/Logo"
 
 interface SecurityBlockPageProps {
   remainingMs: number
@@ -194,7 +195,7 @@ export function SecurityBlockPage({ remainingMs, reason, onBack, lockoutLevel = 
           <div className="px-6 py-4 border-t border-white/10 bg-white/5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <img src="/SaveMali_Logo.png" alt="SaveMali" className="w-6 h-6 rounded-md object-cover" />
+                <LogoIcon size={24} />
                 <span className="text-white/30 text-xs">SaveMali ERP</span>
               </div>
               <span className="text-white/30 text-xs">{t.protected}</span>

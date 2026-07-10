@@ -105,14 +105,12 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
 
       setProgress(60)
 
-      // Direct PUT via SDK HTTP client (handles auth, no strategy negotiation)
-      const formData = new FormData()
-      formData.append("file", compressed, `${userId}.jpg`)
-      const http = (insforge as any).storage.from(BUCKET).http
-      await http.request("PUT", `/api/storage/buckets/${BUCKET}/objects/${encodeURIComponent(path)}`, {
-        body: formData,
-        headers: {},
+      // Upload file via SDK storage API
+      const { error: uploadErr } = await insforge.storage.from(BUCKET).upload(path, compressed, {
+        contentType: "image/jpeg",
+        upsert: true,
       })
+      if (uploadErr) throw new Error(uploadErr.message || "Upload failed")
 
       setProgress(90)
 

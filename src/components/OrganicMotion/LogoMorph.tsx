@@ -13,8 +13,8 @@ interface Props {
 
 export function LogoMorph({ size = 72, className, state: externalState, autoCycle = false, interval = 3000 }: Props) {
   const [internalState, setInternalState] = React.useState<MorphState>("idle")
-  const [imgLoaded, setImgLoaded] = React.useState(false)
-  const imgRef = React.useRef<HTMLImageElement>(null)
+  const [imgLoaded, setImgLoaded] = React.useState(true)
+  const imgRef = React.useRef<HTMLDivElement>(null)
   const glowRef = React.useRef<HTMLDivElement>(null)
   const ringRef = React.useRef<SVGCircleElement>(null)
   const checkRef = React.useRef<SVGPathElement>(null)
@@ -73,16 +73,26 @@ export function LogoMorph({ size = 72, className, state: externalState, autoCycl
           opacity: 0.6, willChange: "transform",
         }}
       />
-      <img
+      <div
         ref={imgRef}
-        src="/SaveMali_Logo.png"
-        alt=""
-        onLoad={() => setImgLoaded(true)}
         style={{
-          width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%",
+          width: "100%", height: "100%", borderRadius: "32%",
           position: "relative", zIndex: 1, willChange: "transform",
+          overflow: "hidden",
         }}
-      />
+      >
+        <svg width="100%" height="100%" viewBox="0 0 64 64" preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+          <defs>
+            <linearGradient id="lm-grad" x1="0" y1="0" x2="64" y2="64">
+              <stop offset="0%" stopColor="#f97316" />
+              <stop offset="100%" stopColor="#c2410c" />
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="64" height="64" rx="16" fill="url(#lm-grad)" />
+          <rect x="3" y="3" width="58" height="58" rx="14" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+          <text x="32" y="44" textAnchor="middle" fill="white" fontSize="34" fontWeight="800" fontFamily="system-ui, sans-serif">S</text>
+        </svg>
+      </div>
       <svg
         width={size}
         height={size}

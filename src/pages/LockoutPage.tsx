@@ -1,5 +1,5 @@
 import { useLanguage } from "@/lib/i18n"
-import { Logo } from "@/components/Logo"
+import { LogoIcon } from "@/components/Logo"
 import { ShieldOff, Clock } from "lucide-react"
 
 interface Props {
@@ -15,12 +15,7 @@ export function LockoutPage({ until, remainingHours }: Props) {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-background px-4">
       <div className="flex flex-col items-center gap-5 text-center max-w-sm">
-        <img
-          src="/SaveMali_Logo.png"
-          alt="SaveMali"
-          className="size-16 rounded-xl object-cover shadow-lg"
-          onError={(e) => { e.currentTarget.style.display = "none" }}
-        />
+        <LogoIcon size={64} className="shadow-lg" />
         <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10">
           <ShieldOff className="size-7 text-destructive" />
         </div>
