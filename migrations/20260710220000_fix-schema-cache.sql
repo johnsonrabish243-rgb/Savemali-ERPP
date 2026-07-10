@@ -1,3 +1,2 @@
--- Force schema cache refresh for PostgREST
--- This ensures columns added in previous migrations (e.g. phone on workspace_members) are available immediately
-NOTIFY pgrst, 'reload schema';
+-- Force PostgREST schema cache reload so new columns (phone, timezone, etc.) are immediately visible
+SELECT pg_notify('pgrst', 'reload schema');

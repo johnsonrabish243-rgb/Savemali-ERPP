@@ -85,7 +85,31 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
     fetchAvatar()
   }, [fetchAvatar])
 
-  // Upload avatar — uses SDK HTTP client for direct PUT (bypasses upload-strategy which may return presigned)
+  async function uploadToStorage(path: string, file: Blob): Promise<void> {
+    // Attempt 1: SDK upload
+    try {
+      const { error } = await insforge.storage.from(BUCKET).upload(path, file, {
+        contentType: "image/jpeg",
+        upsert: true,
+      })
+      if (!error) return
+    } catch {}
+    // Attempt 2: Direct fetch with auth token (bypasses presigned URL path)
+    const { data } = await insforge.auth.getSession()
+    const token = data?.session?.access_token
+    if (token) {
+      const baseUrl = import.meta.env.VITE_INSFORGE_URL
+      const resp = await fetch(`${baseUrl}/api/storage/buckets/${BUCKET}/objects/${encodeURIComponent(path)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "image/jpeg", Authorization: `Bearer ${token}` },
+        body: file,
+      })
+      if (resp.ok) return
+    }
+    throw new Error("Upload failed: both SDK and direct upload attempts exhausted")
+  }
+
+  // Upload avatar
   const upload = React.useCallback(async (file: File): Promise<string | false> => {
     if (!userId || !workspaceId) return false
     const error = validateFile(file)
@@ -101,16 +125,12 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
       const path = `${workspaceId}/${userId}.jpg`
 
       // Remove old file if exists
-      await insforge.storage.from(BUCKET).remove(path)
+      await insforge.storage.from(BUCKET).remove(path).catch(() => {})
 
       setProgress(60)
 
-      // Upload file via SDK storage API
-      const { error: uploadErr } = await insforge.storage.from(BUCKET).upload(path, compressed, {
-        contentType: "image/jpeg",
-        upsert: true,
-      })
-      if (uploadErr) throw new Error(uploadErr.message || "Upload failed")
+      // Upload with automatic fallback
+      await uploadToStorage(path, compressed)
 
       setProgress(90)
 

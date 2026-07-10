@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react"
-import { LogoIcon } from "@/components/Logo"
 
 interface Props {
   onDone: () => void
@@ -53,7 +52,9 @@ export function LoadingScreen({ onDone }: Props) {
 
       <div className="relative z-10 flex flex-col items-center">
         <div className="relative mb-8" style={{ animation: "splash-logo-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}>
-          <LogoIcon size={96} className="shadow-2xl" />
+          <div className="w-24 h-24 rounded-[32%] overflow-hidden shadow-2xl bg-gradient-to-br from-orange-500 to-orange-700">
+            <img src="/SaveMali_Logo.png" alt="SaveMali" className="h-full w-full object-cover" />
+          </div>
           <div
             className="absolute inset-0 rounded-[32%]"
             style={{ animation: "splash-ring 2s ease-out infinite" }}
