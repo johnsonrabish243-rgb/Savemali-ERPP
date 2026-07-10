@@ -19,7 +19,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { useRole } from "@/hooks/use-role"
 import { insforge } from "@/lib/supabase"
 import { cn } from "@/lib/utils"
-import { generateCsrfToken, validateCsrfToken } from "@/lib/security"
+// CSRF protection is handled by InsForge SDK (JWT tokens, CORS headers)
 import { validateFields, hasErrors } from "@/lib/validation"
 import { memberRules } from "@/lib/rules"
 import type { Page } from "@/App"
@@ -129,13 +129,11 @@ export function WorkspaceMembersPage({ onNavigate }: Props) {
     setError(null); setMemberErrors({}); setShowDlg(true)
   }
 
-  const generatePassword = (name: string) => {
-    const first = name.split(" ")[0] || "emp"
-    const clean = first.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, "")
-    const base = clean || "emp"
-    const digits = new Uint8Array(4)
-    crypto.getRandomValues(digits)
-    return `${base}${Array.from(digits, (b) => b % 10).join("")}`
+  const generatePassword = (_name: string) => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%&*"
+    const array = new Uint8Array(14)
+    crypto.getRandomValues(array)
+    return Array.from(array, (b) => chars[b % chars.length]).join("")
   }
 
   const handleSave = async () => {
@@ -144,7 +142,6 @@ export function WorkspaceMembersPage({ onNavigate }: Props) {
     setMemberErrors(errs)
     if (hasErrors(errs)) return
     setSaving(true); setError(null)
-    const csrfToken = generateCsrfToken()
 
     try {
       if (editTarget) {
@@ -230,12 +227,6 @@ export function WorkspaceMembersPage({ onNavigate }: Props) {
       }
 
       setShowDlg(false); setEditTarget(null); fetchMembers()
-
-      if (!validateCsrfToken(csrfToken)) {
-        setError(fr ? "Erreur de sécurité CSRF" : "CSRF security error")
-        setSaving(false)
-        return
-      }
     } catch (err: any) {
       setError(err?.message || (fr ? "Erreur inattendue" : "Unexpected error"))
     } finally {

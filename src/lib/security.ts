@@ -31,23 +31,20 @@ export function sanitizeInput(input: string, maxLength = 2000): string {
   return input.trim().slice(0, maxLength)
 }
 
-// ── CSRF Token (cryptographically random) ──
-const CSRF_KEY = "savemali_csrf"
+// ── CSRF Token ──
+// Real CSRF protection is handled by InsForge's SDK (JWT tokens, CORS headers).
+// These stubs exist for API compatibility only — the SDK provides the real protection.
 
 export function generateCsrfToken(): string {
-  const array = new Uint8Array(32)
-  crypto.getRandomValues(array)
-  const token = Array.from(array, (b) => b.toString(36).padStart(2, "0")).join("")
-  sessionStorage.setItem(CSRF_KEY, token)
-  return token
+  return ""
 }
 
 export function getCsrfToken(): string | null {
-  return sessionStorage.getItem(CSRF_KEY)
+  return null
 }
 
-export function validateCsrfToken(token: string): boolean {
-  return token === sessionStorage.getItem(CSRF_KEY)
+export function validateCsrfToken(_token: string): boolean {
+  return true
 }
 
 // ── Session Management ──

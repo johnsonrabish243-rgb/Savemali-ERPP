@@ -21,7 +21,7 @@ import { insforge } from "@/lib/supabase"
 import type { Page } from "@/App"
 import { toast } from "sonner"
 import { PageFooter } from "@/components/PageFooter"
-import { generateCsrfToken, validateCsrfToken } from "@/lib/security"
+// CSRF protection is handled by InsForge SDK (JWT tokens, CORS headers)
 
 interface Props { onNavigate: (p: Page) => void }
 
@@ -99,12 +99,6 @@ export function SettingsPage({ onNavigate }: Props) {
 
   const handleClearCache = async () => {
     setClearing(true)
-    const csrfToken = generateCsrfToken()
-    if (!validateCsrfToken(csrfToken)) {
-      toast.error(fr ? "Erreur de sécurité CSRF" : "CSRF security error")
-      setClearing(false)
-      return
-    }
     const keep = new Set([
       "vite-ui-theme", "savemali-lang", "savemali_font_size",
       "savemali_access_violations", "savemali_lockout_until",
@@ -123,12 +117,6 @@ export function SettingsPage({ onNavigate }: Props) {
   const handleChangePassword = async () => {
     if (!user?.email) return
     setSendingPwd(true)
-    const csrfToken = generateCsrfToken()
-    if (!validateCsrfToken(csrfToken)) {
-      toast.error(fr ? "Erreur de sécurité CSRF" : "CSRF security error")
-      setSendingPwd(false)
-      return
-    }
     const { error } = await insforge.auth.sendResetPasswordEmail({ email: user.email })
     setSendingPwd(false)
     if (error) {
