@@ -3,10 +3,11 @@ import { useLanguage } from "@/lib/i18n"
 import { insforge } from "@/lib/supabase"
 import { formatCurrency } from "@/lib/currency"
 import { logAudit } from "@/lib/audit"
+import { toast } from "sonner"
 import { publishNotification, createHRPayslipNotification, createHRPayrollPeriodNotification, createHRPaymentNotification } from "@/lib/notifications"
 import {
-  DollarSign, Plus, Loader2, FileText, CreditCard, Search, Calendar,
-  CheckCircle, XCircle, BadgeCheck, Clock, Users, BarChart3, Download
+  DollarSign, Plus, Loader2, FileText, CreditCard, Calendar,
+  CheckCircle, XCircle, BadgeCheck, Users
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -42,7 +43,7 @@ interface HRPayslip {
 interface HRPaymentTransaction {
   id: string; employee_id: string; payslip_id?: string;
   amount: number; payment_method: string; reference?: string; notes?: string;
-  status: string; processed_at?: string;
+  status: string; processed_at?: string; created_at?: string;
   first_name?: string; last_name?: string;
 }
 
@@ -107,7 +108,7 @@ export function HRPayrollEngine({ workspace, user, employees }: Props) {
       [{ workspace_id: wsId, month: m, year: y, label: `${y}-${String(m).padStart(2, "0")}`, status: "draft" }],
       { onConflict: "workspace_id,month,year" }
     )
-    if (error) { console.error(error); return }
+    if (error) { toast.error(error.message); return }
     await publishNotification(createHRPayrollPeriodNotification(wsId, user?.email || "Admin", `${y}-${String(m).padStart(2, "0")}`, "created", "hr"))
     await logAudit({ action: "create", workspace_id: wsId, actor_id: user?.id, actor_email: user?.email, metadata: { module: "hr", type: "payroll_period", month: m, year: y } })
     load()
@@ -126,10 +127,9 @@ export function HRPayrollEngine({ workspace, user, employees }: Props) {
 
     for (const emp of activeEmp) {
       const salary = emp.salary || 0
-      const dayRate = daysInMonth > 0 ? Math.round((salary / daysInMonth) * 100) / 100 : 0
-      const net = Math.round((salary) * 100) / 100
+      const net = Math.round(salary * 100) / 100
       const payslipNumber = `HR-SLIP-${period.year}${String(period.month).padStart(2, "0")}-${String(activeEmp.indexOf(emp) + 1).padStart(3, "0")}`
-      await insforge.database.from("hr_payslips").upsert(
+      const { error: upsertErr } = await insforge.database.from("hr_payslips").upsert(
         [{
           workspace_id: wsId, employee_id: emp.id, period_id: selPeriod,
           base_salary: salary, bonus: 0, allowance: 0, overtime: 0,
@@ -141,6 +141,7 @@ export function HRPayrollEngine({ workspace, user, employees }: Props) {
         }],
         { onConflict: "employee_id,period_id" }
       )
+      if (upsertErr) toast.error(`${fr ? "Erreur bulletin" : "Payslip error"} ${emp.first_name} ${emp.last_name}: ${upsertErr.message}`)
     }
 
     await insforge.database.from("hr_payroll_periods").update({ status: "completed", processed_at: new Date().toISOString(), processed_by: user?.id || null }).eq("id", selPeriod)
@@ -152,7 +153,8 @@ export function HRPayrollEngine({ workspace, user, employees }: Props) {
 
   async function approvePayslip(id: string) {
     if (!wsId) return
-    await insforge.database.from("hr_payslips").update({ status: "approved", approved_by: user?.id || null, approved_at: new Date().toISOString() }).eq("id", id)
+    const { error } = await insforge.database.from("hr_payslips").update({ status: "approved", approved_by: user?.id || null, approved_at: new Date().toISOString() }).eq("id", id)
+    if (error) { toast.error(error.message); return }
     const ps = payslips.find(p => p.id === id)
     if (ps) {
       await publishNotification(createHRPayslipNotification(wsId, `${ps.first_name} ${ps.last_name}`, ps.payslip_number || "", ps.net_pay, "hr"))
@@ -163,14 +165,16 @@ export function HRPayrollEngine({ workspace, user, employees }: Props) {
 
   async function markPaid(id: string) {
     if (!wsId) return
-    await insforge.database.from("hr_payslips").update({ status: "paid", paid_at: new Date().toISOString() }).eq("id", id)
+    const { error: slipErr } = await insforge.database.from("hr_payslips").update({ status: "paid", paid_at: new Date().toISOString() }).eq("id", id)
+    if (slipErr) { toast.error(slipErr.message); return }
     const ps = payslips.find(p => p.id === id)
     if (ps) {
-      await insforge.database.from("hr_payment_transactions").insert([{
+      const { error: trxErr } = await insforge.database.from("hr_payment_transactions").insert([{
         workspace_id: wsId, employee_id: ps.employee_id, payslip_id: id,
         amount: ps.net_pay, payment_method: "bank_transfer", status: "completed",
         processed_by: user?.id || null, processed_at: new Date().toISOString(),
       }])
+      if (trxErr) { toast.error(trxErr.message); return }
       await logAudit({ action: "update", workspace_id: wsId, actor_id: user?.id, actor_email: user?.email, metadata: { module: "hr", type: "payslip_paid", payslip_id: id, amount: ps.net_pay } })
     }
     load()
@@ -178,12 +182,13 @@ export function HRPayrollEngine({ workspace, user, employees }: Props) {
 
   async function savePayment() {
     if (!wsId || !payEmpId) return
+    if (payAmount <= 0) { toast.error(fr ? "Montant invalide" : "Invalid amount"); return }
     const { error } = await insforge.database.from("hr_payment_transactions").insert([{
       workspace_id: wsId, employee_id: payEmpId, amount: payAmount,
       payment_method: payMethod, reference: payRef || null, notes: payNotes || null,
       status: "completed", processed_by: user?.id || null, processed_at: new Date().toISOString(),
     }])
-    if (error) { console.error(error); return }
+    if (error) { toast.error(error.message); return }
     const emp = employees.find(e => e.id === payEmpId)
     await publishNotification(createHRPaymentNotification(wsId, user?.email || "Admin", emp ? `${emp.first_name} ${emp.last_name}` : "", payAmount, "hr"))
     await logAudit({ action: "create", workspace_id: wsId, actor_id: user?.id, actor_email: user?.email, metadata: { module: "hr", type: "payment_recorded", amount: payAmount } })
@@ -194,7 +199,8 @@ export function HRPayrollEngine({ workspace, user, employees }: Props) {
   async function cancelPeriod(id: string) {
     if (!wsId) return
     if (!confirm(fr ? "Annuler cette période de paie ? Cela annulera tous les bulletins associés." : "Cancel this payroll period? This will cancel all associated payslips.")) return
-    await insforge.database.from("hr_payroll_periods").update({ status: "cancelled" }).eq("id", id)
+    const { error: perErr } = await insforge.database.from("hr_payroll_periods").update({ status: "cancelled" }).eq("id", id)
+    if (perErr) { toast.error(perErr.message); return }
     await insforge.database.from("hr_payslips").update({ status: "cancelled" }).eq("period_id", id)
     const period = periods.find(p => p.id === id)
     if (period) {

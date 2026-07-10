@@ -2,11 +2,12 @@ import React from "react"
 import { useLanguage } from "@/lib/i18n"
 import { insforge } from "@/lib/supabase"
 import { formatCurrency } from "@/lib/currency"
+import { toast } from "sonner"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend
 } from "recharts"
 import {
-  DollarSign, TrendingUp, TrendingDown, Users, Wallet, ArrowUpRight
+  DollarSign, TrendingUp, TrendingDown, Users
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -53,13 +54,16 @@ export function HRPayrollFinancial({ workspace, employees }: Props) {
       insforge.database.from("hr_payslips").select("*, hr_employees!inner(first_name,last_name)").eq("workspace_id", wsId).order("created_at", { ascending: false }).limit(500),
       insforge.database.from("hr_payment_transactions").select("*, hr_employees!inner(first_name,last_name)").eq("workspace_id", wsId).order("created_at", { ascending: false }).limit(200),
     ])
-    if (perRes.data) setPeriods(perRes.data)
-    if (payRes.data) {
+    if (perRes.error) toast.error(perRes.error.message)
+    else if (perRes.data) setPeriods(perRes.data)
+    if (payRes.error) toast.error(payRes.error.message)
+    else if (payRes.data) {
       setPayslips((payRes.data as any[]).map(p => ({
         ...p, first_name: p.hr_employees?.first_name, last_name: p.hr_employees?.last_name,
       })))
     }
-    if (trxRes.data) {
+    if (trxRes.error) toast.error(trxRes.error.message)
+    else if (trxRes.data) {
       setPayments((trxRes.data as any[]).map(p => ({
         ...p, first_name: p.hr_employees?.first_name, last_name: p.hr_employees?.last_name,
       })))
