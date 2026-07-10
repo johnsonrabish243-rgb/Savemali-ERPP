@@ -16,7 +16,7 @@ export function sanitizeOutput(value: unknown): string {
 
 // ── Input Validation ──
 const INJECTION_PATTERNS = [
-  /(?:'|;|--|\bunion\b|\bselect\b|\binsert\b|\bdrop\b|\bdelete\b|\bexec\b|xp_)/i,
+  /(?:--|\bunion\b|\bselect\b|\binsert\b|\bdrop\b|\bdelete\b|\bexec\b|xp_)/i,
   /<script[\s>]/i,
   /javascript\s*:/i,
   /on\w+\s*=\s*['"]/i,
