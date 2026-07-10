@@ -85,7 +85,7 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
     fetchAvatar()
   }, [fetchAvatar])
 
-  // Upload avatar — uses SDK upload strategy (direct or presigned), then saves URL to DB
+  // Upload avatar — uses SDK HTTP client for direct PUT (bypasses upload-strategy which may return presigned)
   const upload = React.useCallback(async (file: File): Promise<string | false> => {
     if (!userId || !workspaceId) return false
     const error = validateFile(file)
@@ -105,9 +105,14 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
 
       setProgress(60)
 
-      // Use SDK upload — handles strategy negotiation and proper auth
-      const { error: upErr } = await insforge.storage.from(BUCKET).upload(path, compressed)
-      if (upErr) throw new Error(`Upload failed: ${upErr.message}`)
+      // Direct PUT via SDK HTTP client (handles auth, no strategy negotiation)
+      const formData = new FormData()
+      formData.append("file", compressed, `${userId}.jpg`)
+      const http = (insforge as any).storage.from(BUCKET).http
+      await http.request("PUT", `/api/storage/buckets/${BUCKET}/objects/${encodeURIComponent(path)}`, {
+        body: formData,
+        headers: {},
+      })
 
       setProgress(90)
 
