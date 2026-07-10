@@ -575,7 +575,6 @@ export function PharmacyPage({ onNavigate, initialTab }: Props) {
     await insforge.database.from("order_items").insert(itemsPayload.map((ip) => ({
       ...ip,
       order_id: order.id,
-      workspace_id: workspace.id,
       pharmacy_id: selectedPharmacy.id
     })))
     if (user && workspace.owner_id) {

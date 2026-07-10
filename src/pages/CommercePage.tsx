@@ -392,7 +392,7 @@ export function CommercePage({ onNavigate, initialTab }: Props) {
     const total = validItems.reduce((s, item) => s + safeParseFloat(item.unit_price) * safeParseInt(item.quantity), 0)
     const { data: invoice, error } = await insforge.database.from("invoices").insert([{ workspace_id: workspace.id, customer_id: invoiceForm.customer_id, invoice_number: invoiceNumber, total_usd: total, status: "draft", due_date: invoiceForm.due_date || null, notes: invoiceForm.notes || null }]).select().single()
     if (error || !invoice) { setInvoiceError(error?.message ?? "Error"); setSaving(false); return }
-    await insforge.database.from("invoice_items").insert(validItems.map((item) => ({ workspace_id: workspace.id, invoice_id: invoice.id, product_name: item.product_name.trim(), quantity: safeParseInt(item.quantity), unit_price: safeParseFloat(item.unit_price), total_price: safeParseFloat(item.unit_price) * safeParseInt(item.quantity) })))
+    await insforge.database.from("invoice_items").insert(validItems.map((item) => ({ invoice_id: invoice.id, product_name: item.product_name.trim(), quantity: safeParseInt(item.quantity), unit_price: safeParseFloat(item.unit_price), total_price: safeParseFloat(item.unit_price) * safeParseInt(item.quantity) })))
     if (user && workspace.owner_id) {
       await logActivity({ workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user.id, actorEmail: user.email ?? "", actorName: user.email ?? "", actionType: "create", module: "commerce", description: `Facture ${invoiceNumber} créée — ${formatCurrency(total)}`, amountUsd: total, referenceId: invoice.id })
     }
