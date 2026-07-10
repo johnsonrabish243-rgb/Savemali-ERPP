@@ -168,6 +168,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
   const [editingItem, setEditingItem] = React.useState<any>(null)
   const [saving, setSaving] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [success, setSuccess] = React.useState<string | null>(null)
 
   // Sync initialTab
   React.useEffect(() => {
@@ -179,6 +180,39 @@ export function HRPage({ onNavigate, initialTab }: Props) {
     trackModuleOpen("hr")
     loadData()
   }, [workspace])
+
+  const DEFAULT_DEPARTMENTS = [
+    { name: "Direction Générale", description: "Leadership et stratégie de l'entreprise" },
+    { name: "Ressources Humaines", description: "Gestion du personnel et recrutement" },
+    { name: "Finance et Comptabilité", description: "Gestion financière et comptable" },
+    { name: "Informatique / IT", description: "Systèmes d'information et technologies" },
+    { name: "Marketing", description: "Communication et promotion" },
+    { name: "Ventes", description: "Commercial et force de vente" },
+    { name: "Production", description: "Fabrication et production" },
+    { name: "Logistique", description: "Transport et distribution" },
+    { name: "Qualité", description: "Contrôle qualité et normes" },
+    { name: "Juridique", description: "Services juridiques et conformité" },
+    { name: "Administration", description: "Gestion administrative" },
+    { name: "Achats", description: "Approvisionnement et achats" },
+    { name: "Recherche et Développement", description: "Innovation et R&D" },
+    { name: "Santé et Sécurité", description: "HSE et conditions de travail" },
+    { name: "Formation", description: "Formation et développement des compétences" },
+    { name: "Archives et Documentation", description: "Gestion documentaire" },
+    { name: "Maintenance", description: "Entretien et réparation des équipements" },
+    { name: "Service Client", description: "Support et satisfaction client" },
+    { name: "Communication", description: "Relations publiques et communication interne" },
+    { name: "Audit et Contrôle", description: "Contrôle interne et audit" },
+    { name: "Environnement", description: "Protection environnementale" },
+    { name: "Coopération Internationale", description: "Partenariats et projets internationaux" },
+  ]
+
+  async function seedDepartments() {
+    if (!workspace) return
+    const wid = workspace.id
+    const rows = DEFAULT_DEPARTMENTS.map(d => ({ ...d, workspace_id: wid }))
+    const { error } = await insforge.database.from("hr_departments").insert(rows)
+    if (error) console.error("Seed departments error:", error)
+  }
 
   async function loadData() {
     if (!workspace) return
@@ -204,7 +238,8 @@ export function HRPage({ onNavigate, initialTab }: Props) {
         insforge.database.from("audit_logs").select("*").eq("workspace_id", wid).order("created_at", { ascending: false }).limit(200),
       ])
       setEmployees((empR.data as any[]) || [])
-      setDepartments((deptR.data as any[]) || [])
+      const depts = (deptR.data as any[]) || []
+      setDepartments(depts)
       setContracts((contR.data as any[]) || [])
       setLeaves((leaveR.data as any[]) || [])
       setRecruitments((recR.data as any[]) || [])
@@ -219,6 +254,12 @@ export function HRPage({ onNavigate, initialTab }: Props) {
       setDocuments((docR.data as any[]) || [])
       setCommunications((commR.data as any[]) || [])
       setAuditLogs((auditR.data as any[]) || [])
+
+      if (depts.length === 0) {
+        await seedDepartments()
+        const retry = await insforge.database.from("hr_departments").select("*").eq("workspace_id", wid).order("name")
+        setDepartments((retry.data as any[]) || [])
+      }
     } catch (err) {
       console.error("HR load error:", err)
     }
@@ -241,6 +282,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
     }
     setSaving(true)
     setError(null)
+    setSuccess(null)
     try {
       const wid = workspace.id
       const tableMap: Record<string, string> = {
@@ -253,10 +295,37 @@ export function HRPage({ onNavigate, initialTab }: Props) {
       const table = tableMap[dialogType]
       if (!table) return
 
+      const requiredFields: Record<string, string[]> = {
+        employee: ["first_name", "last_name", "email", "position", "hire_date"],
+        department: ["name"],
+        contract: ["employee_id", "contract_type", "start_date"],
+        leave: ["employee_id", "leave_type", "start_date", "end_date"],
+        recruitment: ["position"],
+        evaluation: ["employee_id", "period", "score"],
+        training: ["title", "start_date"],
+        absence: ["employee_id", "start_date", "end_date", "reason"],
+        attendance: ["employee_id", "date", "check_in"],
+        skill: ["employee_id", "skill_name", "level"],
+        promotion: ["employee_id", "old_position", "new_position", "effective_date"],
+        discipline: ["employee_id", "type", "description", "action_taken", "date"],
+        health_safety: ["incident_type", "date", "description", "severity"],
+        document: ["title", "doc_type"],
+        communication: ["subject", "message"],
+      }
+
+      const missing = (requiredFields[dialogType] || []).filter(f => !data[f] && data[f] !== 0)
+      if (missing.length > 0) {
+        setError(fr ? `Champs requis manquants: ${missing.join(", ")}` : `Missing required fields: ${missing.join(", ")}`)
+        setSaving(false)
+        return
+      }
+
       if (editingItem?.id) {
-        await insforge.database.from(table).update(data).eq("id", editingItem.id)
+        const { error: updErr } = await insforge.database.from(table).update(data).eq("id", editingItem.id)
+        if (updErr) throw updErr
       } else {
-        await insforge.database.from(table).insert([{ ...data, workspace_id: wid }])
+        const { error: insErr } = await insforge.database.from(table).insert([{ ...data, workspace_id: wid }])
+        if (insErr) throw insErr
       }
 
       await logAudit({
@@ -267,8 +336,10 @@ export function HRPage({ onNavigate, initialTab }: Props) {
         metadata: { module: "hr", type: dialogType },
       })
 
+      setSuccess(fr ? "Enregistré avec succès" : "Saved successfully")
       setDialogOpen(false)
       loadData()
+      setTimeout(() => setSuccess(null), 4000)
     } catch (err: any) {
       setError(err.message || (fr ? "Erreur de sauvegarde" : "Save error"))
     }
@@ -330,6 +401,14 @@ export function HRPage({ onNavigate, initialTab }: Props) {
 
   return (
     <div className="p-4 lg:p-6 space-y-6">
+      {/* Success banner */}
+      {success && (
+        <Alert className="border-green-200 bg-green-50 text-green-800">
+          <CheckCircle className="size-4 text-green-600" />
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
       {/* Search + Refresh */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
