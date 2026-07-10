@@ -132,8 +132,18 @@ export const ROLE_CONFIGS: Record<WorkspaceType, Record<RoleKey, RoleConfig>> = 
         { id: "hr_settings", label: { fr: "Paramètres RH", en: "HR Settings" }, icon: Sliders },
       ],
     },
-    stock_manager: { label: { fr: "Stock", en: "Stock" }, accent: "text-orange-600", accentBg: "bg-orange-500", menu: [] },
-    seller: { label: { fr: "Vendeur", en: "Seller" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [] },
+    stock_manager: { label: { fr: "Gestionnaire de stock", en: "Stock Manager" }, accent: "text-orange-600", accentBg: "bg-orange-500", menu: [
+      { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+      { id: "inventory", label: { fr: "Inventaire", en: "Inventory" }, icon: Package },
+      { id: "orders", label: { fr: "Commandes", en: "Orders" }, icon: Truck },
+      { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+    ] },
+    seller: { label: { fr: "Vendeur", en: "Seller" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [
+      { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+      { id: "new_sale", label: { fr: "Nouvelle vente", en: "New sale" }, icon: ShoppingCart },
+      { id: "sales", label: { fr: "Ventes", en: "Sales" }, icon: TrendingUp },
+      { id: "customers", label: { fr: "Clients", en: "Customers" }, icon: Users },
+    ] },
   },
   pharmacy: {
     admin: {
@@ -234,8 +244,17 @@ export const ROLE_CONFIGS: Record<WorkspaceType, Record<RoleKey, RoleConfig>> = 
         { id: "hr_settings", label: { fr: "Paramètres RH", en: "HR Settings" }, icon: Sliders },
       ],
     },
-    stock_manager: { label: { fr: "Stock", en: "Stock" }, accent: "text-orange-600", accentBg: "bg-orange-500", menu: [] },
-    seller: { label: { fr: "Vendeur", en: "Seller" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [] },
+    stock_manager: { label: { fr: "Gestionnaire de stock", en: "Stock Manager" }, accent: "text-orange-600", accentBg: "bg-orange-500", menu: [
+      { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+      { id: "inventory", label: { fr: "Stock", en: "Stock" }, icon: Package },
+      { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+    ] },
+    seller: { label: { fr: "Vendeur", en: "Seller" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [
+      { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+      { id: "ventes", label: { fr: "Ventes", en: "Sales" }, icon: TrendingUp },
+      { id: "produits", label: { fr: "Produits", en: "Products" }, icon: Package },
+      { id: "customers", label: { fr: "Clients", en: "Customers" }, icon: Users },
+    ] },
   },
   commerce: {
     admin: {
@@ -419,8 +438,16 @@ export const ROLE_CONFIGS: Record<WorkspaceType, Record<RoleKey, RoleConfig>> = 
         { id: "hr_settings", label: { fr: "Paramètres RH", en: "HR Settings" }, icon: Sliders },
       ],
     },
-    stock_manager: { label: { fr: "Stock", en: "Stock" }, accent: "text-orange-600", accentBg: "bg-orange-500", menu: [] },
-    seller: { label: { fr: "Vendeur", en: "Seller" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [] },
+    stock_manager: { label: { fr: "Gestionnaire de stock", en: "Stock Manager" }, accent: "text-orange-600", accentBg: "bg-orange-500", menu: [
+      { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+      { id: "inventory", label: { fr: "Inventaire", en: "Inventory" }, icon: Package },
+      { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
+    ] },
+    seller: { label: { fr: "Vendeur", en: "Seller" }, accent: "text-teal-600", accentBg: "bg-teal-500", menu: [
+      { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+      { id: "payments", label: { fr: "Paiements", en: "Payments" }, icon: CreditCard },
+      { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: FileText },
+    ] },
   },
   hr: {
     admin: {

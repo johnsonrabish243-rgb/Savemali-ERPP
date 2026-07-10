@@ -279,7 +279,9 @@ export function SignInPage({ onNavigate }: Props) {
         try {
           const { data: userData } = await insforge.auth.getCurrentUser()
           uid = userData?.user?.id || ""
-        } catch {}
+        } catch (e) {
+          console.warn("Could not get current user after OTP verification:", e)
+        }
       }
 
       try {

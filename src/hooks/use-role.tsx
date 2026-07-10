@@ -73,7 +73,8 @@ export function useRole(): UserRole {
         } else {
           setRole({ role: "viewer", workspaceType: workspace.type, isOwner: false, loading: false })
         }
-      } catch {
+      } catch (err) {
+        console.warn("Failed to fetch user role, defaulting to viewer:", err)
         setRole({ role: "viewer", workspaceType: workspace.type, isOwner: false, loading: false })
       }
     }

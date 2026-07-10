@@ -23,9 +23,9 @@ interface AuditEntry {
 }
 
 function getClientInfo() {
-  if (typeof window === "undefined") return { ip: "", ua: "" }
+  if (typeof window === "undefined") return { ip: null, ua: null }
   return {
-    ip: "",
+    ip: null,
     ua: navigator.userAgent.slice(0, 500),
   }
 }
