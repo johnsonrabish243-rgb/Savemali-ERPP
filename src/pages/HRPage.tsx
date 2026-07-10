@@ -54,7 +54,7 @@ interface HRDepartment {
 interface HRContract {
   id: string; workspace_id: string; employee_id: string; contract_type: string;
   start_date: string; end_date?: string; salary: number; status: string;
-  terms?: string; created_at: string;
+  created_at: string;
 }
 interface HRLeave {
   id: string; workspace_id: string; employee_id: string; leave_type: string;
@@ -62,8 +62,8 @@ interface HRLeave {
   approved_by?: string; created_at: string;
 }
 interface HRRecruitment {
-  id: string; workspace_id: string; position: string; department_id?: string;
-  status: string; candidates_count: number; salary_range?: string;
+  id: string; workspace_id: string; position: string; department?: string;
+  status: string; candidates_count: number;
   description?: string; created_at: string;
 }
 interface HREvaluation {
@@ -72,7 +72,7 @@ interface HREvaluation {
 }
 interface HRTraining {
   id: string; workspace_id: string; title: string; description?: string;
-  instructor?: string; start_date: string; end_date?: string;
+  trainer?: string; start_date: string; end_date?: string;
   status: string; participants_count: number; created_at: string;
 }
 interface HRAttendance {
@@ -80,8 +80,8 @@ interface HRAttendance {
   check_in: string; check_out?: string; status: string; notes?: string; created_at: string;
 }
 interface HRAbsence {
-  id: string; workspace_id: string; employee_id: string; start_date: string;
-  end_date: string; reason: string; status: string; created_at: string;
+  id: string; workspace_id: string; employee_id: string; date: string;
+  reason: string; status: string; created_at: string;
 }
 interface HRSkill {
   id: string; workspace_id: string; employee_id: string; skill_name: string;
@@ -89,24 +89,24 @@ interface HRSkill {
 }
 interface HRPromotion {
   id: string; workspace_id: string; employee_id: string; old_position: string;
-  new_position: string; effective_date: string; notes?: string; created_at: string;
+  new_position: string; effective_date: string; reason?: string; created_at: string;
 }
 interface HRDiscipline {
   id: string; workspace_id: string; employee_id: string; type: string;
-  description: string; action_taken: string; date: string; created_at: string;
+  description: string; incident_date: string; created_at: string;
 }
 interface HRHealthSafety {
-  id: string; workspace_id: string; incident_type: string; date: string;
+  id: string; workspace_id: string; incident_type: string; incident_date: string;
   description: string; location?: string; severity: string; status: string;
-  reported_by?: string; created_at: string;
+  created_at: string;
 }
 interface HRDocument {
   id: string; workspace_id: string; employee_id?: string; title: string;
   doc_type: string; file_name?: string; notes?: string; created_at: string;
 }
 interface HRCommunication {
-  id: string; workspace_id: string; sender_id?: string; subject: string;
-  message: string; priority: string; created_at: string;
+  id: string; workspace_id: string; sender_id?: string; title: string;
+  message: string; created_at: string;
 }
 
 // ─── Helpers ────────────────────────────────────────────
@@ -303,14 +303,14 @@ export function HRPage({ onNavigate, initialTab }: Props) {
         recruitment: ["position"],
         evaluation: ["employee_id", "period", "score"],
         training: ["title", "start_date"],
-        absence: ["employee_id", "start_date", "end_date", "reason"],
+        absence: ["employee_id", "date", "reason"],
         attendance: ["employee_id", "date", "check_in"],
         skill: ["employee_id", "skill_name", "level"],
         promotion: ["employee_id", "old_position", "new_position", "effective_date"],
-        discipline: ["employee_id", "type", "description", "action_taken", "date"],
-        health_safety: ["incident_type", "date", "description", "severity"],
+        discipline: ["employee_id", "type", "description", "incident_date"],
+        health_safety: ["incident_type", "incident_date", "description", "severity"],
         document: ["title", "doc_type"],
-        communication: ["subject", "message"],
+        communication: ["title", "message"],
       }
 
       const missing = (requiredFields[dialogType] || []).filter(f => !data[f] && data[f] !== 0)
@@ -594,7 +594,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
                   <TableRow>
                     <TableHead>{t("Poste", "Position")}</TableHead>
                     <TableHead>{t("Candidats", "Candidates")}</TableHead>
-                    <TableHead>{t("Fourchette salariale", "Salary range")}</TableHead>
+                    <TableHead>{t("Département", "Department")}</TableHead>
                     <TableHead>{t("Statut", "Status")}</TableHead>
                     <TableHead className="w-24"></TableHead>
                   </TableRow>
@@ -604,7 +604,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
                     <TableRow key={r.id}>
                       <TableCell className="text-sm font-medium">{r.position}</TableCell>
                       <TableCell className="text-sm">{r.candidates_count}</TableCell>
-                      <TableCell className="text-sm">{r.salary_range || "—"}</TableCell>
+                        <TableCell className="text-sm">{r.department || "—"}</TableCell>
                       <TableCell>
                         <Badge variant={r.status === "open" ? "default" : "secondary"}>
                           {r.status === "open" ? t("Ouvert", "Open") : r.status === "closed" ? t("Fermé", "Closed") : r.status}
@@ -698,7 +698,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
-                  <TableHead>{fr ? "Période" : "Period"}</TableHead>
+                  <TableHead>{fr ? "Date" : "Date"}</TableHead>
                   <TableHead>{fr ? "Raison" : "Reason"}</TableHead>
                   <TableHead>{fr ? "Statut" : "Status"}</TableHead>
                   <TableHead className="w-20"></TableHead>
@@ -709,7 +709,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
                     return (
                       <TableRow key={a.id}>
                         <TableCell className="text-sm font-medium">{emp ? `${emp.first_name} ${emp.last_name}` : a.employee_id}</TableCell>
-                        <TableCell className="text-sm">{a.start_date} → {a.end_date}</TableCell>
+                        <TableCell className="text-sm">{a.date}</TableCell>
                         <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">{a.reason}</TableCell>
                         <TableCell className="text-sm"><Badge variant={a.status === "approved" ? "default" : a.status === "rejected" ? "destructive" : "secondary"}>
                           {a.status === "approved" ? t("Approuvé", "Approved") : a.status === "rejected" ? t("Refusé", "Rejected") : t("En attente", "Pending")}
@@ -905,7 +905,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
                   {trainings.map((tr) => (
                     <TableRow key={tr.id}>
                       <TableCell className="text-sm font-medium">{tr.title}</TableCell>
-                      <TableCell className="text-sm">{tr.instructor || "—"}</TableCell>
+                      <TableCell className="text-sm">{tr.trainer || "—"}</TableCell>
                       <TableCell className="text-sm">{tr.start_date}{tr.end_date ? ` → ${tr.end_date}` : ""}</TableCell>
                       <TableCell className="text-sm">{tr.participants_count}</TableCell>
                       <TableCell>
@@ -1078,7 +1078,6 @@ export function HRPage({ onNavigate, initialTab }: Props) {
                   <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
                   <TableHead>{fr ? "Type" : "Type"}</TableHead>
                   <TableHead>{fr ? "Description" : "Description"}</TableHead>
-                  <TableHead>{fr ? "Action" : "Action taken"}</TableHead>
                   <TableHead>{fr ? "Date" : "Date"}</TableHead>
                   <TableHead className="w-20"></TableHead>
                 </TableRow></TableHeader>
@@ -1090,8 +1089,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
                         <TableCell className="text-sm font-medium">{emp ? `${emp.first_name} ${emp.last_name}` : d.employee_id}</TableCell>
                         <TableCell className="text-sm"><Badge variant="outline">{d.type}</Badge></TableCell>
                         <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">{d.description}</TableCell>
-                        <TableCell className="text-sm">{d.action_taken}</TableCell>
-                        <TableCell className="text-sm">{d.date}</TableCell>
+                        <TableCell className="text-sm">{d.incident_date}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <Button size="icon" variant="ghost" className="size-7" onClick={() => openDialog("discipline", d)}><Pencil className="size-3.5" /></Button>
@@ -1131,7 +1129,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
                   {healthIncidents.map((h) => (
                     <TableRow key={h.id}>
                       <TableCell className="text-sm font-medium">{h.incident_type}</TableCell>
-                      <TableCell className="text-sm">{h.date}</TableCell>
+                      <TableCell className="text-sm">{h.incident_date}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{h.location || "—"}</TableCell>
                       <TableCell className="text-sm"><Badge variant={h.severity === "high" ? "destructive" : "outline"}>{h.severity}</Badge></TableCell>
                       <TableCell className="text-sm"><Badge variant={h.status === "resolved" ? "secondary" : "outline"}>{h.status}</Badge></TableCell>
@@ -1205,18 +1203,16 @@ export function HRPage({ onNavigate, initialTab }: Props) {
             <div className="rounded-lg border overflow-hidden">
               <Table>
                 <TableHeader><TableRow>
-                  <TableHead>{fr ? "Sujet" : "Subject"}</TableHead>
+                  <TableHead>{fr ? "Titre" : "Title"}</TableHead>
                   <TableHead>{fr ? "Message" : "Message"}</TableHead>
-                  <TableHead>{fr ? "Priorité" : "Priority"}</TableHead>
                   <TableHead>{fr ? "Date" : "Date"}</TableHead>
                   <TableHead className="w-20"></TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
                   {communications.map((c) => (
                     <TableRow key={c.id}>
-                      <TableCell className="text-sm font-medium">{c.subject}</TableCell>
+                      <TableCell className="text-sm font-medium">{c.title}</TableCell>
                       <TableCell className="text-sm text-muted-foreground max-w-[250px] truncate">{c.message}</TableCell>
-                      <TableCell className="text-sm"><Badge variant={c.priority === "high" ? "destructive" : c.priority === "low" ? "outline" : "secondary"}>{c.priority}</Badge></TableCell>
                       <TableCell className="text-sm">{new Date(c.created_at).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
@@ -1467,7 +1463,6 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                 <div><Label>{fr ? "Date de fin" : "End date"}</Label><Input type="date" value={form.end_date || ""} onChange={e => set("end_date", e.target.value)} /></div>
               </div>
               <div><Label>{fr ? "Salaire" : "Salary"}</Label><Input type="number" value={form.salary || ""} onChange={e => set("salary", Number(e.target.value))} /></div>
-              <div><Label>{fr ? "Conditions" : "Terms"}</Label><Textarea value={form.terms || ""} onChange={e => set("terms", e.target.value)} /></div>
             </>
           )}
 
@@ -1508,16 +1503,7 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
           {type === "recruitment" && (
             <>
               <div><Label>{fr ? "Poste" : "Position"}</Label><Input value={form.position || ""} onChange={e => set("position", e.target.value)} /></div>
-              <div>
-                <Label>{fr ? "Département" : "Department"}</Label>
-                <Select value={form.department_id || ""} onValueChange={v => set("department_id", v)}>
-                  <SelectTrigger><SelectValue placeholder={fr ? "Sélectionner..." : "Select..."} /></SelectTrigger>
-                  <SelectContent>
-                    {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div><Label>{fr ? "Fourchette salariale" : "Salary range"}</Label><Input value={form.salary_range || ""} onChange={e => set("salary_range", e.target.value)} placeholder="ex: 500000 - 800000 FC" /></div>
+              <div><Label>{fr ? "Département" : "Department"}</Label><Input value={form.department || ""} onChange={e => set("department", e.target.value)} /></div>
               <div><Label>{fr ? "Description" : "Description"}</Label><Textarea value={form.description || ""} onChange={e => set("description", e.target.value)} /></div>
             </>
           )}
@@ -1545,7 +1531,7 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
             <>
               <div><Label>{fr ? "Titre" : "Title"}</Label><Input value={form.title || ""} onChange={e => set("title", e.target.value)} /></div>
               <div><Label>{fr ? "Description" : "Description"}</Label><Textarea value={form.description || ""} onChange={e => set("description", e.target.value)} /></div>
-              <div><Label>{fr ? "Formateur" : "Instructor"}</Label><Input value={form.instructor || ""} onChange={e => set("instructor", e.target.value)} /></div>
+              <div><Label>{fr ? "Formateur" : "Trainer"}</Label><Input value={form.trainer || ""} onChange={e => set("trainer", e.target.value)} /></div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div><Label>{fr ? "Date de début" : "Start date"}</Label><Input type="date" value={form.start_date || ""} onChange={e => set("start_date", e.target.value)} /></div>
                 <div><Label>{fr ? "Date de fin" : "End date"}</Label><Input type="date" value={form.end_date || ""} onChange={e => set("end_date", e.target.value)} /></div>
@@ -1566,10 +1552,7 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div><Label>{fr ? "Date de début" : "Start date"}</Label><Input type="date" value={form.start_date || ""} onChange={e => set("start_date", e.target.value)} /></div>
-                <div><Label>{fr ? "Date de fin" : "End date"}</Label><Input type="date" value={form.end_date || ""} onChange={e => set("end_date", e.target.value)} /></div>
-              </div>
+              <div><Label>{fr ? "Date" : "Date"}</Label><Input type="date" value={form.date || ""} onChange={e => set("date", e.target.value)} /></div>
               <div><Label>{fr ? "Raison" : "Reason"}</Label><Textarea value={form.reason || ""} onChange={e => set("reason", e.target.value)} /></div>
               <div>
                 <Label>{fr ? "Statut" : "Status"}</Label>
@@ -1664,7 +1647,7 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                 <div><Label>{fr ? "Nouveau poste" : "New position"}</Label><Input value={form.new_position || ""} onChange={e => set("new_position", e.target.value)} /></div>
               </div>
               <div><Label>{fr ? "Date d'effet" : "Effective date"}</Label><Input type="date" value={form.effective_date || ""} onChange={e => set("effective_date", e.target.value)} /></div>
-              <div><Label>{fr ? "Notes" : "Notes"}</Label><Textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} /></div>
+              <div><Label>{fr ? "Motif" : "Reason"}</Label><Textarea value={form.reason || ""} onChange={e => set("reason", e.target.value)} /></div>
             </>
           )}
 
@@ -1693,8 +1676,7 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                 </Select>
               </div>
               <div><Label>{fr ? "Description" : "Description"}</Label><Textarea value={form.description || ""} onChange={e => set("description", e.target.value)} /></div>
-              <div><Label>{fr ? "Action prise" : "Action taken"}</Label><Input value={form.action_taken || ""} onChange={e => set("action_taken", e.target.value)} /></div>
-              <div><Label>{fr ? "Date" : "Date"}</Label><Input type="date" value={form.date || ""} onChange={e => set("date", e.target.value)} /></div>
+              <div><Label>{fr ? "Date" : "Date"}</Label><Input type="date" value={form.incident_date || ""} onChange={e => set("incident_date", e.target.value)} /></div>
             </>
           )}
 
@@ -1715,7 +1697,7 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                 </Select>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div><Label>{fr ? "Date" : "Date"}</Label><Input type="date" value={form.date || ""} onChange={e => set("date", e.target.value)} /></div>
+                <div><Label>{fr ? "Date" : "Date"}</Label><Input type="date" value={form.incident_date || ""} onChange={e => set("incident_date", e.target.value)} /></div>
                 <div><Label>{fr ? "Lieu" : "Location"}</Label><Input value={form.location || ""} onChange={e => set("location", e.target.value)} /></div>
               </div>
               <div><Label>{fr ? "Description" : "Description"}</Label><Textarea value={form.description || ""} onChange={e => set("description", e.target.value)} /></div>
@@ -1741,7 +1723,6 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                   </SelectContent>
                 </Select>
               </div>
-              <div><Label>{fr ? "Signalé par" : "Reported by"}</Label><Input value={form.reported_by || ""} onChange={e => set("reported_by", e.target.value)} /></div>
             </>
           )}
 
@@ -1778,20 +1759,8 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
           {/* COMMUNICATION FORM */}
           {type === "communication" && (
             <>
-              <div><Label>{fr ? "Sujet" : "Subject"}</Label><Input value={form.subject || ""} onChange={e => set("subject", e.target.value)} /></div>
+              <div><Label>{fr ? "Titre" : "Title"}</Label><Input value={form.title || ""} onChange={e => set("title", e.target.value)} /></div>
               <div><Label>{fr ? "Message" : "Message"}</Label><Textarea rows={4} value={form.message || ""} onChange={e => set("message", e.target.value)} /></div>
-              <div>
-                <Label>{fr ? "Priorité" : "Priority"}</Label>
-                <Select value={form.priority || "normal"} onValueChange={v => set("priority", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">{fr ? "Basse" : "Low"}</SelectItem>
-                    <SelectItem value="normal">{fr ? "Normale" : "Normal"}</SelectItem>
-                    <SelectItem value="high">{fr ? "Haute" : "High"}</SelectItem>
-                    <SelectItem value="urgent">{fr ? "Urgente" : "Urgent"}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </>
           )}
         </div>
