@@ -65,10 +65,10 @@ export function AvatarUpload({
       return
     }
     try {
-      const ok = await upload(file)
-      if (ok) {
+      const result = await upload(file)
+      if (result) {
         setSuccess(true)
-        onAvatarChange?.(url)
+        onAvatarChange?.(result)
         setTimeout(() => { setSuccess(false); onOpenChange(false) }, 1500)
       }
     } catch (err: any) {

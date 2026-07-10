@@ -1,19 +1,6 @@
 import * as React from "react"
 import { insforge } from "@/lib/supabase"
 
-// Access the SDK's internal HTTP client auth token
-function getAccessToken(): string {
-  try {
-    // @ts-ignore - access internal http userToken
-    const http = (insforge as any).http
-    if (http?.userToken) return http.userToken
-    // @ts-ignore - access internal tokenManager
-    const tm = (insforge as any).tokenManager
-    if (tm?.accessToken) return tm.accessToken
-  } catch {}
-  return ""
-}
-
 const BUCKET = "avatars"
 const MAX_SIZE = 2 * 1024 * 1024 // 2MB
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp"]
@@ -98,8 +85,8 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
     fetchAvatar()
   }, [fetchAvatar])
 
-  // Upload avatar — uses direct REST API upload, then constructs public URL via SDK
-  const upload = React.useCallback(async (file: File): Promise<boolean> => {
+  // Upload avatar — uses SDK upload strategy (direct or presigned), then saves URL to DB
+  const upload = React.useCallback(async (file: File): Promise<string | false> => {
     if (!userId || !workspaceId) return false
     const error = validateFile(file)
     if (error) throw new Error(error)
@@ -114,37 +101,21 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
       const path = `${workspaceId}/${userId}.jpg`
 
       // Remove old file if exists
-      try { await insforge.storage.from(BUCKET).remove(path) } catch {}
+      await insforge.storage.from(BUCKET).remove(path)
 
       setProgress(60)
 
-      // Direct upload via REST API
-      const formData = new FormData()
-      formData.append("file", compressed, `${userId}.jpg`)
-      const baseUrl = import.meta.env.VITE_INSFORGE_URL
-      const accessToken = getAccessToken()
-      const headers: Record<string, string> = {}
-      if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`
-
-      setProgress(70)
-      const directRes = await fetch(`${baseUrl}/api/storage/buckets/${BUCKET}/objects/${encodeURIComponent(path)}`, {
-        method: "PUT",
-        body: formData,
-        headers,
-        credentials: "include"
-      })
-      if (!directRes.ok) {
-        const errBody = await directRes.text().catch(() => "")
-        throw new Error(`Upload failed (${directRes.status}): ${errBody}`)
-      }
+      // Use SDK upload — handles strategy negotiation and proper auth
+      const { error: upErr } = await insforge.storage.from(BUCKET).upload(path, compressed)
+      if (upErr) throw new Error(`Upload failed: ${upErr.message}`)
 
       setProgress(90)
 
-      // Construct the correct public URL using SDK helper
+      // Construct public URL via SDK helper
       const { data: urlData } = insforge.storage.from(BUCKET).getPublicUrl(path)
-      const publicUrl = urlData?.publicUrl ?? `${baseUrl}/api/storage/buckets/${BUCKET}/objects/${path}`
+      const publicUrl = urlData?.publicUrl ?? `${import.meta.env.VITE_INSFORGE_URL}/api/storage/buckets/${BUCKET}/objects/${encodeURIComponent(path)}`
 
-      // Update workspace_members — throw on error so user sees it
+      // Update workspace_members
       const { error: dbErr } = await insforge.database
         .from("workspace_members")
         .update({ avatar_url: publicUrl })
@@ -157,7 +128,7 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
 
       setUrl(publicUrl)
       setProgress(100)
-      return true
+      return publicUrl
     } finally {
       setUploading(false)
       setTimeout(() => setProgress(0), 500)
