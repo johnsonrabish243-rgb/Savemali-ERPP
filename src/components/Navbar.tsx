@@ -111,7 +111,7 @@ export function Navbar({ currentPage, onNavigate }: NavProps) {
               <>
                 <button
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors",
+                    "inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
                     isPublic ? "text-white/70 hover:text-white hover:bg-white/10" : "text-foreground hover:bg-muted"
                   )}
                   onClick={() => handleNav("signin")}
@@ -119,7 +119,7 @@ export function Navbar({ currentPage, onNavigate }: NavProps) {
                   {t.nav.login}
                 </button>
                 <button
-                  className="ag-btn-brand px-4 py-1.5 text-sm"
+                  className="ag-btn-brand rounded-full px-4 py-1.5 text-sm"
                   onClick={() => handleNav("signup")}
                 >
                   {t.nav.signup}
@@ -161,8 +161,8 @@ export function Navbar({ currentPage, onNavigate }: NavProps) {
                     </>
                   ) : (
                     <>
-                      <button className="ag-btn-ghost w-full border-white/10 text-white hover:bg-white/10" onClick={() => handleNav("signin")}>{t.nav.login}</button>
-                      <button className="ag-btn-brand w-full" onClick={() => handleNav("signup")}>{t.nav.signup}</button>
+                      <button className="ag-btn-ghost w-full rounded-full border-white/10 text-white hover:bg-white/10" onClick={() => handleNav("signin")}>{t.nav.login}</button>
+                      <button className="ag-btn-brand w-full rounded-full" onClick={() => handleNav("signup")}>{t.nav.signup}</button>
                     </>
                   )}
                 </div>
