@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Logo } from "@/components/Logo"
 import { UserAvatar } from "@/components/UserAvatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/use-auth"
 import { cn } from "@/lib/utils"
 import type { Page } from "@/App"
@@ -25,7 +26,6 @@ export function Navbar({ currentPage, onNavigate }: NavProps) {
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null)
   const isPublic = PUBLIC_PAGES.includes(currentPage)
 
-  // Fetch avatar
   React.useEffect(() => {
     if (!user || !workspace) return
     insforge.database
@@ -50,31 +50,40 @@ export function Navbar({ currentPage, onNavigate }: NavProps) {
 
   return (
     <header className={cn(
-      "sticky top-0 z-50 w-full backdrop-blur-md transition-all duration-300",
+      "sticky top-0 z-50 w-full transition-all duration-300",
       isPublic
-        ? "border-b border-white/10 bg-surface-dark/80 supports-[backdrop-filter]:bg-surface-dark/60"
-        : "border-b border-border bg-surface/95 supports-[backdrop-filter]:bg-surface/80"
+        ? "border-b border-white/[0.06] bg-[#0b1120]/90 backdrop-blur-xl"
+        : "border-b border-border bg-card/90 backdrop-blur-xl"
     )}>
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
-        <button onClick={() => handleNav("home")} className="flex shrink-0 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md" aria-label="SaveMali home">
+        <button onClick={() => handleNav("home")} className="flex shrink-0 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg" aria-label="SaveMali home">
           <Logo />
         </button>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {/* Language */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className={cn(
-                "inline-flex items-center gap-1.5 rounded-sm px-2 py-1.5 text-sm font-medium transition-colors",
-                isPublic ? "text-white/70 hover:text-white hover:bg-white/10" : "text-foreground hover:bg-muted"
+                "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-all duration-200",
+                isPublic ? "text-white/60 hover:text-white hover:bg-white/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}>
-                <Globe className="size-4" /><span className="hidden font-semibold uppercase sm:inline">{lang}</span>
+                <Globe className="size-4" />
+                <span className="hidden font-semibold uppercase sm:inline text-xs tracking-wider">{lang}</span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setLang("fr")} className="gap-2"><span>🇫🇷</span><span>Français</span>{lang === "fr" && <span className="ml-auto text-xs text-accent">actif</span>}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setLang("en")} className="gap-2"><span>🇬🇧</span><span>English</span>{lang === "en" && <span className="ml-auto text-xs text-accent">active</span>}</DropdownMenuItem>
+            <DropdownMenuContent align="end" className="min-w-[140px]">
+              <DropdownMenuItem onClick={() => setLang("fr")} className="gap-2">
+                <span className="text-base">🇫🇷</span>
+                <span>Français</span>
+                {lang === "fr" && <span className="ml-auto text-xs font-medium text-brand">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setLang("en")} className="gap-2">
+                <span className="text-base">🇬🇧</span>
+                <span>English</span>
+                {lang === "en" && <span className="ml-auto text-xs font-medium text-brand">✓</span>}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -82,48 +91,60 @@ export function Navbar({ currentPage, onNavigate }: NavProps) {
 
           {/* Auth — desktop */}
           <div className="hidden items-center gap-2 md:flex">
-            {isPublic && <div className="mx-1 h-5 w-px bg-white/20" />}
+            {isPublic && <div className="mx-1 h-5 w-px bg-white/[0.08]" />}
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className={cn(
-                    "inline-flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium transition-colors",
-                    isPublic ? "text-white/70 hover:text-white hover:bg-white/10" : "text-foreground hover:bg-muted"
+                    "inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-all duration-200",
+                    isPublic ? "text-white/60 hover:text-white hover:bg-white/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}>
                     <UserAvatar
                       avatarUrl={avatarUrl}
                       name={user?.email?.split("@")[0] ?? ""}
                       email={user?.email ?? ""}
                       size="sm"
-                      className="size-6"
+                      className="size-6 ring-1 ring-border"
                     />
-                    <span className="text-xs font-medium max-w-[100px] truncate">{user.email}</span>
+                    <span className="text-xs font-medium max-w-[120px] truncate hidden sm:block">{user.email?.split("@")[0]}</span>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => handleNav("dashboard")} className="gap-2"><LayoutDashboard className="size-4" />{lang === "fr" ? "Tableau de bord" : "Dashboard"}</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNav("settings")} className="gap-2"><Settings className="size-4" />{lang === "fr" ? "Paramètres" : "Settings"}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNav("dashboard")} className="gap-2">
+                    <LayoutDashboard className="size-4" />
+                    {lang === "fr" ? "Tableau de bord" : "Dashboard"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNav("settings")} className="gap-2">
+                    <Settings className="size-4" />
+                    {lang === "fr" ? "Paramètres" : "Settings"}
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-destructive focus:text-destructive"><LogOut className="size-4" />{lang === "fr" ? "Se déconnecter" : "Sign out"}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-destructive focus:text-destructive">
+                    <LogOut className="size-4" />
+                    {lang === "fr" ? "Se déconnecter" : "Sign out"}
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <>
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
-                    isPublic ? "text-white/70 hover:text-white hover:bg-white/10" : "text-foreground hover:bg-muted"
+                    "rounded-full",
+                    isPublic ? "text-white/70 hover:text-white hover:bg-white/[0.06]" : ""
                   )}
                   onClick={() => handleNav("signin")}
                 >
                   {t.nav.login}
-                </button>
-                <button
-                  className="ag-btn-brand rounded-full px-4 py-1.5 text-sm"
+                </Button>
+                <Button
+                  size="sm"
+                  className="rounded-full shadow-sm"
                   onClick={() => handleNav("signup")}
                 >
                   {t.nav.signup}
-                </button>
+                </Button>
               </>
             )}
           </div>
@@ -132,37 +153,56 @@ export function Navbar({ currentPage, onNavigate }: NavProps) {
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <button className={cn(
-                "inline-flex items-center justify-center rounded-sm p-1.5 transition-colors md:hidden",
-                isPublic ? "text-white/70 hover:text-white hover:bg-white/10" : "text-foreground hover:bg-muted"
-              )} aria-label="Open menu"><Menu className="size-5" /></button>
+                "inline-flex items-center justify-center rounded-lg p-2 transition-colors md:hidden",
+                isPublic ? "text-white/60 hover:text-white hover:bg-white/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              )} aria-label="Open menu">
+                <Menu className="size-5" />
+              </button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 bg-surface-dark p-0 border-white/10">
+            <SheetContent side="right" className="w-72 bg-[#0b1120] p-0 border-white/[0.06]">
               <div className="flex flex-col h-full">
-                <div className="flex items-center px-5 py-4 border-b border-white/10">
+                <div className="flex items-center px-5 py-4 border-b border-white/[0.06]">
                   <Logo />
                 </div>
                 <div className="flex-1" />
-                <div className="border-t border-white/10 p-4 flex flex-col gap-2">
+                <div className="border-t border-white/[0.06] p-4 flex flex-col gap-2">
                   {user ? (
                     <>
-                      <div className="flex items-center gap-2 px-1 py-1">
+                      <div className="flex items-center gap-2.5 px-2 py-2 mb-1">
                         <UserAvatar
                           avatarUrl={avatarUrl}
                           name={user?.email?.split("@")[0] ?? ""}
                           email={user?.email ?? ""}
                           size="sm"
-                          className="size-7"
+                          className="size-8 ring-1 ring-white/10"
                         />
-                        <span className="text-xs text-white/50 truncate">{user.email}</span>
+                        <div>
+                          <p className="text-sm font-medium text-white">{user.email?.split("@")[0]}</p>
+                          <p className="text-xs text-white/40">{user.email}</p>
+                        </div>
                       </div>
-                      <button className="ag-btn-ghost w-full justify-start border-white/10 text-white hover:bg-white/10" onClick={() => handleNav("dashboard")}><LayoutDashboard className="size-4" />{lang === "fr" ? "Tableau de bord" : "Dashboard"}</button>
-                      <button className="ag-btn-ghost w-full justify-start border-white/10 text-white hover:bg-white/10" onClick={() => handleNav("settings")}><Settings className="size-4" />{lang === "fr" ? "Paramètres" : "Settings"}</button>
-                      <button className="ag-btn-ghost w-full justify-start border-white/10 text-red-400 hover:bg-red-500/10" onClick={handleSignOut}><LogOut className="size-4" />{lang === "fr" ? "Se déconnecter" : "Sign out"}</button>
+                      <Button variant="ghost" className="w-full justify-start text-white/60 hover:text-white hover:bg-white/[0.06]" onClick={() => handleNav("dashboard")}>
+                        <LayoutDashboard className="size-4" />
+                        {lang === "fr" ? "Tableau de bord" : "Dashboard"}
+                      </Button>
+                      <Button variant="ghost" className="w-full justify-start text-white/60 hover:text-white hover:bg-white/[0.06]" onClick={() => handleNav("settings")}>
+                        <Settings className="size-4" />
+                        {lang === "fr" ? "Paramètres" : "Settings"}
+                      </Button>
+                      <div className="h-px bg-white/[0.06] my-1" />
+                      <Button variant="ghost" className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={handleSignOut}>
+                        <LogOut className="size-4" />
+                        {lang === "fr" ? "Se déconnecter" : "Sign out"}
+                      </Button>
                     </>
                   ) : (
                     <>
-                      <button className="ag-btn-ghost w-full rounded-full border-white/10 text-white hover:bg-white/10" onClick={() => handleNav("signin")}>{t.nav.login}</button>
-                      <button className="ag-btn-brand w-full rounded-full" onClick={() => handleNav("signup")}>{t.nav.signup}</button>
+                      <Button variant="ghost" className="w-full rounded-full text-white/60 hover:text-white hover:bg-white/[0.06]" onClick={() => handleNav("signin")}>
+                        {t.nav.login}
+                      </Button>
+                      <Button className="w-full rounded-full" onClick={() => handleNav("signup")}>
+                        {t.nav.signup}
+                      </Button>
                     </>
                   )}
                 </div>

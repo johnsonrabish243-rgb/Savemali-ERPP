@@ -30,7 +30,6 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
 
   const { notifications, unreadCount, markAsRead, markAllAsRead, loading } = useNotifications()
 
-  // Fetch current user's avatar
   React.useEffect(() => {
     if (!user || !workspace) return
     insforge.database
@@ -107,31 +106,30 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden animate-in fade-in-0" onClick={() => setSidebarOpen(false)} />
       )}
 
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 flex w-64 flex-col transition-transform duration-200 lg:static lg:translate-x-0",
-        "bg-[#1e293b] text-[#e2e8f0]",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        "fixed inset-y-0 left-0 z-50 flex w-64 flex-col transition-all duration-300 ease-out lg:static lg:translate-x-0",
+        "bg-sidebar-bg text-sidebar-fg border-r border-sidebar-border",
+        sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
       )}>
         {/* Logo */}
-        <div className="flex h-16 items-center gap-3 px-5 border-b border-white/10">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-[#f97316]">
+        <div className="flex h-16 items-center gap-3 px-5 border-b border-sidebar-border">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-strong shadow-sm">
             <span className="text-sm font-extrabold text-white">S</span>
           </div>
           <span className="text-lg font-extrabold tracking-tight text-white">
-            Save<span className="text-[#f97316]">Mali</span>
+            Save<span className="text-brand">Mali</span>
           </span>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-[#94a3b8] hover:text-white">
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-sidebar-muted hover:text-white transition-colors">
             <X className="size-5" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3">
+        <nav className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin">
           {(() => {
-            // Group menu items by category
             const groups: { label: string; items: typeof menu }[] = []
             let currentGroup: typeof menu = []
             menu.forEach((item, idx) => {
@@ -145,9 +143,9 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
             if (currentGroup.length > 0) groups.push({ label: "", items: currentGroup })
 
             return groups.map((group, gi) => (
-              <div key={gi} className="mb-4">
+              <div key={gi} className="mb-3">
                 {group.label && (
-                  <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#64748b]">
+                  <p className="px-3 mb-1 text-[11px] font-semibold uppercase tracking-widest text-sidebar-muted">
                     {group.label}
                   </p>
                 )}
@@ -162,15 +160,17 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
                         key={item.id}
                         onClick={() => handleNav(item.id)}
                         className={cn(
-                          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+                          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                           isActive
-                            ? "bg-[#f97316]/15 text-[#f97316]"
-                            : "text-[#94a3b8] hover:bg-white/5 hover:text-white"
+                            ? "bg-sidebar-active-bg text-sidebar-active"
+                            : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-fg"
                         )}
                       >
-                        <Icon className={cn("size-4 shrink-0", isActive && "text-[#f97316]")} />
+                        <Icon className={cn("size-4 shrink-0 transition-colors", isActive && "text-sidebar-active")} />
                         <span className="flex-1 text-left">{item.label[lang]}</span>
-                        {isActive && <ChevronRight className="size-3.5 shrink-0 text-[#f97316]" />}
+                        {isActive && (
+                          <span className="flex size-1.5 rounded-full bg-sidebar-active" />
+                        )}
                       </button>
                     )
                   })}
@@ -181,23 +181,23 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
         </nav>
 
         {/* User + Logout */}
-        <div className="border-t border-white/10 p-3">
-          <div className="flex items-center gap-3 rounded-lg px-3 py-2">
+        <div className="border-t border-sidebar-border p-3">
+          <div className="flex items-center gap-3 rounded-lg px-3 py-2.5">
             <UserAvatar
               avatarUrl={avatarUrl}
               name={user?.email?.split("@")[0] ?? ""}
               email={user?.email ?? ""}
               size="sm"
-              className="ring-2 ring-[#f97316]/30"
+              className="ring-2 ring-brand/30"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user?.email?.split("@")[0] ?? user?.email}</p>
-              <p className="text-xs text-[#64748b]">{config.label[lang]}/{WORKSPACE_TYPE_LABELS[workspace.type][lang]}</p>
+              <p className="text-sm font-medium text-sidebar-fg truncate">{user?.email?.split("@")[0] ?? user?.email}</p>
+              <p className="text-xs text-sidebar-muted">{config.label[lang]}/{WORKSPACE_TYPE_LABELS[workspace.type][lang]}</p>
             </div>
           </div>
           <button
             onClick={signOut}
-            className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[#94a3b8] hover:bg-red-500/10 hover:text-red-400 transition-colors"
+            className="mt-1.5 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-muted hover:bg-red-500/10 hover:text-red-400 transition-all duration-200"
           >
             <LogOut className="size-4" />
             {fr ? "Déconnexion" : "Sign out"}
@@ -207,48 +207,48 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
 
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="flex h-16 items-center gap-4 border-b border-border bg-[#1e293b] px-4 lg:px-6">
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-[#94a3b8] hover:text-white">
+        <header className="flex h-16 items-center gap-4 border-b border-border bg-card/80 backdrop-blur-md px-4 lg:px-6 sticky top-0 z-30">
+          <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground transition-colors">
             <Menu className="size-5" />
           </button>
           <div className="flex items-center gap-2.5">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-[#f97316]">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-strong shadow-xs">
               <span className="text-xs font-extrabold text-white">S</span>
             </div>
-            <span className="text-base font-extrabold tracking-tight text-white hidden sm:block">
-              Save<span className="text-[#f97316]">Mali</span>
+            <span className="text-base font-bold tracking-tight text-foreground hidden sm:block">
+              Save<span className="text-brand">Mali</span>
             </span>
           </div>
           <div className="flex-1" />
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {/* Notifications */}
             <div className="relative">
               <button
                 onClick={() => setNotifOpen(!notifOpen)}
-                className="relative rounded-lg p-2 text-[#94a3b8] hover:bg-white/10 hover:text-white transition-colors"
+                className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200"
                 aria-label={fr ? "Notifications" : "Notifications"}
               >
                 <Bell className="size-4.5" />
                 {unreadCount > 0 && (
-                  <span className="absolute right-1 top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#f97316] text-[10px] font-medium text-white">
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white shadow-sm">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </button>
 
               {notifOpen && (
-                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in-0 zoom-in-95">
-                  <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
+                  <div className="flex items-center justify-between border-b border-border px-4 py-3 bg-muted/30">
                     <h3 className="text-sm font-semibold text-foreground">
                       {fr ? "Notifications" : "Notifications"}
                     </h3>
                     <div className="flex items-center gap-2">
                       {unreadCount > 0 && (
-                        <button onClick={markAllAsRead} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                        <button onClick={markAllAsRead} className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
                           {fr ? "Tout marquer lu" : "Mark all read"}
                         </button>
                       )}
-                      <button onClick={() => setNotifOpen(false)} className="p-1 rounded hover:bg-muted transition-colors" aria-label={fr ? "Fermer" : "Close"}>
+                      <button onClick={() => setNotifOpen(false)} className="p-1 rounded-md hover:bg-muted transition-colors" aria-label={fr ? "Fermer" : "Close"}>
                         <XIcon className="size-4" />
                       </button>
                     </div>
@@ -257,19 +257,22 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
                   <div className="max-h-[400px] overflow-y-auto">
                     {loading ? (
                       <div className="flex h-32 items-center justify-center">
-                        <div className="size-6 animate-spin rounded-full border-2 border-border border-t-primary" />
+                        <div className="size-6 animate-spin rounded-full border-2 border-muted border-t-brand" />
                       </div>
                     ) : notifications.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-                        <Bell className="size-10 text-muted-foreground/50 mb-2" />
-                        <p className="text-sm text-muted-foreground">{fr ? "Aucune notification" : "No notifications"}</p>
+                      <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                        <div className="flex size-12 items-center justify-center rounded-full bg-muted mb-3">
+                          <Bell className="size-6 text-muted-foreground/50" />
+                        </div>
+                        <p className="text-sm font-medium text-muted-foreground">{fr ? "Aucune notification" : "No notifications"}</p>
+                        <p className="text-xs text-muted-foreground/60 mt-1">{fr ? "Vous serez notifié des activités importantes" : "You'll be notified of important activities"}</p>
                       </div>
                     ) : (
-                      <div className="divide-y divide-border">
+                      <div className="divide-y divide-border/50">
                         {notifications.map((notif) => (
-                          <button key={notif.id} onClick={() => handleNotificationClick(notif)} className={cn("w-full px-4 py-3 text-left transition-colors hover:bg-muted/50", !notif.read && "bg-muted/30")}>
+                          <button key={notif.id} onClick={() => handleNotificationClick(notif)} className={cn("w-full px-4 py-3.5 text-left transition-colors hover:bg-muted/30", !notif.read && "bg-muted/20")}>
                             <div className="flex items-start gap-3">
-                              <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg",
+                              <div className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg",
                                 notif.type === "sale" && "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
                                 notif.type === "payment" && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
                                 notif.type === "stock_alert" && "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
@@ -297,14 +300,14 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
                                 {!["sale","payment","stock_alert","member","invoice","accounting","order","grade","attendance","expense","report"].includes(notif.type) && <Bell className="size-4" />}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className={cn("text-sm font-medium", !notif.read && "font-semibold")}>{notif.title}</p>
-                                <p className="text-xs text-muted-foreground truncate mt-0.5">{notif.message}</p>
+                                <p className={cn("text-sm", !notif.read ? "font-semibold text-foreground" : "font-medium text-foreground/90")}>{notif.title}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{notif.message}</p>
                                 <div className="flex items-center gap-2 mt-1.5">
                                   <span className="text-[10px] text-muted-foreground">{formatTime(notif.created_at)}</span>
-                                  {notif.actor_name && <span className="text-[10px] text-muted-foreground/70">· {notif.actor_name}</span>}
+                                  {notif.actor_name && <span className="text-[10px] text-muted-foreground/60">· {notif.actor_name}</span>}
                                 </div>
                               </div>
-                              {!notif.read && <div className="size-2 rounded-full bg-primary flex-shrink-0 mt-1" />}
+                              {!notif.read && <span className="size-2 rounded-full bg-brand shrink-0 mt-1.5 shadow-sm" />}
                             </div>
                           </button>
                         ))}
@@ -315,44 +318,46 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
               )}
             </div>
             {/* User profile in header */}
-            <div className="flex items-center gap-2.5 pl-3 border-l border-white/10">
+            <div className="flex items-center gap-2.5 pl-3 border-l border-border">
               <UserAvatar
                 avatarUrl={avatarUrl}
                 name={user?.email?.split("@")[0] ?? ""}
                 email={user?.email ?? ""}
                 size="sm"
-                className="ring-2 ring-[#f97316]/30"
+                className="ring-2 ring-brand/30"
               />
               <div className="hidden sm:block">
-                <p className="text-sm font-medium text-white">{user?.email?.split("@")[0] ?? workspace.name}</p>
+                <p className="text-sm font-medium text-foreground">{user?.email?.split("@")[0] ?? workspace.name}</p>
               </div>
             </div>
           </div>
         </header>
 
         {/* Welcome Banner */}
-        <div className="border-b border-border bg-gradient-to-r from-[#f97316]/5 via-[#f97316]/10 to-transparent px-4 lg:px-6 py-4">
-          <h1 className="text-lg font-bold text-foreground">
+        <div className="border-b border-border bg-gradient-to-r from-brand/5 via-brand/[0.07] to-transparent px-4 lg:px-6 py-4">
+          <h1 className="text-lg font-bold text-foreground tracking-tight">
             {t.dashboard.welcomeTitle.replace("{name}", user?.email?.split("@")[0] ?? "")}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {(() => {
               const wsType = workspace?.type
               const greetings: Record<string, { fr: string; en: string }> = {
-                pharmacy: { fr: "💊 Gérez votre pharmacie en toute sérénité", en: "💊 Manage your pharmacy with confidence" },
-                commerce: { fr: "🛒 Gérez votre commerce facilement", en: "🛒 Manage your shop with ease" },
-                education: { fr: "🎓 Gérez votre établissement scolaire", en: "🎓 Manage your school efficiently" },
-                gestion: { fr: "📊 Gérez votre entreprise intelligemment", en: "📊 Manage your business smartly" },
-                hr: { fr: "👥 Gérez vos ressources humaines", en: "👥 Manage your human resources" },
+                pharmacy: { fr: "Gérez votre pharmacie en toute sérénité", en: "Manage your pharmacy with confidence" },
+                commerce: { fr: "Gérez votre commerce facilement", en: "Manage your shop with ease" },
+                education: { fr: "Gérez votre établissement scolaire", en: "Manage your school efficiently" },
+                gestion: { fr: "Gérez votre entreprise intelligemment", en: "Manage your business smartly" },
+                hr: { fr: "Gérez vos ressources humaines", en: "Manage your human resources" },
               }
-              const msg = wsType ? greetings[wsType] : { fr: "📋 Bienvenue sur SaveMali", en: "📋 Welcome to SaveMali" }
-              return fr ? msg.fr : msg.en
+              const msg = wsType ? greetings[wsType] : { fr: "Bienvenue sur SaveMali", en: "Welcome to SaveMali" }
+              return msg[lang]
             })()} — {format(new Date(), "d MMMM yyyy", { locale: fr ? frLocale : enUS })}
           </p>
         </div>
 
         <main className="flex-1 overflow-y-auto">
-          {children}
+          <div className="animate-fade-in-up">
+            {children}
+          </div>
         </main>
       </div>
     </div>

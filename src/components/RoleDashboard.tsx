@@ -260,24 +260,24 @@ export function RoleDashboard() {
   }
 
   return (
-    <div className="p-4 lg:p-6 space-y-6">
+    <div className="p-4 lg:p-6 xl:p-8 space-y-6">
       {/* Filter Bar */}
-      <div className="rounded-xl border border-border bg-card p-4">
+      <div className="rounded-xl border border-border bg-card shadow-sm card-hover p-4">
         <div className="flex flex-wrap items-center gap-3">
           {/* Date Range */}
           <div className="flex items-center gap-2">
             <Calendar className="size-4 text-muted-foreground" />
             <span className="text-xs font-medium text-muted-foreground">{fr ? "Période" : "Period"}</span>
-            <div className="flex gap-1">
+            <div className="flex gap-1 rounded-lg bg-muted/50 p-0.5">
               {dateRangeOptions.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => setDateRange(opt.value as any)}
                   className={cn(
-                    "rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
+                    "rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200",
                     dateRange === opt.value
-                      ? "bg-brand text-white shadow-sm"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {opt.label}
@@ -452,36 +452,46 @@ export function RoleDashboard() {
   )
 }
 
-function StatCardComponent({ stat }: { stat: StatCard }) {
+function StatCardComponent({ stat, index = 0 }: { stat: StatCard; index?: number }) {
   return (
-    <div className={cn("rounded-xl p-5 text-white transition-all hover:shadow-lg hover:scale-[1.02]", stat.color)}>
-      <div className="flex items-start justify-between">
-        <div className="flex size-10 items-center justify-center rounded-lg bg-white/20">
-          {stat.icon}
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-xl p-5 text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5",
+        `bg-gradient-to-br ${stat.color}`,
+        "animate-kpi-enter"
+      )}
+      style={{ animationDelay: `${index * 80}ms` }}
+    >
+      <div className="absolute top-0 right-0 w-32 h-32 translate-x-8 -translate-y-8 bg-white/5 rounded-full blur-xl" />
+      <div className="relative z-10">
+        <div className="flex items-start justify-between">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm shadow-inner">
+            {stat.icon}
+          </div>
+          {stat.change && (
+            <span className={cn("flex items-center gap-0.5 text-xs font-medium rounded-full bg-white/15 px-2 py-0.5 backdrop-blur-sm",
+              stat.changeType === "up" && "text-emerald-100",
+              stat.changeType === "down" && "text-red-100",
+              stat.changeType === "neutral" && "text-white/70"
+            )}>
+              {stat.changeType === "up" && <ArrowUpRight className="size-3" />}
+              {stat.changeType === "down" && <ArrowDownRight className="size-3" />}
+              {stat.change}
+            </span>
+          )}
         </div>
-        {stat.change && (
-          <span className={cn("flex items-center gap-0.5 text-xs font-medium",
-            stat.changeType === "up" && "text-emerald-100",
-            stat.changeType === "down" && "text-red-100",
-            stat.changeType === "neutral" && "text-white/70"
-          )}>
-            {stat.changeType === "up" && <ArrowUpRight className="size-3" />}
-            {stat.changeType === "down" && <ArrowDownRight className="size-3" />}
-            {stat.change}
-          </span>
-        )}
+        <p className="mt-3 text-2xl font-bold tracking-tight text-white tabular-nums">{stat.value}</p>
+        <p className="text-xs text-white/75 mt-1 font-medium">{stat.label}</p>
       </div>
-      <p className="mt-3 text-2xl font-bold text-white">{stat.value}</p>
-      <p className="text-xs text-white/80 mt-1">{stat.label}</p>
     </div>
   )
 }
 
 function SectionCard({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-xl border border-border bg-card", className)}>
-      <div className="border-b border-border px-5 py-3">
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+    <div className={cn("rounded-xl border border-border bg-card shadow-sm card-hover overflow-hidden", className)}>
+      <div className="border-b border-border/50 px-5 py-3.5 bg-muted/20">
+        <h3 className="text-sm font-semibold text-foreground tracking-tight">{title}</h3>
       </div>
       <div className="p-5">{children}</div>
     </div>
@@ -640,7 +650,7 @@ function DirectorDashboard({ stats, chartData, fr, activity }: { stats: Record<s
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <div className="grid gap-4 lg:grid-cols-3">
         <SectionCard title={fr ? "Frais des 30 derniers jours" : "Last 30 days fees"} className="lg:col-span-2">
           <MiniBarChart data={chartData.fees ?? []} color="#6366f1" height={180} />
@@ -691,7 +701,7 @@ function TeacherDashboard({ stats, fr }: { stats: Record<string, number>; fr: bo
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <div className="grid gap-4 lg:grid-cols-2">
         <SectionCard title={fr ? "Mes cours aujourd'hui" : "My classes today"}>
           <RecentList items={[
@@ -718,7 +728,7 @@ function SupervisorDashboard({ stats, fr }: { stats: Record<string, number>; fr:
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <div className="grid gap-4 lg:grid-cols-2">
         <SectionCard title={fr ? "Présences du jour" : "Today's attendance"}>
           <RecentList items={[
@@ -765,7 +775,7 @@ function ObserverDashboard({ stats, fr, ws }: { stats: Record<string, number>; f
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <SectionCard title={fr ? "Aperçu" : "Overview"}>
         <RecentList items={[
           { title: fr ? "Mode lecture seule" : "Read-only mode", subtitle: fr ? "Vous consultez les données" : "You are viewing data", time: "—", badge: fr ? "Observateur" : "Observer", badgeColor: "bg-slate-100 text-slate-700" },
@@ -785,7 +795,7 @@ function EducationCashierDashboard({ stats, chartData, fr }: { stats: Record<str
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <SectionCard title={fr ? "Revenus vs Dépenses" : "Revenue vs Expenses"}>
         <FinanceChart data={chartData.finance ?? []} height={180} />
       </SectionCard>
@@ -803,7 +813,7 @@ function HRAdminDashboard({ stats, fr, activity }: { stats: Record<string, numbe
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <div className="grid gap-4 lg:grid-cols-2">
         <SectionCard title={fr ? "Activité récente" : "Recent activity"}>
           <RecentList items={activityToItems(activity ?? [], fr)} />
@@ -837,7 +847,7 @@ function EducationAccountantDashboard({ stats, chartData, fr }: { stats: Record<
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <SectionCard title={fr ? "Frais vs Dépenses" : "Fees vs Expenses"}>
         <FinanceChart data={chartData.finance ?? []} height={180} />
       </SectionCard>
@@ -855,7 +865,7 @@ function GestionCashierDashboard({ stats, chartData, fr }: { stats: Record<strin
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <SectionCard title={fr ? "Revenus vs Dépenses" : "Income vs Expenses"}>
         <FinanceChart data={chartData.finance ?? []} height={180} />
       </SectionCard>
@@ -875,7 +885,7 @@ function PharmacyManagerDashboard({ stats, chartData, fr, activity }: { stats: R
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <div className="grid gap-4 lg:grid-cols-3">
         <SectionCard title={fr ? "Ventes des 7 derniers jours" : "Last 7 days sales"} className="lg:col-span-2">
           <MiniBarChart data={chartData.sales ?? []} color="#10b981" height={180} />
@@ -918,7 +928,7 @@ function PharmacyCashierDashboard({ stats, fr }: { stats: Record<string, number>
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <SectionCard title={fr ? "Historique des ventes" : "Sales history"}>
         <RecentList items={[
           { title: fr ? "Aucune vente" : "No sales", subtitle: fr ? "En attente" : "Awaiting data", time: "—" },
@@ -938,7 +948,7 @@ function PharmacyAccountantDashboard({ stats, chartData, fr }: { stats: Record<s
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <SectionCard title={fr ? "Revenus vs Dépenses" : "Revenue vs Expenses"}>
         <FinanceChart data={chartData.finance ?? []} height={180} />
       </SectionCard>
@@ -958,7 +968,7 @@ function CommerceManagerDashboard({ stats, chartData, fr, activity }: { stats: R
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <div className="grid gap-4 lg:grid-cols-3">
         <SectionCard title={fr ? "Ventes des 7 derniers jours" : "Last 7 days sales"} className="lg:col-span-2">
           <MiniBarChart data={chartData.sales ?? []} color="#f97316" height={180} />
@@ -1001,7 +1011,7 @@ function CommerceCashierDashboard({ stats, fr }: { stats: Record<string, number>
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <SectionCard title={fr ? "Historique" : "History"}>
         <RecentList items={[
           { title: fr ? "Aucune transaction" : "No transactions", subtitle: fr ? "En attente" : "Awaiting data", time: "—" },
@@ -1021,7 +1031,7 @@ function CommerceAccountantDashboard({ stats, chartData, fr }: { stats: Record<s
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <SectionCard title={fr ? "Revenus vs Dépenses" : "Revenue vs Expenses"}>
         <FinanceChart data={chartData.finance ?? []} height={180} />
       </SectionCard>
@@ -1044,7 +1054,7 @@ function GestionManagerDashboard({ stats, chartData, fr, activity }: { stats: Re
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <div className="grid gap-4 lg:grid-cols-3">
         <SectionCard title={fr ? "Revenus vs Dépenses" : "Revenue vs Expenses"} className="lg:col-span-2">
           <FinanceChart data={chartData.finance ?? []} height={180} />
@@ -1087,7 +1097,7 @@ function GestionAccountantDashboard({ stats, chartData, fr }: { stats: Record<st
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{s.map((stat, i) => <StatCardComponent key={i} stat={stat} index={i} />)}</div>
       <SectionCard title={fr ? "Revenus vs Dépenses" : "Revenue vs Expenses"}>
         <FinanceChart data={chartData.finance ?? []} height={180} />
       </SectionCard>

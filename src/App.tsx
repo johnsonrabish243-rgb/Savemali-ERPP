@@ -222,15 +222,19 @@ function AppContent() {
       {showNav && <PredictiveBar onNavigate={handleNavigate} />}
       <React.Suspense fallback={
         <div className="flex min-h-svh items-center justify-center bg-background">
-          <div className="w-48 flex flex-col items-center gap-3">
-            <div className="relative w-full h-[3px] overflow-hidden rounded-full bg-muted">
-              <div className="absolute top-0 left-0 h-full w-[40%] rounded-full bg-gradient-to-r from-transparent via-brand to-transparent" style={{ animation: "loading-sweep-suspense 1.4s ease-in-out infinite" }} />
+          <div className="flex flex-col items-center gap-4">
+            <div className="size-10 animate-spin rounded-full border-[3px] border-muted border-t-brand" />
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-sm font-medium text-muted-foreground">SaveMali</p>
+              <div className="w-32 h-[2px] overflow-hidden rounded-full bg-muted">
+                <div className="h-full w-[40%] rounded-full bg-gradient-to-r from-transparent via-brand to-transparent animate-loading-bar" />
+              </div>
             </div>
           </div>
-          <style>{`@keyframes loading-sweep-suspense { 0% { left: -40%; } 100% { left: 100%; } }`}</style>
         </div>
       }>
-        {page === "home" && <HomePage onNavigate={handleNavigate} />}
+        <div key={page} className="animate-fade-in-up">
+          {page === "home" && <HomePage onNavigate={handleNavigate} />}
         {page === "education" && <EducationPage onNavigate={handleNavigate} />}
         {page === "pharmacy" && <PharmacyProvider><PharmacyPage onNavigate={handleNavigate} /></PharmacyProvider>}
         {page === "commerce" && <CommercePage onNavigate={handleNavigate} />}
@@ -257,6 +261,7 @@ function AppContent() {
         {page === "access-denied" && <AccessDeniedPage onNavigate={handleNavigate} />}
         {page === "reset-password" && <ResetPasswordPage onNavigate={handleNavigate} />}
         {page === "create-workspace" && <CreateWorkspacePage onNavigate={handleNavigate} />}
+        </div>
       </React.Suspense>
       <React.Suspense fallback={null}>
         <SavemaliWidget />

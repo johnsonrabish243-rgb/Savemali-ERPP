@@ -21,27 +21,37 @@ interface QuickAction { label: string; icon: React.ReactNode; color: string; onC
 interface RecentItem { title: string; subtitle: string; time: string; badge?: string; badgeColor?: string }
 interface DashboardConfig { stats: StatCard[]; quickActions: QuickAction[]; recentItems: RecentItem[] }
 
-function Stat({ s }: { s: StatCard }) {
+function Stat({ s, index = 0 }: { s: StatCard; index?: number }) {
   return (
-    <div className={cn("rounded-xl p-4 text-white transition-all hover:shadow-lg hover:scale-[1.02]", s.color)}>
-      <div className="flex items-start justify-between">
-        <div className="flex size-9 items-center justify-center rounded-lg bg-white/20">{s.icon}</div>
-        {s.change && (
-          <span className={cn("flex items-center gap-0.5 text-xs font-medium", s.changeType === "up" && "text-emerald-100", s.changeType === "down" && "text-red-100")}>
-            {s.changeType === "up" && <ArrowUpRight className="size-3" />}{s.changeType === "down" && <ArrowDownRight className="size-3" />}{s.change}
-          </span>
-        )}
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-xl p-4 text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5",
+        `bg-gradient-to-br ${s.color}`,
+        "animate-kpi-enter"
+      )}
+      style={{ animationDelay: `${index * 80}ms` }}
+    >
+      <div className="absolute top-0 right-0 w-28 h-28 translate-x-6 -translate-y-6 bg-white/5 rounded-full blur-xl" />
+      <div className="relative z-10">
+        <div className="flex items-start justify-between">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm shadow-inner">{s.icon}</div>
+          {s.change && (
+            <span className={cn("flex items-center gap-0.5 text-xs font-medium rounded-full bg-white/15 px-2 py-0.5 backdrop-blur-sm", s.changeType === "up" && "text-emerald-100", s.changeType === "down" && "text-red-100")}>
+              {s.changeType === "up" && <ArrowUpRight className="size-3" />}{s.changeType === "down" && <ArrowDownRight className="size-3" />}{s.change}
+            </span>
+          )}
+        </div>
+        <p className="mt-2.5 text-xl font-bold text-white tabular-nums tracking-tight">{s.value}</p>
+        <p className="text-xs text-white/75 mt-1 font-medium">{s.label}</p>
       </div>
-      <p className="mt-2.5 text-xl font-bold text-white">{s.value}</p>
-      <p className="text-xs text-white/80 mt-1">{s.label}</p>
     </div>
   )
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-border bg-card">
-      <div className="border-b border-border px-4 py-2.5"><h3 className="text-sm font-semibold text-foreground">{title}</h3></div>
+    <div className="rounded-xl border border-border bg-card shadow-sm card-hover overflow-hidden">
+      <div className="border-b border-border/50 px-4 py-3 bg-muted/20"><h3 className="text-sm font-semibold text-foreground tracking-tight">{title}</h3></div>
       <div className="p-4">{children}</div>
     </div>
   )
@@ -454,7 +464,7 @@ export function EmployeeDashboard({ workspaceType, role, onNavigateToTab }: Empl
 
   return (
     <div className="p-4 lg:p-6 space-y-5">
-      {config.stats.length > 0 && <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{config.stats.map((stat, i) => <Stat key={i} s={stat} />)}</div>}
+      {config.stats.length > 0 && <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{config.stats.map((stat, i) => <Stat key={i} s={stat} index={i} />)}</div>}
       {config.quickActions.length > 0 && (
         <Section title={fr ? "Actions rapides" : "Quick Actions"}>
           <div className="flex flex-wrap gap-2">
