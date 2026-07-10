@@ -612,7 +612,42 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           title={t("Absences", "Absences")}
           action={<Button size="sm" onClick={() => openDialog("absence")}><Plus className="size-4 mr-1" />{t("Enregistrer", "Record")}</Button>}
         >
-          <EmptyState icon={FileWarning} title={t("Absences enregistrées", "Recorded absences")} desc={t("Historique des absences", "Absence history")} />
+          {absences.length === 0 ? (
+            <EmptyState icon={FileWarning} title={t("Aucune absence", "No absences")} desc={t("Enregistrez les absences des employés", "Record employee absences")} />
+          ) : (
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
+                  <TableHead>{fr ? "Période" : "Period"}</TableHead>
+                  <TableHead>{fr ? "Raison" : "Reason"}</TableHead>
+                  <TableHead>{fr ? "Statut" : "Status"}</TableHead>
+                  <TableHead className="w-20"></TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {absences.map((a) => {
+                    const emp = employees.find(e => e.id === a.employee_id)
+                    return (
+                      <TableRow key={a.id}>
+                        <TableCell className="text-sm font-medium">{emp ? `${emp.first_name} ${emp.last_name}` : a.employee_id}</TableCell>
+                        <TableCell className="text-sm">{a.start_date} → {a.end_date}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">{a.reason}</TableCell>
+                        <TableCell className="text-sm"><Badge variant={a.status === "approved" ? "default" : a.status === "rejected" ? "destructive" : "secondary"}>
+                          {a.status === "approved" ? t("Approuvé", "Approved") : a.status === "rejected" ? t("Refusé", "Rejected") : t("En attente", "Pending")}
+                        </Badge></TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="ghost" className="size-7" onClick={() => openDialog("absence", a)}><Pencil className="size-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => handleDelete("hr_absences", a.id)}><Trash2 className="size-3.5" /></Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </SectionCard>
       )}
 
@@ -1457,6 +1492,17 @@ function HRDialog({ open, onOpenChange, type, item, employees, departments, onSa
                 <div><Label>{fr ? "Date de fin" : "End date"}</Label><Input type="date" value={form.end_date || ""} onChange={e => set("end_date", e.target.value)} /></div>
               </div>
               <div><Label>{fr ? "Raison" : "Reason"}</Label><Textarea value={form.reason || ""} onChange={e => set("reason", e.target.value)} /></div>
+              <div>
+                <Label>{fr ? "Statut" : "Status"}</Label>
+                <Select value={form.status || "pending"} onValueChange={v => set("status", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">{fr ? "En attente" : "Pending"}</SelectItem>
+                    <SelectItem value="approved">{fr ? "Approuvé" : "Approved"}</SelectItem>
+                    <SelectItem value="rejected">{fr ? "Refusé" : "Rejected"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </>
           )}
 
