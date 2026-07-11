@@ -45,7 +45,7 @@ export function HRLandingPage({ onNavigate }: Props) {
             {fr ? "Module complet de gestion RH : employés, contrats, congés, formations, évaluations et rapports." : "Complete HR management module: employees, contracts, leave, training, evaluations and reports."}
           </p>
           <div className="mt-10">
-            <SpiralButton onClick={() => onNavigate("home")} label={fr ? "Commencer gratuitement" : "Start free"} />
+            <SpiralButton onClick={() => onNavigate("signup")} label={fr ? "Commencer gratuitement" : "Start free"} />
           </div>
         </div>
       </section>
@@ -100,7 +100,7 @@ export function HRLandingPage({ onNavigate }: Props) {
           <div className="mb-4 flex justify-center">
             <Logo imgClassName="h-10" />
           </div>
-          <p className="text-xs text-muted-foreground">&copy; 2026 SaveMali — {fr ? "Développé par John Mocket" : "Developed by John Mocket"}</p>
+          <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} SaveMali — {fr ? "Développé par John Mocket" : "Developed by John Mocket"}</p>
         </div>
       </footer>
     </div>

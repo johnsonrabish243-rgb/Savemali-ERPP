@@ -22,9 +22,8 @@ import {
   usePlatformAdmin, fetchPlatformDashboardStats, fetchAllUsers,
   fetchAllWorkspaces, fetchPlatformSettings,
   updatePlatformSetting, suspendUser, reactivateUser,
-  suspendWorkspace, reactivateWorkspace,
+  suspendWorkspace, reactivateWorkspace, platformGetAuditLogs,
 } from "@/lib/platform-admin"
-import { getAuditLogs } from "@/lib/audit"
 import type { PlatformDashboardStats, PlatformSetting } from "@/lib/platform-admin"
 
 interface Props {
@@ -508,7 +507,7 @@ function ActivitySection() {
   const [searchAction, setSearchAction] = React.useState("all")
 
   React.useEffect(() => {
-    getAuditLogs({ workspace_id: undefined as any, limit: 50 }).then((d) => {
+    platformGetAuditLogs(50, 0).then((d) => {
       setLogs(d)
       setLoading(false)
     })
@@ -595,7 +594,7 @@ function AuditSection() {
   const ITEMS = 15
 
   React.useEffect(() => {
-    getAuditLogs({ workspace_id: undefined as any, limit: 200 }).then((d) => {
+    platformGetAuditLogs(200, 0).then((d) => {
       setLogs(d)
       setLoading(false)
     })

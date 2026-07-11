@@ -220,15 +220,15 @@ export function HRPayrollEngine({ workspace, user, employees }: Props) {
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          [employees.filter(e => e.status === "active").length, fr ? "Employés actifs" : "Active employees"],
-          [totalPayroll, fr ? "Masse salariale" : "Total payroll"],
-          [paidAmount, fr ? "Payé" : "Paid"],
-          [pendingAmount, fr ? "En attente" : "Pending"],
-        ].map(([v, l]) => (
+          [employees.filter(e => e.status === "active").length, fr ? "Employés actifs" : "Active employees", "count"],
+          [totalPayroll, fr ? "Masse salariale" : "Total payroll", "currency"],
+          [paidAmount, fr ? "Payé" : "Paid", "currency"],
+          [pendingAmount, fr ? "En attente" : "Pending", "currency"],
+        ].map(([v, l, i]) => (
           <Card key={l as string}>
             <CardContent className="p-3">
               <p className="text-xs text-muted-foreground">{l as string}</p>
-              <p className="text-xl font-bold">{typeof v === "number" ? formatCurrency(v) : v}</p>
+              <p className="text-xl font-bold">{i === "count" ? v : typeof v === "number" ? formatCurrency(v) : v}</p>
             </CardContent>
           </Card>
         ))}

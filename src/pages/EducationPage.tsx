@@ -322,7 +322,8 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
   }
   const deleteClass = async (id: string) => {
     if (!confirm(fr ? "Supprimer cette classe ?" : "Delete this class?")) return
-    await insforge.database.from("exam_results").delete().eq("class_id", id).eq("workspace_id", workspace.id)
+    const examIds = (await insforge.database.from("exams").select("id").eq("class_id", id).eq("workspace_id", workspace.id)).data?.map((e: any) => e.id) ?? []
+    if (examIds.length) await insforge.database.from("exam_results").delete().in("exam_id", examIds).eq("workspace_id", workspace.id)
     await insforge.database.from("exams").delete().eq("class_id", id).eq("workspace_id", workspace.id)
     await insforge.database.from("students").update({ class_name: null }).eq("class_name", classes.find((c) => c.id === id)?.name ?? "").eq("workspace_id", workspace.id)
     const { error } = await insforge.database.from("classes").delete().eq("id", id).eq("workspace_id", workspace.id)

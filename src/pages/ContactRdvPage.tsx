@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Calendar, Clock, Phone, Mail, MapPin, Globe, ChevronRight, Loader2, Check, X, AlertTriangle, MessageSquare, Shield, ChevronDown, ChevronUp, CalendarDays, Video, Building2, User, Upload, FileText, Search, ArrowUpDown, Filter, CreditCard, Smartphone, Laptop, Plus, Minus, ExternalLink, CheckCircle2, XCircle, Clock as ClockIcon, HelpCircle, BookOpen, ChevronLeft } from "lucide-react"
+import { Calendar, Clock, Mail, MapPin, Globe, ChevronRight, Loader2, Check, X, AlertTriangle, MessageSquare, Shield, ChevronDown, ChevronUp, CalendarDays, Video, Building2, Upload, Smartphone, HelpCircle, ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,7 +14,7 @@ import { useLanguage } from "@/lib/i18n"
 import { SeoHead } from "@/lib/seo"
 import { useAuth } from "@/hooks/use-auth"
 import { insforge } from "@/lib/supabase"
-import { sendEmail } from "@/lib/email"
+
 import { sanitizeStrict, detectInjection, checkApiRateLimit } from "@/lib/security"
 import { submitContactMessage, createAppointment, cancelAppointment, getUserAppointments, isWithinBusinessHours } from "@/lib/rdv"
 import { cn } from "@/lib/utils"
@@ -145,7 +145,7 @@ function ContactFormSection({ fr }: { fr: boolean }) {
       setSuccess({ number: result.contactNumber })
       toast.success(fr ? "Message envoyé avec succès !" : "Message sent successfully!")
     } catch (err: any) {
-      toast.error(err.message || fr ? "Erreur lors de l'envoi" : "Error sending message")
+      toast.error(err.message || (fr ? "Erreur lors de l'envoi" : "Error sending message"))
     } finally {
       setSaving(false)
     }
@@ -280,7 +280,7 @@ function AppointmentSection({ fr, email, userId }: { fr: boolean; email?: string
       setSuccess({ number: result.appointmentNumber })
       toast.success(fr ? "Rendez-vous confirmé !" : "Appointment confirmed!")
     } catch (err: any) {
-      toast.error(err.message || fr ? "Erreur" : "Error")
+      toast.error(err.message || (fr ? "Erreur" : "Error"))
     } finally {
       setSaving(false)
     }

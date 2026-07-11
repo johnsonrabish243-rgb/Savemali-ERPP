@@ -43,7 +43,7 @@ export function PharmacyLandingPage({ onNavigate }: Props) {
             {fr ? "Gérez votre pharmacie avec confiance. Inventaire, ventes, alertes péremption et rapports financiers." : "Manage your pharmacy with confidence. Inventory, sales, expiry alerts and financial reports."}
           </p>
           <div className="mt-10">
-            <SpiralButton onClick={() => onNavigate("home")} label={fr ? "Commencer gratuitement" : "Start free"} />
+            <SpiralButton onClick={() => onNavigate("signup")} label={fr ? "Commencer gratuitement" : "Start free"} />
           </div>
         </div>
       </section>
@@ -98,7 +98,7 @@ export function PharmacyLandingPage({ onNavigate }: Props) {
           <div className="mb-4 flex justify-center">
             <Logo imgClassName="h-10" />
           </div>
-          <p className="text-xs text-muted-foreground">&copy; 2026 SaveMali — {fr ? "Développé par John Mocket" : "Developed by John Mocket"}</p>
+          <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} SaveMali — {fr ? "Développé par John Mocket" : "Developed by John Mocket"}</p>
         </div>
       </footer>
     </div>

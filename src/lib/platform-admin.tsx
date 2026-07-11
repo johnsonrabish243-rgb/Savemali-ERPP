@@ -102,45 +102,8 @@ export async function hasAnyPlatformAdmin(): Promise<boolean> {
 
 export async function fetchPlatformDashboardStats(): Promise<PlatformDashboardStats> {
   try {
-    const [
-      usersCount, wsCount, activeWsCount,
-      members, employees,
-      admins, managers, cashiers, accountants,
-      tickets, appointments, notifications, reports,
-    ] = await Promise.all([
-      insforge.database.rpc("platform_total_users"),
-      insforge.database.rpc("platform_total_workspaces"),
-      insforge.database.from("workspace_members").select("id", { count: "exact", head: true }).eq("status", "active"),
-      insforge.database.from("workspace_members").select("id", { count: "exact", head: true }),
-      insforge.database.from("employees").select("id", { count: "exact", head: true }),
-      insforge.database.from("workspace_members").select("id", { count: "exact", head: true }).eq("role", "admin"),
-      insforge.database.from("workspace_members").select("id", { count: "exact", head: true }).eq("role", "manager"),
-      insforge.database.from("workspace_members").select("id", { count: "exact", head: true }).eq("role", "cashier"),
-      insforge.database.from("workspace_members").select("id", { count: "exact", head: true }).eq("role", "accountant"),
-      insforge.database.from("support_tickets").select("id", { count: "exact", head: true }),
-      insforge.database.from("appointments").select("id", { count: "exact", head: true }),
-      insforge.database.from("workspace_notifications").select("id", { count: "exact", head: true }),
-      insforge.database.from("shared_reports").select("id", { count: "exact", head: true }),
-    ])
-
-    const totalWs = wsCount.data ?? 0
-    const activeWs = activeWsCount.count ?? 0
-
-    return {
-      totalUsers: usersCount.data ?? 0,
-      totalWorkspaces: totalWs,
-      activeWorkspaces: activeWs,
-      inactiveWorkspaces: Math.max(0, totalWs - activeWs),
-      totalEmployees: employees.count ?? 0,
-      totalAdmins: admins.count ?? 0,
-      totalManagers: managers.count ?? 0,
-      totalCashiers: cashiers.count ?? 0,
-      totalAccountants: accountants.count ?? 0,
-      totalSupportTickets: tickets.count ?? 0,
-      totalAppointments: appointments.count ?? 0,
-      totalNotifications: notifications.count ?? 0,
-      totalReports: reports.count ?? 0,
-    }
+    const { data, error } = await insforge.database.rpc("platform_dashboard_stats")
+    return (data ?? {}) as PlatformDashboardStats
   } catch {
     return {
       totalUsers: 0, totalWorkspaces: 0, activeWorkspaces: 0, inactiveWorkspaces: 0,
@@ -204,7 +167,7 @@ export async function updatePlatformSetting(key: string, value: unknown): Promis
   try {
     await insforge.database
       .from("platform_settings")
-      .update({ value: JSON.stringify(value), updated_at: new Date().toISOString() })
+      .update({ value, updated_at: new Date().toISOString() })
       .eq("key", key)
   } catch {}
 }
@@ -213,10 +176,7 @@ export async function updatePlatformSetting(key: string, value: unknown): Promis
 
 export async function fetchAllWorkspaces() {
   try {
-    const { data } = await insforge.database
-      .from("workspaces")
-      .select("*, workspace_members!inner(count)")
-      .order("created_at", { ascending: false })
+    const { data } = await insforge.database.rpc("platform_list_workspaces")
     return data ?? []
   } catch {
     return []
@@ -225,19 +185,19 @@ export async function fetchAllWorkspaces() {
 
 export async function suspendWorkspace(workspaceId: string): Promise<void> {
   try {
-    await insforge.database
-      .from("workspace_members")
-      .update({ status: "suspended" })
-      .eq("workspace_id", workspaceId)
+    await insforge.database.rpc("platform_update_workspace_members_status", {
+      p_workspace_id: workspaceId,
+      p_status: "suspended",
+    })
   } catch {}
 }
 
 export async function reactivateWorkspace(workspaceId: string): Promise<void> {
   try {
-    await insforge.database
-      .from("workspace_members")
-      .update({ status: "active" })
-      .eq("workspace_id", workspaceId)
+    await insforge.database.rpc("platform_update_workspace_members_status", {
+      p_workspace_id: workspaceId,
+      p_status: "active",
+    })
   } catch {}
 }
 
@@ -245,10 +205,7 @@ export async function reactivateWorkspace(workspaceId: string): Promise<void> {
 
 export async function fetchAllUsers() {
   try {
-    const { data } = await insforge.database
-      .from("workspace_members")
-      .select("*, workspaces(name, type)")
-      .order("created_at", { ascending: false })
+    const { data } = await insforge.database.rpc("platform_list_users")
     return data ?? []
   } catch {
     return []
@@ -257,18 +214,32 @@ export async function fetchAllUsers() {
 
 export async function suspendUser(memberId: string): Promise<void> {
   try {
-    await insforge.database
-      .from("workspace_members")
-      .update({ status: "suspended" })
-      .eq("id", memberId)
+    await insforge.database.rpc("platform_update_member_status", {
+      p_member_id: memberId,
+      p_status: "suspended",
+    })
   } catch {}
 }
 
 export async function reactivateUser(memberId: string): Promise<void> {
   try {
-    await insforge.database
-      .from("workspace_members")
-      .update({ status: "active" })
-      .eq("id", memberId)
+    await insforge.database.rpc("platform_update_member_status", {
+      p_member_id: memberId,
+      p_status: "active",
+    })
   } catch {}
+}
+
+// ── Platform audit logs ──
+
+export async function platformGetAuditLogs(limit = 50, offset = 0) {
+  try {
+    const { data } = await insforge.database.rpc("platform_get_audit_logs", {
+      p_limit: limit,
+      p_offset: offset,
+    })
+    return data ?? []
+  } catch {
+    return []
+  }
 }

@@ -43,7 +43,7 @@ export function GestionLandingPage({ onNavigate }: Props) {
             {fr ? "Outils avancés de gestion d'entreprise : comptabilité, RH, reporting et analyses stratégiques." : "Advanced business management tools: accounting, HR, reporting and strategic analytics."}
           </p>
           <div className="mt-10">
-            <SpiralButton onClick={() => onNavigate("home")} label={fr ? "Commencer gratuitement" : "Start free"} />
+            <SpiralButton onClick={() => onNavigate("signup")} label={fr ? "Commencer gratuitement" : "Start free"} />
           </div>
         </div>
       </section>
@@ -98,7 +98,7 @@ export function GestionLandingPage({ onNavigate }: Props) {
           <div className="mb-4 flex justify-center">
             <Logo imgClassName="h-10" />
           </div>
-          <p className="text-xs text-muted-foreground">&copy; 2026 SaveMali — {fr ? "Développé par John Mocket" : "Developed by John Mocket"}</p>
+          <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} SaveMali — {fr ? "Développé par John Mocket" : "Developed by John Mocket"}</p>
         </div>
       </footer>
     </div>

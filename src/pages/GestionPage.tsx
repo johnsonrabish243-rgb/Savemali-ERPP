@@ -257,7 +257,7 @@ export function GestionPage({ onNavigate, initialTab }: Props) {
     const fullName = `${payload.first_name} ${payload.last_name}`
     await logActivity({
       workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user.id,
-      actorEmail: user.email || "", actorName: "", actionType: editEmp ? "update" : "create",
+      actorEmail: user.email || "", actorName: user.email?.split("@")[0] ?? "", actionType: editEmp ? "update" : "create",
       module: "gestion", description: editEmp ? `${fr ? "Modification" : "Updated"} employee: ${fullName}` : `${fr ? "Ajout" : "Added"} employee: ${fullName}`, referenceId: null,
     })
     setShowEmpDlg(false); setEditEmp(null); fetchData(); setSaving(false)
@@ -271,7 +271,7 @@ export function GestionPage({ onNavigate, initialTab }: Props) {
     if (emp) {
       await logActivity({
         workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user.id,
-        actorEmail: user.email || "", actorName: "", actionType: "delete",
+        actorEmail: user.email || "", actorName: user?.email?.split("@")[0] ?? "", actionType: "delete",
         module: "gestion", description: `${fr ? "Suppression" : "Deleted"} employee: ${emp.first_name} ${emp.last_name}`, referenceId: id,
       })
     }
@@ -305,7 +305,7 @@ export function GestionPage({ onNavigate, initialTab }: Props) {
     publishNotification(createAccountingNotification(workspace.id, user.email?.split("@")[0] ?? "Gestion", entryForm.description.trim(), amount, entryForm.type, "gestion", "accounting"))
     await logActivity({
       workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user.id,
-      actorEmail: user.email || "", actorName: "", actionType: "create",
+      actorEmail: user.email || "", actorName: user?.email?.split("@")[0] ?? "", actionType: "create",
       module: "gestion", description: `${fr ? "Ajout" : "Added"} ${entryForm.type === "income" ? (fr ? "revenu" : "income") : (fr ? "dépense" : "expense")}: ${entryForm.description.trim()}`,
       amountUsd: amount, referenceId: null,
     })
@@ -320,7 +320,7 @@ export function GestionPage({ onNavigate, initialTab }: Props) {
     if (entry) {
       await logActivity({
         workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user.id,
-        actorEmail: user.email || "", actorName: "", actionType: "delete",
+        actorEmail: user.email || "", actorName: user?.email?.split("@")[0] ?? "", actionType: "delete",
         module: "gestion", description: `${fr ? "Suppression" : "Deleted"} ${entry.type === "income" ? (fr ? "revenu" : "income") : (fr ? "dépense" : "expense")}: ${entry.description}`,
         amountUsd: Number(entry.amount_usd), referenceId: id,
       })
@@ -343,9 +343,11 @@ export function GestionPage({ onNavigate, initialTab }: Props) {
       description: paymentForm.description,
       status: paymentForm.status,
     }]).select().single()
-    if (!error && data) setPayments((prev) => [data as any, ...prev])
-    if (workspace) {
-      publishNotification(createPaymentNotification(workspace.id, empName, amount, "FC", "gestion", "payments"))
+    if (!error && data) {
+      setPayments((prev) => [data as any, ...prev])
+      if (workspace) {
+        publishNotification(createPaymentNotification(workspace.id, empName, amount, "FC", "gestion", "payments"))
+      }
     }
     setPaymentForm({ employee_id: "", date: new Date().toISOString().slice(0, 10), amount: "", description: "", status: "paid" })
     setHistoryEntries((prev) => [{

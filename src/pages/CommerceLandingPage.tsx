@@ -43,7 +43,7 @@ export function CommerceLandingPage({ onNavigate }: Props) {
             {fr ? "Gérez votre commerce avec des outils professionnels : caisse, inventaire, facturation et analyse des ventes." : "Manage your business with professional tools: cash register, inventory, invoicing and sales analysis."}
           </p>
           <div className="mt-10">
-            <SpiralButton onClick={() => onNavigate("home")} label={fr ? "Commencer gratuitement" : "Start free"} />
+            <SpiralButton onClick={() => onNavigate("signup")} label={fr ? "Commencer gratuitement" : "Start free"} />
           </div>
         </div>
       </section>
@@ -98,7 +98,7 @@ export function CommerceLandingPage({ onNavigate }: Props) {
           <div className="mb-4 flex justify-center">
             <Logo imgClassName="h-10" />
           </div>
-          <p className="text-xs text-muted-foreground">&copy; 2026 SaveMali — {fr ? "Développé par John Mocket" : "Developed by John Mocket"}</p>
+          <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} SaveMali — {fr ? "Développé par John Mocket" : "Developed by John Mocket"}</p>
         </div>
       </footer>
     </div>

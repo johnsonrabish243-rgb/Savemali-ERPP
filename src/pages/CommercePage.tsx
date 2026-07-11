@@ -324,10 +324,16 @@ export function CommercePage({ onNavigate, initialTab }: Props) {
   const processSale = async () => {
     if (!workspace || cart.length === 0) return
     setSaving(true)
+    for (const c of cart) {
+      if (c.product.stock_quantity < c.qty) {
+        toast.error(fr ? `Stock insuffisant pour ${c.product.name}` : `Insufficient stock for ${c.product.name}`)
+        setSaving(false); return
+      }
+    }
     const { data: sale, error } = await insforge.database.from("sales").insert([{ workspace_id: workspace.id, total_usd: cartTotal, payment_method: paymentMethod, status: "completed" }]).select().single()
     if (error || !sale) { setSaving(false); return }
     await insforge.database.from("sale_items").insert(cart.map((c) => ({ sale_id: sale.id, workspace_id: workspace.id, product_name: c.product.name, product_id: c.product.id, quantity: c.qty, unit_price: c.product.price_usd, total_price: c.product.price_usd * c.qty })))
-    for (const c of cart) await insforge.database.from("commerce_products").update({ stock_quantity: Math.max(0, c.product.stock_quantity - c.qty) }).eq("id", c.product.id).eq("workspace_id", workspace.id).gte("stock_quantity", c.qty)
+    for (const c of cart) await insforge.database.from("commerce_products").update({ stock_quantity: c.product.stock_quantity - c.qty }).eq("id", c.product.id).eq("workspace_id", workspace.id).gte("stock_quantity", c.qty)
     if (user && workspace.owner_id) {
       const itemsSummary = cart.map((c) => `${c.product.name} ×${c.qty}`).join(", ")
       await logActivity({ workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user.id, actorEmail: user.email ?? "", actorName: user.email ?? "", actionType: "sale", module: "commerce", description: `Vente commerce ${formatCurrency(cartTotal)} — ${itemsSummary}`, amountUsd: cartTotal, referenceId: sale.id })

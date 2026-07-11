@@ -102,8 +102,8 @@ export function ResetPasswordPage({ onNavigate }: Props) {
   }
 
   const handleResetPassword = async () => {
-    if (!newPassword || newPassword.length < 6) {
-      setError(fr ? "Le mot de passe doit contenir au moins 6 caractères" : "Password must be at least 6 characters")
+    if (!newPassword || newPassword.length < 8) {
+      setError(fr ? "Le mot de passe doit contenir au moins 8 caractères" : "Password must be at least 8 characters")
       return
     }
     if (detectInjection(newPassword)) {
