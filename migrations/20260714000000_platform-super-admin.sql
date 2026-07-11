@@ -78,7 +78,7 @@ as $$
   );
 $$;
 
--- Count all users (for dashboard stats)
+-- Count all users (for dashboard stats — uses workspace_members because auth.users is schema-restricted)
 create or replace function platform_total_users()
 returns bigint
 language sql
@@ -86,7 +86,7 @@ security definer
 set search_path = public
 stable
 as $$
-  select count(*)::bigint from auth.users;
+  select count(distinct user_id)::bigint from workspace_members where user_id is not null;
 $$;
 
 -- Count all workspaces (for dashboard stats)
