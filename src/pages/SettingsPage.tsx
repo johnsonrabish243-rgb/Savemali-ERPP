@@ -10,7 +10,7 @@ import {
   BarChart3, Zap, Gift, HelpCircle, Sparkles, BadgeCheck,
   Users, CircleUser, Paintbrush, Activity, Radio, HardDrive,
   ShieldAlert, FileJson, Laptop, MessageSquare, ClipboardList,
-  Bug, UserCog, TicketCheck, Filter, ArrowUpDown
+  Bug, UserCog, TicketCheck, Filter, ArrowUpDown, CalendarDays, CalendarX
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
@@ -186,6 +186,8 @@ const sidebarGroups = (fr: boolean, role: string, isOwner: boolean) => {
       items: [
         { id: "tickets", label: fr ? "Tickets" : "Tickets", icon: MessageSquare, roles: ["admin", "manager"] },
         { id: "dpo", label: "DPO", icon: Shield, roles: ["admin", "manager"] },
+        { id: "contact-messages", label: fr ? "Messages" : "Messages", icon: Mail, roles: ["admin", "manager"] },
+        { id: "rdv-admin", label: fr ? "Rendez-vous" : "Appointments", icon: CalendarDays, roles: ["admin", "manager"] },
       ],
     },
     {
@@ -1461,6 +1463,28 @@ export function SettingsPage({ onNavigate }: Props) {
             </SettingsSection>
           )}
 
+          {/* ===== CONTACT MESSAGES ===== */}
+          {activeSection === "contact-messages" && (
+            <SettingsSection
+              title={fr ? "Messages de contact" : "Contact Messages"}
+              description={fr ? "Gerer les messages recus via le formulaire de contact" : "Manage messages received via contact form"}
+              icon={<Mail className="size-4" />}
+            >
+              <ContactMessagesView fr={fr} workspace={workspace} />
+            </SettingsSection>
+          )}
+
+          {/* ===== RDV APPOINTMENTS ===== */}
+          {activeSection === "rdv-admin" && (
+            <SettingsSection
+              title={fr ? "Rendez-vous" : "Appointments"}
+              description={fr ? "Gerer les demandes de rendez-vous" : "Manage appointment requests"}
+              icon={<CalendarDays className="size-4" />}
+            >
+              <AppointmentsAdminView fr={fr} workspace={workspace} />
+            </SettingsSection>
+          )}
+
         </div>
       </div>
       <PageFooter onNavigate={onNavigate} />
@@ -1734,6 +1758,257 @@ function DpoRequestsView({ fr, workspace }: { fr: boolean; workspace: any }) {
               </div>
             </div>
             <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${statusColors[r.status] || ""}`}>{statusLabels[r.status] || r.status}</span>
+          </div>
+        ))
+      )}
+    </div>
+  )
+}
+
+// ── Contact Messages Admin View ──
+function ContactMessagesView({ fr, workspace }: { fr: boolean; workspace: any }) {
+  const [messages, setMessages] = React.useState<any[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [filter, setFilter] = React.useState("all")
+  const [selected, setSelected] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    if (!workspace) return
+    setLoading(true)
+    insforge.database
+      .from("contact_messages")
+      .select("*")
+      .eq("workspace_id", workspace.id)
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .then(({ data }) => { setMessages((data as any[]) ?? []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [workspace])
+
+  const statusColors: Record<string, string> = {
+    new: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    read: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    replied: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    closed: "bg-muted text-muted-foreground",
+  }
+  const statusLabels: Record<string, string> = {
+    new: fr ? "Nouveau" : "New",
+    read: fr ? "Lu" : "Read",
+    replied: fr ? "Répondu" : "Replied",
+    closed: fr ? "Fermé" : "Closed",
+  }
+
+  const filtered = filter === "all" ? messages : messages.filter((m) => m.status === filter)
+
+  if (loading) return <div className="flex items-center justify-center py-12"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>
+
+  if (selected) {
+    return (
+      <div className="pt-2">
+        <Button variant="ghost" size="sm" onClick={() => setSelected(null)} className="mb-4 gap-1.5">
+          <ChevronLeft className="size-4" />{fr ? "Retour" : "Back"}
+        </Button>
+        <div className="rounded-lg border border-border/60 p-4 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <p className="text-xs text-muted-foreground">{fr ? "Message" : "Message"}</p>
+              <p className="text-sm font-mono font-bold text-foreground">{selected.contact_number}</p>
+            </div>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium ${statusColors[selected.status] || ""}`}>{statusLabels[selected.status] || selected.status}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div><p className="text-xs text-muted-foreground">{fr ? "Nom" : "Name"}</p><p className="font-medium">{selected.full_name || "—"}</p></div>
+            <div><p className="text-xs text-muted-foreground">Email</p><p className="font-medium">{selected.email || "—"}</p></div>
+            <div><p className="text-xs text-muted-foreground">{fr ? "Catégorie" : "Category"}</p><p className="font-medium capitalize">{selected.category}</p></div>
+            <div><p className="text-xs text-muted-foreground">{fr ? "Société" : "Company"}</p><p className="font-medium">{selected.company || "—"}</p></div>
+            <div className="col-span-2"><p className="text-xs text-muted-foreground">{fr ? "Date" : "Date"}</p><p className="font-medium">{new Date(selected.created_at).toLocaleString(fr ? "fr-FR" : "en-US")}</p></div>
+          </div>
+          <div className="pt-2 border-t border-border/40">
+            <p className="text-xs text-muted-foreground mb-1">{fr ? "Sujet" : "Subject"}</p>
+            <p className="text-sm font-medium text-foreground mb-2">{selected.subject}</p>
+            <p className="text-xs text-muted-foreground mb-1">{fr ? "Message" : "Message"}</p>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selected.message}</p>
+          </div>
+          <div className="flex gap-2 pt-2 border-t border-border/40">
+            <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={async () => {
+              await insforge.database.from("contact_messages").update({ status: "read" }).eq("id", selected.id)
+              setSelected((p: any) => ({ ...p, status: "read" }))
+            }}>
+              {fr ? "Marquer lu" : "Mark read"}
+            </Button>
+            <Button size="sm" variant="ghost" className="gap-1.5 text-xs" onClick={async () => {
+              await insforge.database.from("contact_messages").update({ status: "closed" }).eq("id", selected.id)
+              setSelected((p: any) => ({ ...p, status: "closed" }))
+            }}>
+              <X className="size-3.5" />{fr ? "Fermer" : "Close"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="pt-2 space-y-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        {["all", "new", "read", "replied", "closed"].map((s) => (
+          <button key={s} onClick={() => setFilter(s)} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${filter === s ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+            {s === "all" ? (fr ? "Tous" : "All") : statusLabels[s] || s}
+          </button>
+        ))}
+      </div>
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center py-8 text-center">
+          <Mail className="size-8 text-muted-foreground/50 mb-2" />
+          <p className="text-sm text-muted-foreground">{fr ? "Aucun message" : "No messages"}</p>
+        </div>
+      ) : (
+        filtered.map((m) => (
+          <div key={m.id} className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3 hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => setSelected(m)}>
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                <Mail className="size-3.5 text-muted-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{m.subject}</p>
+                <p className="text-xs text-muted-foreground">{m.contact_number} · {m.full_name || m.email}</p>
+              </div>
+            </div>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${statusColors[m.status] || ""}`}>{statusLabels[m.status] || m.status}</span>
+          </div>
+        ))
+      )}
+    </div>
+  )
+}
+
+// ── Appointments Admin View ──
+function AppointmentsAdminView({ fr, workspace }: { fr: boolean; workspace: any }) {
+  const [appointments, setAppointments] = React.useState<any[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [filter, setFilter] = React.useState("all")
+  const [selected, setSelected] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    if (!workspace) return
+    setLoading(true)
+    insforge.database
+      .from("appointments")
+      .select("*")
+      .eq("workspace_id", workspace.id)
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .then(({ data }) => { setAppointments((data as any[]) ?? []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [workspace])
+
+  const statusColors: Record<string, string> = {
+    pending: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    confirmed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+    completed: "bg-muted text-muted-foreground",
+    cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  }
+  const statusLabels: Record<string, string> = {
+    pending: fr ? "En attente" : "Pending",
+    confirmed: fr ? "Confirmé" : "Confirmed",
+    completed: fr ? "Terminé" : "Completed",
+    cancelled: fr ? "Annulé" : "Cancelled",
+  }
+  const typeLabels: Record<string, string> = {
+    videoconference: "Visioconférence",
+    phone: "Téléphone",
+    in_person: "Présentiel",
+  }
+
+  const filtered = filter === "all" ? appointments : appointments.filter((a) => a.status === filter)
+
+  if (loading) return <div className="flex items-center justify-center py-12"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>
+
+  if (selected) {
+    return (
+      <div className="pt-2">
+        <Button variant="ghost" size="sm" onClick={() => setSelected(null)} className="mb-4 gap-1.5">
+          <ChevronLeft className="size-4" />{fr ? "Retour" : "Back"}
+        </Button>
+        <div className="rounded-lg border border-border/60 p-4 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <p className="text-xs text-muted-foreground">{fr ? "Rendez-vous" : "Appointment"}</p>
+              <p className="text-sm font-mono font-bold text-foreground">{selected.appointment_number}</p>
+            </div>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium ${statusColors[selected.status] || ""}`}>{statusLabels[selected.status] || selected.status}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div><p className="text-xs text-muted-foreground">{fr ? "Nom" : "Name"}</p><p className="font-medium">{selected.full_name || "—"}</p></div>
+            <div><p className="text-xs text-muted-foreground">Email</p><p className="font-medium">{selected.email || "—"}</p></div>
+            <div><p className="text-xs text-muted-foreground">{fr ? "Société" : "Company"}</p><p className="font-medium">{selected.company || "—"}</p></div>
+            <div><p className="text-xs text-muted-foreground">{fr ? "Téléphone" : "Phone"}</p><p className="font-medium">{selected.phone || "—"}</p></div>
+            <div><p className="text-xs text-muted-foreground">{fr ? "Date" : "Date"}</p><p className="font-medium">{new Date(selected.meeting_date + "T" + selected.meeting_time).toLocaleDateString(fr ? "fr-FR" : "en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p></div>
+            <div><p className="text-xs text-muted-foreground">{fr ? "Heure" : "Time"}</p><p className="font-medium">{selected.meeting_time?.slice(0, 5)}</p></div>
+            <div><p className="text-xs text-muted-foreground">{fr ? "Type" : "Type"}</p><p className="font-medium">{typeLabels[selected.meeting_type] || selected.meeting_type}</p></div>
+            <div><p className="text-xs text-muted-foreground">{fr ? "Motif" : "Purpose"}</p><p className="font-medium capitalize">{selected.purpose}</p></div>
+            <div className="col-span-2"><p className="text-xs text-muted-foreground">{fr ? "Créé le" : "Created"}</p><p className="font-medium">{new Date(selected.created_at).toLocaleString(fr ? "fr-FR" : "en-US")}</p></div>
+          </div>
+          {selected.comments && (
+            <div className="pt-2 border-t border-border/40">
+              <p className="text-xs text-muted-foreground mb-1">{fr ? "Commentaires" : "Comments"}</p>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selected.comments}</p>
+            </div>
+          )}
+          <div className="flex gap-2 pt-2 border-t border-border/40">
+            {selected.status === "pending" && (
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={async () => {
+                await insforge.database.from("appointments").update({ status: "confirmed" }).eq("id", selected.id)
+                logAudit({ action: "appointment_confirmed", target_id: selected.appointment_number, target_type: "appointment" })
+                setSelected((p: any) => ({ ...p, status: "confirmed" }))
+                toast.success(fr ? "Rendez-vous confirmé" : "Appointment confirmed")
+              }}>
+                <Check className="size-3.5" />{fr ? "Confirmer" : "Confirm"}
+              </Button>
+            )}
+            {(selected.status === "pending" || selected.status === "confirmed") && (
+              <Button size="sm" variant="ghost" className="gap-1.5 text-xs text-destructive hover:text-destructive" onClick={async () => {
+                await insforge.database.from("appointments").update({ status: "cancelled" }).eq("id", selected.id)
+                logAudit({ action: "appointment_cancelled", target_id: selected.appointment_number, target_type: "appointment" })
+                setSelected((p: any) => ({ ...p, status: "cancelled" }))
+                toast.success(fr ? "Rendez-vous annulé" : "Appointment cancelled")
+              }}>
+                <CalendarX className="size-3.5" />{fr ? "Annuler" : "Cancel"}
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="pt-2 space-y-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        {["all", "pending", "confirmed", "completed", "cancelled"].map((s) => (
+          <button key={s} onClick={() => setFilter(s)} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${filter === s ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+            {s === "all" ? (fr ? "Tous" : "All") : statusLabels[s] || s}
+          </button>
+        ))}
+      </div>
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center py-8 text-center">
+          <CalendarDays className="size-8 text-muted-foreground/50 mb-2" />
+          <p className="text-sm text-muted-foreground">{fr ? "Aucun rendez-vous" : "No appointments"}</p>
+        </div>
+      ) : (
+        filtered.map((a) => (
+          <div key={a.id} className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3 hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => setSelected(a)}>
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                <CalendarDays className="size-3.5 text-muted-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{a.full_name} — {a.purpose}</p>
+                <p className="text-xs text-muted-foreground">{a.appointment_number} · {new Date(a.meeting_date + "T" + a.meeting_time).toLocaleDateString(fr ? "fr-FR" : "en-US")}</p>
+              </div>
+            </div>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${statusColors[a.status] || ""} shrink-0`}>{statusLabels[a.status] || a.status}</span>
           </div>
         ))
       )}

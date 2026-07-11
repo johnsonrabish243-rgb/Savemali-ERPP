@@ -17,7 +17,7 @@ interface NavProps {
   onNavigate: (page: Page) => void
 }
 
-const PUBLIC_PAGES: Page[] = ["home", "about", "contact", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion", "privacy", "terms"]
+const PUBLIC_PAGES: Page[] = ["home", "about", "contact", "contact-rdv", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion", "privacy", "terms"]
 
 export function Navbar({ currentPage, onNavigate }: NavProps) {
   const { t, lang, setLang } = useLanguage()

@@ -307,6 +307,64 @@ function tplDpoAutoReply(d: { requestNumber: string; name: string; subject: stri
   }
 }
 
+function tplRdvConfirmation(d: { appointmentNumber: string; name: string; date: string; time: string; type: string; purpose: string; comments?: string }) {
+  return {
+    subject: 'Confirmation rendez-vous - ' + d.appointmentNumber,
+    html: page('Rendez-vous confirme', [
+      iconCircle('&#128197;', 'linear-gradient(135deg,#7c3aed,#a855f7)'),
+      heading('Rendez-vous confirme'),
+      paragraph('Bonjour <strong style="color:#18181b">' + esc(d.name) + '</strong>,'),
+      paragraph('Votre rendez-vous a ete confirme avec succes. Voici les details :'),
+      '<tr><td style="padding-bottom:20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;border:1px solid #f4f4f5">'
+      + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Reference</p><p style="margin:0;color:#7c3aed;font-size:14px;font-weight:600;font-family:Arial,Helvetica,sans-serif">' + esc(d.appointmentNumber) + '</p></td></tr>'
+      + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Date</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.date) + '</p></td></tr>'
+      + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Heure</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.time) + '</p></td></tr>'
+      + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Type</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.type) + '</p></td></tr>'
+      + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Objet</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.purpose) + '</p></td></tr>'
+      + (d.comments ? '<tr><td style="padding:14px 18px"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Commentaires</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.comments) + '</p></td></tr>' : '')
+      + '</table></td></tr>',
+      paragraph('Un rappel vous sera envoye 24 heures avant le rendez-vous.'),
+      '<tr><td><div style="background:#f9fafb;border-radius:12px;padding:18px 22px;border:1px solid #f4f4f5"><p style="margin:0 0 6px;color:#18181b;font-size:13px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Besoin de modifier ?</p><p style="margin:0;color:#52525b;font-size:12px;line-height:1.6;font-family:Arial,Helvetica,sans-serif">Contactez-nous a <a href="mailto:' + SUPPORT_EMAIL + '" style="color:#7c3aed;text-decoration:none">' + SUPPORT_EMAIL + '</a> ou depuis votre tableau de bord.</p></div></td></tr>',
+      paragraph('Cordialement,<br>L\'equipe SaveMali'),
+    ].join('')),
+  }
+}
+
+function tplRdvReminder(d: { appointmentNumber: string; name: string; date: string; time: string; type: string }) {
+  return {
+    subject: 'Rappel rendez-vous - ' + d.appointmentNumber,
+    html: page('Rappel de rendez-vous', [
+      iconCircle('&#9200;', 'linear-gradient(135deg,#f59e0b,#d97706)'),
+      heading('Rappel de rendez-vous'),
+      paragraph('Bonjour <strong style="color:#18181b">' + esc(d.name) + '</strong>,'),
+      paragraph('Nous vous rappelons votre rendez-vous prevu demain :'),
+      '<tr><td style="padding-bottom:20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;border:1px solid #f4f4f5">'
+      + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Reference</p><p style="margin:0;color:#7c3aed;font-size:14px;font-weight:600;font-family:Arial,Helvetica,sans-serif">' + esc(d.appointmentNumber) + '</p></td></tr>'
+      + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Date</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.date) + '</p></td></tr>'
+      + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Heure</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.time) + '</p></td></tr>'
+      + '<tr><td style="padding:14px 18px"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Type</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.type) + '</p></td></tr>'
+      + '</table></td></tr>',
+      notice('Si vous souhaitez annuler ou reporter, veuillez nous contacter au plus vite.'),
+      paragraph('Cordialement,<br>L\'equipe SaveMali'),
+    ].join('')),
+  }
+}
+
+function tplRdvCancellation(d: { appointmentNumber: string; name: string; reason?: string }) {
+  return {
+    subject: 'Annulation rendez-vous - ' + d.appointmentNumber,
+    html: page('Rendez-vous annule', [
+      iconCircle('&#10060;', 'linear-gradient(135deg,#ef4444,#dc2626)'),
+      heading('Rendez-vous annule'),
+      paragraph('Bonjour <strong style="color:#18181b">' + esc(d.name) + '</strong>,'),
+      paragraph('Votre rendez-vous <strong style="color:#18181b">' + esc(d.appointmentNumber) + '</strong> a ete annule.'),
+      (d.reason ? '<tr><td style="padding-bottom:32px"><div style="border-left:3px solid #ef4444;padding:18px 22px;background:#fef2f2;border-radius:0 12px 12px 0"><p style="margin:0 0 5px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Motif</p><p style="margin:0;color:#18181b;font-size:14px;font-family:Arial,Helvetica,sans-serif">' + esc(d.reason) + '</p></div></td></tr>' : ''),
+      paragraph('Vous pouvez prendre un nouveau rendez-vous a tout moment depuis notre site.'),
+      paragraph('Cordialement,<br>L\'equipe SaveMali'),
+    ].join('')),
+  }
+}
+
 const TEMPLATES: Record<string, (d: any) => { subject: string; html: string }> = {
   'verification-code': (d) => tplVerificationCode(d.code, d.link),
   'verification-link': (d) => tplVerificationLink(d.link),
@@ -320,6 +378,9 @@ const TEMPLATES: Record<string, (d: any) => { subject: string; html: string }> =
   'support-auto-reply': (d) => tplSupportAutoReply(d),
   'dpo-request': (d) => tplDpoNewRequest(d),
   'dpo-auto-reply': (d) => tplDpoAutoReply(d),
+  'rdv-confirmation': (d) => tplRdvConfirmation(d),
+  'rdv-reminder': (d) => tplRdvReminder(d),
+  'rdv-cancellation': (d) => tplRdvCancellation(d),
 }
 
 export default async function handler(req: Request): Promise<Response> {

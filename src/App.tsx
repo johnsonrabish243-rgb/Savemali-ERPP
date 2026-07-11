@@ -34,6 +34,7 @@ const GestionLandingPage = React.lazy(() => import("@/pages/GestionLandingPage")
 const HRLandingPage = React.lazy(() => import("@/pages/HRLandingPage").then(m => ({ default: m.HRLandingPage })))
 const AboutPage = React.lazy(() => import("@/pages/AboutPage").then(m => ({ default: m.AboutPage })))
 const ContactPage = React.lazy(() => import("@/pages/ContactPage").then(m => ({ default: m.ContactPage })))
+const ContactRdvPage = React.lazy(() => import("@/pages/ContactRdvPage").then(m => ({ default: m.ContactRdvPage })))
 const SettingsPage = React.lazy(() => import("@/pages/SettingsPage").then(m => ({ default: m.SettingsPage })))
 const SecurityDashboardPage = React.lazy(() => import("@/pages/SecurityDashboardPage").then(m => ({ default: m.SecurityDashboardPage })))
 const HabitTrackerPage = React.lazy(() => import("@/pages/HabitTrackerPage").then(m => ({ default: m.HabitTrackerPage })))
@@ -49,7 +50,7 @@ export type Page =
   | "dashboard" | "signin" | "signup" | "members" | "reports"
   | "privacy" | "terms" | "restricted" | "settings"
   | "landing-education" | "landing-pharmacy" | "landing-commerce" | "landing-gestion" | "landing-hr"
-  | "about" | "contact" | "security" | "habits" | "access-denied" | "reset-password" | "create-workspace"
+  | "about" | "contact" | "contact-rdv" | "security" | "habits" | "access-denied" | "reset-password" | "create-workspace"
 
 const NO_NAV_PAGES: Page[] = ["dashboard", "signin", "signup", "members", "reports", "restricted", "settings", "security", "habits", "access-denied", "reset-password", "create-workspace"]
 
@@ -129,7 +130,7 @@ function AppContent() {
     if (!loading && user && page === "signin") {
       setPage("dashboard")
     }
-    if (!loading && !user && !["home", "signin", "signup", "about", "contact", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion", "landing-hr"].includes(page)) {
+    if (!loading && !user && !["home", "signin", "signup", "about", "contact", "contact-rdv", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion", "landing-hr"].includes(page)) {
       setPage("home")
     }
     // If user is logged in but has no workspace, redirect to workspace creation
@@ -171,7 +172,7 @@ function AppContent() {
   // Email verification: handled on SignInPage only (single verification point)
 
   // If auth resolved but no user and page requires auth, redirect to home (prevents white screen)
-  const PUBLIC_PAGES: Page[] = ["home", "signin", "signup", "about", "contact", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion", "landing-hr"]
+  const PUBLIC_PAGES: Page[] = ["home", "signin", "signup", "about", "contact", "contact-rdv", "privacy", "terms", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion", "landing-hr"]
   if (!loading && !user && !PUBLIC_PAGES.includes(page)) {
     setPage("home")
     return null
@@ -246,6 +247,7 @@ function AppContent() {
         {page === "landing-hr" && <HRLandingPage onNavigate={handleNavigate} />}
         {page === "about" && <AboutPage onNavigate={handleNavigate} />}
         {page === "contact" && <ContactPage onNavigate={handleNavigate} />}
+        {page === "contact-rdv" && <ContactRdvPage onNavigate={handleNavigate} />}
         {page === "settings" && <SettingsPage onNavigate={handleNavigate} />}
         {page === "security" && <SecurityDashboardPage onNavigate={handleNavigate} />}
         {page === "habits" && <HabitTrackerPage onNavigate={handleNavigate} />}

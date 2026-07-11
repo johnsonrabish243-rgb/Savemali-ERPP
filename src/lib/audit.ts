@@ -11,6 +11,8 @@ export type AuditAction =
   | "backup_created" | "session_revoked"
   | "leave_approved" | "leave_rejected"
   | "support_ticket_created" | "dpo_request_created"
+  | "appointment_created" | "appointment_cancelled" | "appointment_confirmed"
+  | "contact_message_sent"
 
 interface AuditEntry {
   action: AuditAction

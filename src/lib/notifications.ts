@@ -153,6 +153,9 @@ const NOTIFICATION_TYPES = {
   HR_PAYMENT: "hr_payment",
   HR_PAYROLL_PERIOD: "hr_payroll_period",
   HR_SALARY_ADVANCE: "hr_salary_advance",
+  RDV_APPOINTMENT: "rdv_appointment",
+  RDV_REMINDER: "rdv_reminder",
+  RDV_CONTACT: "rdv_contact",
 } as const
 
 export const NotificationType = NOTIFICATION_TYPES
@@ -572,6 +575,41 @@ export function createHRPayrollPeriodNotification(
     module,
     link: link ?? "hr_payroll",
     actor_name: actorName,
+  }
+}
+
+// ─── Rendez-vous Notifications ──────────────────────────
+
+export function createRdvAppointmentNotification(
+  workspaceId: string,
+  contactName: string,
+  date: string,
+  purpose: string,
+  link?: string
+): NotificationPayload {
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.RDV_APPOINTMENT,
+    title: "Nouveau rendez-vous",
+    message: `${contactName} a pris un rendez-vous : ${purpose} le ${date}`,
+    module: "rdv",
+    link: link ?? "settings",
+  }
+}
+
+export function createRdvContactNotification(
+  workspaceId: string,
+  contactName: string,
+  subject: string,
+  link?: string
+): NotificationPayload {
+  return {
+    workspace_id: workspaceId,
+    type: NOTIFICATION_TYPES.RDV_CONTACT,
+    title: "Nouveau message",
+    message: `${contactName} : ${subject}`,
+    module: "rdv",
+    link: link ?? "settings",
   }
 }
 
