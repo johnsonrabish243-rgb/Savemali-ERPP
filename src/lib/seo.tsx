@@ -109,7 +109,7 @@ const pageMeta: Record<string, PageMeta> = {
 }
 
 const SITE_NAME = "SaveMali"
-const DEFAULT_OG_IMAGE = "https://www.savemali.online/SaveMali_Logo.png"
+const DEFAULT_OG_IMAGE = `${BASE_URL}/SaveMali_Logo.png`
 const AUTHOR = "John Mocket & JVisionLab"
 
 interface SeoHeadProps {
@@ -146,6 +146,8 @@ export function SeoHead({ page, lang = "fr", overrideMeta }: SeoHeadProps) {
       <meta property="og:description" content={description} />
       <meta property="og:url" content={canonical} />
       <meta property="og:image" content={ogImage} />
+      <meta property="og:image:width" content="1254" />
+      <meta property="og:image:height" content="1254" />
       <meta property="og:locale" content={isFr ? "fr_CD" : "en_US"} />
       <meta property="og:locale:alternate" content={isFr ? "en_US" : "fr_CD"} />
 
@@ -161,7 +163,6 @@ export function SeoHead({ page, lang = "fr", overrideMeta }: SeoHeadProps) {
 
       <meta name="application-name" content={SITE_NAME} />
       <meta name="author" content={AUTHOR} />
-      {!meta.noIndex && <meta name="google-site-verification" content="" />}
     </Helmet>
   )
 }
