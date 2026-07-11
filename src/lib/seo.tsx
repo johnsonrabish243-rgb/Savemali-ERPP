@@ -163,6 +163,7 @@ export function SeoHead({ page, lang = "fr", overrideMeta }: SeoHeadProps) {
 
       <meta name="application-name" content={SITE_NAME} />
       <meta name="author" content={AUTHOR} />
+      <meta name="google-site-verification" content="0b6JySvn3UbAOOk45wMN6Dz_7v3Yd1sERymW2s_C5ac" />
     </Helmet>
   )
 }
