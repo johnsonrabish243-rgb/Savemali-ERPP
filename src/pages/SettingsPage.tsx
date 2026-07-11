@@ -275,11 +275,13 @@ export function SettingsPage({ onNavigate }: Props) {
   // Save timezone & compact mode to DB
   const savePreference = React.useCallback(async (field: string, value: any) => {
     if (!user?.id || !workspace?.id) return
-    await insforge.database
-      .from("workspace_members")
-      .update({ [field]: value })
-      .eq("workspace_id", workspace.id)
-      .eq("user_id", user.id)
+    // Some fields live on user_settings, others on workspace_members
+    const USER_ONLY = new Set(["reduced_motion", "sidebar_collapsed"])
+    const table = USER_ONLY.has(field) ? "user_settings" : "workspace_members"
+    const { error } = table === "user_settings"
+      ? await insforge.database.from("user_settings").upsert({ user_id: user.id, [field]: value }, { onConflict: "user_id" })
+      : await insforge.database.from("workspace_members").update({ [field]: value }).eq("workspace_id", workspace.id).eq("user_id", user.id)
+    if (error) console.error(`Failed to save ${field}:`, error)
   }, [user, workspace])
 
   // Save display_name and phone
