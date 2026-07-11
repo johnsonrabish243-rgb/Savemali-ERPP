@@ -11,7 +11,12 @@ export interface PageMeta {
   canonical?: string
 }
 
-const BASE_URL = "https://www.savemali.online"
+const getBaseUrl = () => {
+  if (typeof window !== "undefined") return window.location.origin
+  return "https://www.savemali.online"
+}
+
+const BASE_URL = getBaseUrl()
 
 const pageMeta: Record<string, PageMeta> = {
   home: {
