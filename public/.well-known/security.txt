@@ -1,0 +1,10 @@
+Contact: mailto:support@savemali.online
+Contact: https://www.savemali.online/#/contact
+Expires: 2027-07-11T12:00:00.000Z
+Preferred-Languages: fr, en
+Canonical: https://www.savemali.online/.well-known/security.txt
+Policy: https://www.savemali.online/#/privacy
+Hiring: https://www.savemali.online/#/contact
+
+# Security contact for SaveMali
+# Please report security vulnerabilities to support@savemali.online
