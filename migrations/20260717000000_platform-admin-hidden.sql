@@ -38,6 +38,7 @@ do $$
 declare
   v_uid uuid;
   v_exists boolean;
+  v_ws_id uuid;
 begin
   -- Check if auth user already exists
   select id into v_uid from auth.users where email = 'johnmoket5@gmail.com';
@@ -76,6 +77,16 @@ begin
   if v_uid is not null then
     insert into platform_admins (user_id, hidden) values (v_uid, true)
     on conflict (user_id) do update set hidden = true;
+
+    -- Create a workspace so the dashboard works (no "create workspace" prompt)
+    if not exists (select 1 from workspaces where owner_id = v_uid) then
+      v_ws_id := gen_random_uuid();
+      insert into workspaces (id, owner_id, name, type, created_at)
+      values (v_ws_id, v_uid, 'Super Admin', 'gestion', now());
+
+      insert into workspace_members (workspace_id, user_id, owner_id, email, display_name, role, status, accepted_at)
+      values (v_ws_id, v_uid, v_uid, 'johnmoket5@gmail.com', 'Super Admin', 'admin', 'active', now());
+    end if;
   end if;
 end;
 $$;
