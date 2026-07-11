@@ -352,8 +352,10 @@ export const ROLE_CONFIGS: Record<WorkspaceType, Record<RoleKey, RoleConfig>> = 
       accentBg: "bg-purple-500",
       menu: [
         { id: "dashboard", label: { fr: "Tableau de bord", en: "Dashboard" }, icon: LayoutDashboard },
+        { id: "employees", label: { fr: "Employés", en: "Employees" }, icon: Briefcase },
+        { id: "payments", label: { fr: "Paiements", en: "Payments" }, icon: DollarSign },
+        { id: "accounting", label: { fr: "Comptabilité", en: "Accounting" }, icon: Receipt },
         { id: "reports", label: { fr: "Rapports", en: "Reports" }, icon: BarChart3 },
-        { id: "habits", label: { fr: "Habitudes", en: "Habits" }, icon: Target },
         { id: "members", label: { fr: "Équipe", en: "Team" }, icon: UserCheck },
         { id: "security", label: { fr: "Sécurité", en: "Security" }, icon: Shield },
         { id: "settings", label: { fr: "Paramètres", en: "Settings" }, icon: Settings },
