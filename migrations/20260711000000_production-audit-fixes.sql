@@ -319,7 +319,7 @@ CREATE INDEX IF NOT EXISTS idx_gestion_payments_ws ON gestion_payments(workspace
 CREATE INDEX IF NOT EXISTS idx_pharmacy_prescriptions_ws ON pharmacy_prescriptions(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_pharmacy_expenses_ws ON pharmacy_expenses(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_pharmacy_accounting_ws ON pharmacy_accounting(workspace_id);
-CREATE INDEX IF NOT EXISTS idx_shared_reports_ws ON shared_reports(workspace_id);
+-- Skipped: shared_reports owned by postgres
 CREATE INDEX IF NOT EXISTS idx_habits_ws_user ON habits(workspace_id, user_id);
 CREATE INDEX IF NOT EXISTS idx_habit_logs_user_date ON habit_logs(user_id, date);
 CREATE INDEX IF NOT EXISTS idx_pharmacies_ws ON pharmacies(workspace_id);
