@@ -13,6 +13,7 @@ import { isUserLockedOut } from "@/hooks/use-security"
 import { useAbuseProtection } from "@/hooks/use-abuse-protection"
 import { SecurityBlockPage } from "@/pages/SecurityBlockPage"
 import { SeoHead, OrganizationSchema, WebSiteSchema, SoftwareApplicationSchema } from "@/lib/seo"
+import { PlatformAdminProvider, usePlatformAdmin } from "@/lib/platform-admin"
 
 const HomePage = React.lazy(() => import("@/pages/HomePage").then(m => ({ default: m.HomePage })))
 const EducationPage = React.lazy(() => import("@/pages/EducationPage").then(m => ({ default: m.EducationPage })))
@@ -43,6 +44,7 @@ const LockoutPage = React.lazy(() => import("@/pages/LockoutPage").then(m => ({ 
 const AccessDeniedPage = React.lazy(() => import("@/pages/AccessDeniedPage").then(m => ({ default: m.AccessDeniedPage })))
 const ResetPasswordPage = React.lazy(() => import("@/pages/ResetPasswordPage").then(m => ({ default: m.ResetPasswordPage })))
 const CreateWorkspacePage = React.lazy(() => import("@/pages/CreateWorkspacePage").then(m => ({ default: m.CreateWorkspacePage })))
+const PlatformPage = React.lazy(() => import("@/pages/PlatformPage").then(m => ({ default: m.PlatformPage })))
 
 const SavemaliWidget = React.lazy(() => import("@/components/SavemaliWidget").then(m => ({ default: m.SavemaliWidget })))
 
@@ -52,8 +54,9 @@ export type Page =
   | "privacy" | "terms" | "restricted" | "settings"
   | "landing-education" | "landing-pharmacy" | "landing-commerce" | "landing-gestion" | "landing-hr"
   | "about" | "contact" | "contact-rdv" | "security" | "habits" | "access-denied" | "reset-password" | "create-workspace"
+  | "platform"
 
-const NO_NAV_PAGES: Page[] = ["dashboard", "signin", "signup", "members", "reports", "restricted", "settings", "security", "habits", "access-denied", "reset-password", "create-workspace"]
+const NO_NAV_PAGES: Page[] = ["dashboard", "signin", "signup", "members", "reports", "restricted", "settings", "security", "habits", "access-denied", "reset-password", "create-workspace", "platform"]
 
 const WS_PAGE_MAP: Record<string, Page> = {
   education: "education",
@@ -87,6 +90,7 @@ function AppContent() {
   const [showLoading, setShowLoading] = React.useState(true)
   const [lockedOut, setLockedOut] = React.useState(() => isUserLockedOut())
   const { isBlocked, remainingMs, status, resetProtection } = useAbuseProtection()
+  const { isPlatformAdmin, loading: paLoading } = usePlatformAdmin()
 
   // Check lockout periodically (every 30s) for auto-reactivation
   React.useEffect(() => {
@@ -160,7 +164,11 @@ function AppContent() {
     if (!loading && user && !workspace && page !== "create-workspace" && page !== "signup" && page !== "signin") {
       setPage("create-workspace")
     }
-  }, [user, loading, page, workspace])
+    // Platform admin guard
+    if (!paLoading && page === "platform" && !isPlatformAdmin) {
+      setPage("home")
+    }
+  }, [user, loading, page, workspace, isPlatformAdmin, paLoading])
 
   const showNav = !NO_NAV_PAGES.includes(page)
 
@@ -284,6 +292,7 @@ function AppContent() {
         {page === "access-denied" && <AccessDeniedPage onNavigate={handleNavigate} />}
         {page === "reset-password" && <ResetPasswordPage onNavigate={handleNavigate} />}
         {page === "create-workspace" && <CreateWorkspacePage onNavigate={handleNavigate} />}
+        {page === "platform" && <PlatformPage onNavigate={handleNavigate} />}
         </div>
       </React.Suspense>
       <React.Suspense fallback={null}>
@@ -297,10 +306,12 @@ export function App() {
   return (
     <LanguageProvider>
       <AuthProvider>
-        <PredictiveProvider>
-          <AppContent />
-          <Toaster />
-        </PredictiveProvider>
+        <PlatformAdminProvider>
+          <PredictiveProvider>
+            <AppContent />
+            <Toaster />
+          </PredictiveProvider>
+        </PlatformAdminProvider>
       </AuthProvider>
     </LanguageProvider>
   )

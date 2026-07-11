@@ -106,6 +106,13 @@ const pageMeta: Record<string, PageMeta> = {
     descriptionEn: "Reset your SaveMali password.",
     noIndex: true,
   },
+  platform: {
+    title: "Plateforme — SaveMali Super Admin",
+    description: "Panneau d'administration de la plateforme SaveMali.",
+    titleEn: "Platform — SaveMali Super Admin",
+    descriptionEn: "SaveMali platform administration panel.",
+    noIndex: true,
+  },
 }
 
 const SITE_NAME = "SaveMali"

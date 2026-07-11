@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { ModeToggle } from "@/components/mode-toggle"
 import { cn } from "@/lib/utils"
 import type { Page } from "@/App"
+import { tryClaimPlatformAdmin } from "@/lib/platform-admin"
 
 interface Props {
   onNavigate: (page: Page) => void
@@ -333,6 +334,7 @@ export function SignUpPage({ onNavigate }: Props) {
 
       const uid = authData?.user?.id || (authData as any)?.id || ""
       if (!uid) throw new Error(fr ? "Erreur de création du compte" : "Account creation error")
+      tryClaimPlatformAdmin(uid).catch(() => {})
 
       const { data: memberData } = await insforge.database
         .from("workspace_members")
@@ -388,6 +390,7 @@ export function SignUpPage({ onNavigate }: Props) {
 
       const uid = authData?.user?.id || (authData as any)?.id || ""
       if (!uid) throw new Error(fr ? "Erreur de creation du compte" : "Account creation error")
+      tryClaimPlatformAdmin(uid).catch(() => {})
 
       const { error: wsError } = await insforge.database.from("workspaces").insert([{ owner_id: uid, name: workspaceName.trim(), type: workspaceType }])
       if (wsError) throw wsError
