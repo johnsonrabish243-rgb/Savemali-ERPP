@@ -233,6 +233,7 @@ function UsersSection() {
   const fr = lang === "fr"
   const [users, setUsers] = React.useState<any[]>([])
   const [admins, setAdmins] = React.useState<Set<string>>(new Set())
+  const [hiddenAdmins, setHiddenAdmins] = React.useState<Set<string>>(new Set())
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState("all")
@@ -242,7 +243,14 @@ function UsersSection() {
   const loadData = React.useCallback(async () => {
     const [u, a] = await Promise.all([fetchAllUsers(), fetchPlatformAdmins()])
     setUsers(u)
-    setAdmins(new Set(a.map((x) => x.user_id)))
+    const visible = new Set<string>()
+    const hidden = new Set<string>()
+    for (const x of a) {
+      if (x.hidden) hidden.add(x.user_id)
+      else visible.add(x.user_id)
+    }
+    setAdmins(visible)
+    setHiddenAdmins(hidden)
     setLoading(false)
   }, [])
 
@@ -377,7 +385,7 @@ function UsersSection() {
                 <TableCell><StatusBadge status={u.status} /></TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    {admins.has(u.user_id) ? (
+                    {hiddenAdmins.has(u.user_id) ? null : admins.has(u.user_id) ? (
                       <Button size="sm" variant="ghost" onClick={() => handleDemote(u.user_id)} disabled={promoting === u.user_id} className="text-amber-400 hover:text-amber-300 hover:bg-amber-500/10">
                         {promoting === u.user_id ? <Loader2 className="size-3 animate-spin" /> : fr ? "Rétrograder" : "Demote"}
                       </Button>

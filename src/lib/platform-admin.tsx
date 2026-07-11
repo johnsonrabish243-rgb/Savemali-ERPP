@@ -236,6 +236,7 @@ export interface PlatformAdmin {
   user_id: string
   email: string | null
   created_at: string
+  hidden?: boolean
 }
 
 export async function fetchPlatformAdmins(): Promise<PlatformAdmin[]> {
