@@ -20,3 +20,37 @@ Key patterns:
 - Reference users with `auth.users(id)`; use `auth.uid()` in RLS policies.
 - For storage uploads, persist both the returned `url` and `key`.
 <!-- INSFORGE:END -->
+
+## Session Summary — Settings Overhaul + Audit
+
+### What was done
+
+**Dynamic WelcomeMessage component:**
+- Extracted welcome banner from `DashboardLayout.tsx` into standalone `WelcomeMessage.tsx`
+- Added workspace-type-specific tips (expiry alerts, pending leave, etc.)
+- Shows current date, user name, dynamic insight per workspace type
+- Cleaner interface with Sparkle icon and notification count pill
+
+**Settings redesign (Stripe/Shopify-grade UX):**
+- **Search bar:** Instant filter across all settings sections (filters sidebar groups live)
+- **Reorganized categories:** Mon compte (Profile + Language), Préférences (Appearance + Notifications), Sécurité (Security + Privacy), Organisation (Workspace + Team + API + Backups + Billing), Système (Activity Log + Service Health)
+- **New sections:**
+  - Confidentialité (Privacy): Export my data, Delete account, Connected devices
+  - Activity Log: Recent actions with timestamps
+  - Service Health: Status cards for DB, API, Storage, Auth, Notifications
+- **Sidebar grouped** with section headers and filtered by search query
+- **Premium card styling:** Hover effects, icon containers, consistent spacing
+
+**Bug fixes from comprehensive audit:**
+- 32 `console.error` calls in user-facing paths converted to `toast.error` (RoleDashboard, ReportPreviewModal, ReportGenerator, HRPage, SecurityDashboardPage, SettingsPage)
+- 26 empty `catch {}` blocks fixed with error logging across 13 files
+- `any` type usage in SettingsPage replaced with proper interfaces (`MemberData`, `UserSettingsData`, `ApiKeyData`, `TeamMemberData`, `NotifConfig`)
+
+**Latest commits:**
+- `49f34ed` — `feat: settings overhaul, WelcomeMessage, search, privacy/system sections, audit fixes`
+- `3d7b860` — `refine: premium logo, theme readability, responsive tables, schema cache DDL`
+- `c7071c7` — `fix: route reduced_motion save to user_settings with upsert`
+- `5466fcc` — `fix: auth loading screen also shows real SaveMali logo`
+- `f886f85` — `fix: schema cache, upload fallback, loading screen real logo`
+
+**GitHub:** All changes pushed (latest: `49f34ed`)

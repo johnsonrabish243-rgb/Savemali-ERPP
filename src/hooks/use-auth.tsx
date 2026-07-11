@@ -42,9 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (state.user) {
       try {
         await logAudit({ action: "logout", workspace_id: state.workspace?.id, actor_id: state.user.id, actor_email: state.user.email })
-      } catch {}
+      } catch (e) { console.error("Error:", e) }
     }
-    try { await insforge.auth.signOut() } catch {}
+    try { await insforge.auth.signOut() } catch (e) { console.error("Error:", e) }
     localStorage.removeItem("savemali_refresh_token")
     clearSession()
     setState({ user: null, workspace: null, loading: false, isOwner: false, emailVerified: true })
@@ -145,7 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setState({ user, workspace: result.workspace, loading: false, isOwner: result.isOwner, emailVerified })
 
         // Clear any stale abuse protection data from testing
-        try { clearAbuseLogs(); clearAbuseLockout() } catch {}
+        try { clearAbuseLogs(); clearAbuseLockout() } catch (e) { console.error("Error:", e) }
 
         initSession()
 
@@ -161,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               actor_email: user.email,
               metadata: { device, browser },
             })
-          } catch {}
+          } catch (e) { console.error("Error:", e) }
         }
       } catch (err) {
         if (!cancelled) {
@@ -199,7 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setState((prev) => ({ ...prev, emailVerified: true }))
           }
         }
-      } catch {}
+      } catch (e) { console.error("Error:", e) }
     }, 3000)
     return () => clearInterval(interval)
   }, [state.user, state.emailVerified])
@@ -228,7 +228,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: state.user.email,
         redirectTo: `${window.location.origin}/signin`,
       })
-    } catch {}
+    } catch (e) { console.error("Error:", e) }
   }, [state.user])
 
   return (

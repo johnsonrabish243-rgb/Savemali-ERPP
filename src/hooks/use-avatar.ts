@@ -93,7 +93,7 @@ export function useAvatar(userId: string | undefined, workspaceId: string | unde
         upsert: true,
       })
       if (!error) return
-    } catch {}
+    } catch (e) { console.error("Error:", e) }
     // Attempt 2: Direct fetch with auth token (bypasses presigned URL path)
     const { data } = await insforge.auth.getSession()
     const token = data?.session?.access_token

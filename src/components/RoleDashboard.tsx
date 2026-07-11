@@ -4,6 +4,7 @@ import { useRole } from "@/hooks/use-role"
 import { useLanguage } from "@/lib/i18n"
 import { insforge } from "@/lib/supabase"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 import { formatCurrency } from "@/lib/currency"
 import { UserAvatar } from "@/components/UserAvatar"
 import { ReportPreviewModal } from "@/components/ReportPreviewModal"
@@ -220,7 +221,7 @@ export function RoleDashboard() {
 
       setActivity(activityLogs)
       setSharedReports(results.sharedReports?.data ?? [])
-    } catch {}
+    } catch (e) { console.error("Error:", e) }
     setLoading(false)
   }
 
@@ -397,7 +398,7 @@ export function RoleDashboard() {
                             await insforge.database.from("shared_reports").update({ status: "archived" }).eq("id", report.id)
                             setSharedReports((prev) => prev.map((r) => r.id === report.id ? { ...r, status: "archived" } : r))
                           } catch (err) {
-                            console.error("Failed to archive report:", err)
+                            toast.error(fr ? "Échec de l'archivage du rapport" : "Failed to archive report")
                           } finally {
                             setProcessingReport(null)
                           }

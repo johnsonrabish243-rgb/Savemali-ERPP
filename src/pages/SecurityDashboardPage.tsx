@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { useRole } from "@/hooks/use-role"
 import { useLanguage } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -116,7 +117,7 @@ export function SecurityDashboardPage({ onNavigate }: Props) {
         setAuditLogs((auLogs as any[]) ?? [])
         setMembers((membersData.data as any[]) ?? [])
       } catch (err) {
-        console.error("Security dashboard load error:", err)
+        toast.error(fr ? "Erreur lors du chargement du tableau de bord de sécurité" : "Failed to load security dashboard")
       } finally {
         if (!cancelled) setLoading(false)
       }

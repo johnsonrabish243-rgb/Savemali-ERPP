@@ -170,7 +170,7 @@ export function EmployeeDashboard({ workspaceType, role, onNavigateToTab }: Empl
           .order("created_at", { ascending: false })
           .limit(10)
         if (!cancelled) setMyReports(data ?? [])
-      } catch {}
+      } catch (e) { console.error("Error:", e) }
     }
     fetchReports()
     const interval = setInterval(fetchReports, 15_000)

@@ -72,7 +72,7 @@ function loadRecord(): AbuseRecord {
   try {
     const raw = localStorage.getItem(getStorageKey("record"))
     if (raw) return JSON.parse(raw)
-  } catch {}
+  } catch (e) { console.error("Error:", e) }
   return {
     violations: [],
     lockoutUntil: 0,
@@ -90,7 +90,7 @@ function saveRecord(record: AbuseRecord): void {
       record.violations = record.violations.slice(-CONFIG.maxLogEntries)
     }
     localStorage.setItem(getStorageKey("record"), JSON.stringify(record))
-  } catch {}
+  } catch (e) { console.error("Error:", e) }
 }
 
 // ── Abuse Event Logger ──

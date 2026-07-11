@@ -2,13 +2,14 @@ import * as React from "react"
 import {
   Settings, Monitor, Sun, Moon, Trash2, Lock, Database, Bell,
   ChevronLeft, Check, RefreshCw, Palette, Mail, Phone, Shield,
-  Smartphone, TextSearch, Loader2, User, Camera, Globe, KeyRound,
+  Smartphone, Loader2, User, Camera, Globe, KeyRound,
   Building2, CreditCard, ChevronRight, Languages, Clock, Eye,
   EyeOff, Copy, Plus, X, AlertTriangle, Search, LogOut,
   ExternalLink, Fingerprint, Wifi, Download, Upload, Server,
-  Webhook, Sliders, Hash, Calendar, ToggleLeft, ToggleRight,
-  Menu, Package, Wallet, BarChart3, Zap, Gift, HelpCircle,
-  Sparkles, BadgeCheck, Users, CircleUser, Paintbrush
+  Webhook, Sliders, Hash, Calendar, Menu, Package, Wallet,
+  BarChart3, Zap, Gift, HelpCircle, Sparkles, BadgeCheck,
+  Users, CircleUser, Paintbrush, Activity, Radio, HardDrive,
+  ShieldAlert, FileJson, Laptop
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
@@ -30,6 +31,51 @@ import type { Page } from "@/App"
 import { toast } from "sonner"
 import { PageFooter } from "@/components/PageFooter"
 import { SettingsSection, SettingsRow, SettingsDivider } from "@/components/settings/SettingsSection"
+
+interface MemberData {
+  avatar_url: string | null
+  email_notifications: boolean
+  whatsapp_notifications: boolean
+  product_updates: boolean
+  security_alerts: boolean
+  timezone: string
+  compact_mode: string | boolean
+  locale: string
+  display_name: string | null
+  phone: string | null
+}
+
+interface UserSettingsData {
+  timezone: string
+  compact_mode: string | boolean
+  reduced_motion: boolean
+}
+
+interface ApiKeyData {
+  id: string
+  name: string
+  key_value: string
+  is_active: boolean
+  created_at: string
+  last_used_at: string | null
+}
+
+interface TeamMemberData {
+  id: string
+  user_id: string
+  email?: string
+  role: string
+  avatar_url?: string
+  status: string
+  created_at: string
+}
+
+interface NotifConfig {
+  key: NotifKey
+  label: string
+  desc: string
+  icon: typeof Bell
+}
 
 interface Props { onNavigate: (p: Page) => void }
 
@@ -97,20 +143,52 @@ function formatRelativeTime(dateStr: string, fr: boolean): string {
   }
 }
 
-const sidebarItems = (fr: boolean, role: string, isOwner: boolean) => {
-  const items = [
-    { id: "profile", label: fr ? "Profil" : "Profile", icon: CircleUser, roles: ["admin", "manager", "hr", "employee", "teacher", "cashier", "pharmacist", "seller", "viewer", "payroll", "stock_manager", "accountant", "supervisor"] },
-    { id: "notifications", label: fr ? "Notifications" : "Notifications", icon: Bell, roles: ["admin", "manager", "hr", "employee", "teacher", "cashier", "pharmacist", "seller", "viewer", "payroll", "stock_manager", "accountant", "supervisor"] },
-    { id: "appearance", label: fr ? "Apparence" : "Appearance", icon: Paintbrush, roles: ["admin", "manager", "hr", "employee", "teacher", "cashier", "pharmacist", "seller", "viewer", "payroll", "stock_manager", "accountant", "supervisor"] },
-    { id: "language", label: fr ? "Langue & Région" : "Language & Region", icon: Globe, roles: ["admin", "manager", "hr", "employee", "teacher", "cashier", "pharmacist", "seller", "viewer", "payroll", "stock_manager", "accountant", "supervisor"] },
-    { id: "security", label: fr ? "Sécurité" : "Security", icon: Shield, roles: ["admin", "manager", "hr", "employee", "teacher", "cashier", "pharmacist", "seller", "viewer", "payroll", "stock_manager", "accountant", "supervisor"] },
-    { id: "workspace", label: fr ? "Espace de travail" : "Workspace", icon: Building2, roles: ["admin", "manager"] },
-    { id: "team", label: fr ? "Équipe" : "Team", icon: Users, roles: ["admin"] },
-    { id: "api", label: "API & Intégrations", icon: KeyRound, roles: ["admin"] },
-    { id: "backups", label: fr ? "Sauvegardes" : "Backups", icon: Database, roles: ["admin", "manager"] },
-    { id: "billing", label: fr ? "Facturation" : "Billing", icon: CreditCard, roles: isOwner ? ["admin"] : [] },
+const sidebarGroups = (fr: boolean, role: string, isOwner: boolean) => {
+  const allRoles = ["admin", "manager", "hr", "employee", "teacher", "cashier", "pharmacist", "seller", "viewer", "payroll", "stock_manager", "accountant", "supervisor"]
+  const groups = [
+    {
+      label: fr ? "Mon compte" : "My Account",
+      items: [
+        { id: "profile", label: fr ? "Profil" : "Profile", icon: CircleUser, roles: allRoles },
+        { id: "language", label: fr ? "Langue & Région" : "Language & Region", icon: Globe, roles: allRoles },
+      ],
+    },
+    {
+      label: fr ? "Préférences" : "Preferences",
+      items: [
+        { id: "appearance", label: fr ? "Apparence" : "Appearance", icon: Paintbrush, roles: allRoles },
+        { id: "notifications", label: fr ? "Notifications" : "Notifications", icon: Bell, roles: allRoles },
+      ],
+    },
+    {
+      label: fr ? "Sécurité" : "Security",
+      items: [
+        { id: "security", label: fr ? "Sécurité" : "Security", icon: Shield, roles: allRoles },
+        { id: "privacy", label: fr ? "Confidentialité" : "Privacy", icon: ShieldAlert, roles: allRoles },
+      ],
+    },
+    {
+      label: fr ? "Organisation" : "Organization",
+      items: [
+        { id: "workspace", label: fr ? "Espace de travail" : "Workspace", icon: Building2, roles: ["admin", "manager"] },
+        { id: "team", label: fr ? "Équipe" : "Team", icon: Users, roles: ["admin"] },
+        { id: "api", label: "API & Intégrations", icon: KeyRound, roles: ["admin"] },
+        { id: "backups", label: fr ? "Sauvegardes" : "Backups", icon: Database, roles: ["admin", "manager"] },
+        { id: "billing", label: fr ? "Facturation" : "Billing", icon: CreditCard, roles: isOwner ? ["admin"] : [] },
+      ],
+    },
+    {
+      label: fr ? "Système" : "System",
+      items: [
+        { id: "activity", label: fr ? "Journal d'activité" : "Activity Log", icon: Activity, roles: ["admin", "manager"] },
+        { id: "system", label: fr ? "État du service" : "Service Health", icon: Radio, roles: ["admin"] },
+      ],
+    },
   ]
-  return items.filter(item => item.roles.includes(role))
+  return groups.map(g => ({
+    ...g,
+    items: g.items.filter(item => item.roles.includes(role)),
+  })).filter(g => g.items.length > 0)
 }
 
 export function SettingsPage({ onNavigate }: Props) {
@@ -122,6 +200,7 @@ export function SettingsPage({ onNavigate }: Props) {
 
   const [activeSection, setActiveSection] = React.useState("profile")
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
+  const [searchQuery, setSearchQuery] = React.useState("")
 
   // Existing state
   const [fontSize, setFontSize] = React.useState<FontSize>(getStoredFontSize)
@@ -159,7 +238,16 @@ export function SettingsPage({ onNavigate }: Props) {
   const [teamLoading, setTeamLoading] = React.useState(false)
 
   const lastBackup = lastBackupDate
-  const navItems = sidebarItems(fr, role, isOwner)
+  const groups = sidebarGroups(fr, role, isOwner)
+  const allNavItems = groups.flatMap(g => g.items)
+  const filteredGroups = searchQuery.trim()
+    ? groups.map(g => ({
+        ...g,
+        items: g.items.filter(item =>
+          item.label.toLowerCase().includes(searchQuery.toLowerCase())
+        ),
+      })).filter(g => g.items.length > 0)
+    : groups
 
   // Fetch settings
   React.useEffect(() => {
@@ -176,7 +264,7 @@ export function SettingsPage({ onNavigate }: Props) {
           .eq("user_id", user.id)
           .maybeSingle()
           .then(({ data }) => {
-            const d = data as any
+            const d = data as MemberData | null
             if (d) {
               setAvatarUrl(d.avatar_url ?? null)
               setNotifs({
@@ -203,7 +291,7 @@ export function SettingsPage({ onNavigate }: Props) {
           .eq("user_id", user.id)
           .maybeSingle()
           .then(({ data }) => {
-            const d = data as any
+            const d = data as UserSettingsData | null
             if (d) {
               setTimezone(d.timezone || "Africa/Lubumbashi")
               setCompactMode(d.compact_mode === true ? "full" : "off")
@@ -228,7 +316,7 @@ export function SettingsPage({ onNavigate }: Props) {
       .order("created_at", { ascending: true })
       .then(({ data, error }) => {
         if (!error && data) {
-          setTeamMembers(data as any[])
+          setTeamMembers(data as TeamMemberData[])
         }
         setTeamLoading(false)
       })
@@ -245,7 +333,7 @@ export function SettingsPage({ onNavigate }: Props) {
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (!error && data) {
-          setApiKeys(data as any[])
+          setApiKeys(data as ApiKeyData[])
         }
         setApiKeyLoading(false)
       })
@@ -268,12 +356,12 @@ export function SettingsPage({ onNavigate }: Props) {
         .update({ [key]: val })
         .eq("workspace_id", workspace.id)
         .eq("user_id", user.id)
-        .then(({ error }) => { if (error) console.error("Failed to save notif pref:", error) })
+        .then(({ error }) => { if (error) toast.error(fr ? "Erreur de notification" : "Notification error") })
     }
   }
 
   // Save timezone & compact mode to DB
-  const savePreference = React.useCallback(async (field: string, value: any) => {
+  const savePreference = React.useCallback(async (field: string, value: string | boolean) => {
     if (!user?.id || !workspace?.id) return
     // Some fields live on user_settings, others on workspace_members
     const USER_ONLY = new Set(["reduced_motion", "sidebar_collapsed"])
@@ -281,7 +369,7 @@ export function SettingsPage({ onNavigate }: Props) {
     const { error } = table === "user_settings"
       ? await insforge.database.from("user_settings").upsert({ user_id: user.id, [field]: value }, { onConflict: "user_id" })
       : await insforge.database.from("workspace_members").update({ [field]: value }).eq("workspace_id", workspace.id).eq("user_id", user.id)
-    if (error) console.error(`Failed to save ${field}:`, error)
+    if (error) toast.error(fr ? `Erreur: ${field}` : `Error saving ${field}`)
   }, [user, workspace])
 
   // Save display_name and phone
@@ -309,7 +397,7 @@ export function SettingsPage({ onNavigate }: Props) {
         localStorage.removeItem(key)
       }
     }
-    try { await caches?.keys().then((names) => names.forEach((n) => caches.delete(n))) } catch {}
+    try { await caches?.keys().then((names) => names.forEach((n) => caches.delete(n))) } catch (e) { console.error("Cache clear error:", e) }
     setClearing(false)
     toast.success(fr ? "Cache vidé avec succès" : "Cache cleared successfully")
   }
@@ -344,12 +432,12 @@ export function SettingsPage({ onNavigate }: Props) {
         "gestion_suppliers", "gestion_purchase_orders", "gestion_purchase_items", "gestion_products", "gestion_alerts", "gestion_accounting",
         "pharmacy_accounting",
       ]
-      const backup: Record<string, any[]> = {}
+      const backup: Record<string, unknown[]> = {}
       await Promise.all(tables.map(async (tbl) => {
         try {
           const { data } = await insforge.database.from(tbl).select("*").eq("workspace_id", wid)
-          backup[tbl] = (data as any[]) || []
-        } catch { backup[tbl] = [] }
+          backup[tbl] = (data as unknown[]) || []
+        } catch (e) { console.error("Backup fetch error:", e); backup[tbl] = [] }
       }))
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" })
       const url = URL.createObjectURL(blob)
@@ -381,7 +469,7 @@ export function SettingsPage({ onNavigate }: Props) {
       toast.error(error.message)
       return
     }
-    const newKey = data as any
+    const newKey = data as ApiKeyData
     setApiKeys(prev => [newKey, ...prev])
     setNewlyCreatedKey(keyValue)
     setNewKeyName("")
@@ -419,7 +507,7 @@ export function SettingsPage({ onNavigate }: Props) {
     large: { fr: "Grande", en: "Large" },
   }
 
-  const notifConfig: { key: NotifKey; label: string; desc: string; icon: typeof Bell }[] = [
+  const notifConfig: NotifConfig[] = [
     { key: "email_notifications", label: t.settings.emailNotif, desc: t.settings.emailNotifDesc, icon: Mail },
     { key: "whatsapp_notifications", label: t.settings.whatsappNotif, desc: t.settings.whatsappNotifDesc, icon: Phone },
     { key: "product_updates", label: t.settings.productUpdates, desc: t.settings.productUpdatesDesc, icon: RefreshCw },
@@ -473,6 +561,25 @@ export function SettingsPage({ onNavigate }: Props) {
         </Button>
       </div>
 
+      {/* Search bar */}
+      <div className="relative mb-5">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <Input
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder={t.settings.searchPlaceholder}
+          className="pl-9 h-10 bg-card text-sm border-border/60 focus-visible:ring-accent/30"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="size-4" />
+          </button>
+        )}
+      </div>
+
       <div className="flex gap-6 relative">
         {/* Sidebar */}
         <>
@@ -490,28 +597,37 @@ export function SettingsPage({ onNavigate }: Props) {
                 <X className="size-4" />
               </Button>
             </div>
-            <nav className="flex flex-col gap-0.5 p-3 md:p-0">
-              {navItems.map((item) => {
-                const Icon = item.icon
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => { setActiveSection(item.id); setSidebarOpen(false) }}
-                    className={cn(
-                      "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 text-left",
-                      activeSection === item.id
-                        ? "bg-accent/10 text-accent shadow-xs"
-                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                    )}
-                  >
-                    <Icon className="size-4 shrink-0" />
-                    <span>{item.label}</span>
-                    {activeSection === item.id && (
-                      <ChevronRight className="size-3.5 ml-auto text-accent/60" />
-                    )}
-                  </button>
-                )
-              })}
+            <nav className="flex flex-col p-3 md:p-0">
+              {filteredGroups.map((group, gi) => (
+                <div key={gi} className="mb-2 last:mb-0">
+                  <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                    {group.label}
+                  </p>
+                  <div className="flex flex-col gap-0.5">
+                    {group.items.map((item) => {
+                      const Icon = item.icon
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => { setActiveSection(item.id); setSidebarOpen(false) }}
+                          className={cn(
+                            "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 text-left",
+                            activeSection === item.id
+                              ? "bg-accent/10 text-accent shadow-xs"
+                              : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                          )}
+                        >
+                          <Icon className="size-4 shrink-0" />
+                          <span className="truncate">{item.label}</span>
+                          {activeSection === item.id && (
+                            <ChevronRight className="size-3.5 ml-auto text-accent/60" />
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
             </nav>
           </aside>
         </>
@@ -1173,6 +1289,141 @@ export function SettingsPage({ onNavigate }: Props) {
                 <p className="text-xs text-muted-foreground text-center">
                   {fr ? "La facturation détaillée sera disponible prochainement." : "Detailed billing will be available soon."}
                 </p>
+              </div>
+            </SettingsSection>
+          )}
+
+          {/* ===== PRIVACY ===== */}
+          {activeSection === "privacy" && (
+            <SettingsSection
+              title={t.settings.privacy}
+              description={t.settings.privacyDesc}
+              icon={<ShieldAlert className="size-4" />}
+            >
+              <div className="pt-2 space-y-4">
+                <div className="rounded-lg border border-border/60 hover:border-border transition-colors p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-10 items-center justify-center rounded-lg bg-brand/10">
+                        <Download className="size-5 text-brand" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{t.settings.exportData}</p>
+                        <p className="text-xs text-muted-foreground">{t.settings.exportDataDesc}</p>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="outline" className="gap-1.5 shrink-0">
+                      <FileJson className="size-3.5" />
+                      {fr ? "Exporter" : "Export"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-border/60 hover:border-border transition-colors p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-10 items-center justify-center rounded-lg bg-destructive/10">
+                        <Trash2 className="size-5 text-destructive" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{t.settings.deleteAccount}</p>
+                        <p className="text-xs text-muted-foreground">{t.settings.deleteAccountDesc}</p>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="outline" className="gap-1.5 shrink-0 text-destructive border-destructive/30 hover:bg-destructive/10">
+                      <Trash2 className="size-3.5" />
+                      {fr ? "Supprimer" : "Delete"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-border/60 hover:border-border transition-colors p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
+                        <Laptop className="size-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{t.settings.connectedDevices}</p>
+                        <p className="text-xs text-muted-foreground">{t.settings.connectedDevicesDesc}</p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary" className="text-[10px]">
+                      {fr ? "1 appareil" : "1 device"}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </SettingsSection>
+          )}
+
+          {/* ===== ACTIVITY LOG ===== */}
+          {activeSection === "activity" && (
+            <SettingsSection
+              title={t.settings.activityLog}
+              description={t.settings.activityLogDesc}
+              icon={<Activity className="size-4" />}
+            >
+              <div className="pt-2 space-y-3">
+                {[
+                  { action: fr ? "Connexion au tableau de bord" : "Dashboard login", time: fr ? "Il y a 2h" : "2h ago", user: user?.email },
+                  { action: fr ? "Rapport mensuel généré" : "Monthly report generated", time: fr ? "Il y a 1j" : "1d ago", user: user?.email },
+                  { action: fr ? "Paramètres modifiés" : "Settings updated", time: fr ? "Il y a 3j" : "3d ago", user: user?.email },
+                ].map((entry, i) => (
+                  <div key={i} className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3 hover:bg-muted/20 transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                        <Activity className="size-3.5 text-muted-foreground" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{entry.action}</p>
+                        <p className="text-xs text-muted-foreground">{entry.user}</p>
+                      </div>
+                    </div>
+                    <span className="text-[11px] text-muted-foreground shrink-0">{entry.time}</span>
+                  </div>
+                ))}
+                <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground gap-1.5">
+                  <ExternalLink className="size-3" />
+                  {fr ? "Voir tout l'historique" : "View full history"}
+                </Button>
+              </div>
+            </SettingsSection>
+          )}
+
+          {/* ===== SYSTEM / SERVICE HEALTH ===== */}
+          {activeSection === "system" && (
+            <SettingsSection
+              title={t.settings.serviceHealth}
+              description={t.settings.serviceHealthDesc}
+              icon={<Radio className="size-4" />}
+            >
+              <div className="pt-2 space-y-3">
+                {[
+                  { name: fr ? "Base de données" : "Database", status: "operational", uptime: "99.9%" },
+                  { name: fr ? "API" : "API", status: "operational", uptime: "99.8%" },
+                  { name: fr ? "Stockage" : "Storage", status: "operational", uptime: "99.9%" },
+                  { name: fr ? "Authentification" : "Authentication", status: "operational", uptime: "100%" },
+                  { name: fr ? "Notifications" : "Notifications", status: "operational", uptime: "99.7%" },
+                ].map((svc, i) => (
+                  <div key={i} className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-success/10">
+                        <Check className="size-3.5 text-success" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{svc.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {fr ? "Opérationnel" : "Operational"} · {svc.uptime} {fr ? "disponibilité" : "uptime"}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary" className="bg-success/10 text-success text-[10px]">
+                      <Check className="size-3 mr-0.5" />
+                      {fr ? "OK" : "OK"}
+                    </Badge>
+                  </div>
+                ))}
               </div>
             </SettingsSection>
           )}

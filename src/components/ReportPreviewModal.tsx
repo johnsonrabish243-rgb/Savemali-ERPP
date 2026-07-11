@@ -98,7 +98,6 @@ export function ReportPreviewModal({ open, onClose, report, onStatusChange }: Re
       else if (format === "docx") await generateDOCX(rd, fr)
       else generateXLSX(rd, fr)
     } catch (err) {
-      console.error(`${format.toUpperCase()} generation failed:`, err)
       toast.error(fr ? "Erreur de téléchargement" : "Download error")
     } finally {
       setGenerating(null)
@@ -119,7 +118,6 @@ export function ReportPreviewModal({ open, onClose, report, onStatusChange }: Re
       setComment("")
       onClose()
     } catch (err) {
-      console.error("Failed to accept report:", err)
       toast.error(fr ? "Erreur lors de l'acceptation" : "Error accepting report")
     } finally {
       setProcessing(false)
@@ -144,7 +142,6 @@ export function ReportPreviewModal({ open, onClose, report, onStatusChange }: Re
       setComment("")
       onClose()
     } catch (err) {
-      console.error("Failed to reject report:", err)
       toast.error(fr ? "Erreur lors du refus" : "Error rejecting report")
     } finally {
       setProcessing(false)

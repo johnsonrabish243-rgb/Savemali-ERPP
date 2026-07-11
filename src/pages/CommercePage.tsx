@@ -134,11 +134,11 @@ export function CommercePage({ onNavigate, initialTab }: Props) {
   React.useEffect(() => {
     const savedReports = localStorage.getItem("savemali_com_reports")
     if (savedReports) {
-      try { const p = JSON.parse(savedReports); if (p.topProducts) setTopProducts(p.topProducts) } catch {}
+      try { const p = JSON.parse(savedReports); if (p.topProducts) setTopProducts(p.topProducts) } catch (e) { console.error("Error:", e) }
     }
     const savedHistory = localStorage.getItem("savemali_com_history")
     if (savedHistory) {
-      try { const h = JSON.parse(savedHistory); if (h.dateFrom) setHistoryDateFrom(h.dateFrom); if (h.dateTo) setHistoryDateTo(h.dateTo); if (h.typeFilter) setHistoryTypeFilter(h.typeFilter) } catch {}
+      try { const h = JSON.parse(savedHistory); if (h.dateFrom) setHistoryDateFrom(h.dateFrom); if (h.dateTo) setHistoryDateTo(h.dateTo); if (h.typeFilter) setHistoryTypeFilter(h.typeFilter) } catch (e) { console.error("Error:", e) }
     }
   }, [])
 

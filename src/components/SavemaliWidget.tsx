@@ -142,7 +142,7 @@ async function sendMessage(messages: Message[], agent: Agent): Promise<string> {
 
     if (!res.ok) {
       let detail = ""
-      try { detail = JSON.parse(rawText).message || "" } catch {}
+      try { detail = JSON.parse(rawText).message || "" } catch (e) { console.error("Error:", e) }
       throw new Error(detail || `HTTP ${res.status}`)
     }
 

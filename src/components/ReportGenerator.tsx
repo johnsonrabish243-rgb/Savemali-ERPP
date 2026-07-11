@@ -100,7 +100,7 @@ export function ReportGenerator({ moduleType, workspace, data, isAdmin = false }
         if (!cancelled && reports && reports.length > 0) {
           setSubmitted(reports[0] as SubmittedReport)
         }
-      } catch {}
+      } catch (e) { console.error("Error:", e) }
       if (!cancelled) setLoadingStatus(false)
     }
     checkStatus()
@@ -125,7 +125,7 @@ export function ReportGenerator({ moduleType, workspace, data, isAdmin = false }
             toast.info(fr ? cfg.fr : cfg.en)
           }
         }
-      } catch {}
+      } catch (e) { console.error("Error:", e) }
     }, 15_000)
     return () => clearInterval(interval)
   }, [submitted?.id, submitted?.status, user, workspace?.id, fr])
@@ -184,7 +184,7 @@ export function ReportGenerator({ moduleType, workspace, data, isAdmin = false }
       if (!report) return
       await generatePDF(report, fr)
     } catch (err) {
-      console.error("PDF generation failed:", err)
+      toast.error(fr ? "Erreur de génération PDF" : "PDF generation failed")
     } finally {
       setGenerating(null)
     }
@@ -197,7 +197,7 @@ export function ReportGenerator({ moduleType, workspace, data, isAdmin = false }
       if (!report) return
       await generateDOCX(report, fr)
     } catch (err) {
-      console.error("DOCX generation failed:", err)
+      toast.error(fr ? "Erreur de génération DOCX" : "DOCX generation failed")
     } finally {
       setGenerating(null)
     }
@@ -210,7 +210,7 @@ export function ReportGenerator({ moduleType, workspace, data, isAdmin = false }
       if (!report) return
       generateXLSX(report, fr)
     } catch (err) {
-      console.error("XLSX generation failed:", err)
+      toast.error(fr ? "Erreur de génération XLSX" : "XLSX generation failed")
     } finally {
       setGenerating(null)
     }

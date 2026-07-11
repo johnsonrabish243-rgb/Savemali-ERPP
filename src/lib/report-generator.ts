@@ -66,7 +66,7 @@ export async function generatePDF(data: ReportData, fr = true): Promise<void> {
         reader.readAsDataURL(blob)
       })
     }
-  } catch {}
+  } catch (e) { console.error("Error:", e) }
 
   // ── Header ──
   doc.setFillColor(15, 23, 42)
@@ -74,7 +74,7 @@ export async function generatePDF(data: ReportData, fr = true): Promise<void> {
 
   // Logo image or text fallback
   if (logoDataUrl) {
-    try { doc.addImage(logoDataUrl, "PNG", 14, 6, 22, 22) } catch {}
+    try { doc.addImage(logoDataUrl, "PNG", 14, 6, 22, 22) } catch (e) { console.error("Error:", e) }
     doc.setTextColor(255, 255, 255)
     doc.setFontSize(9)
     doc.setFont("helvetica", "normal")
@@ -271,7 +271,7 @@ export async function generateDOCX(data: ReportData, fr = true): Promise<void> {
       for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
       logoBase64 = btoa(binary)
     }
-  } catch {}
+  } catch (e) { console.error("Error:", e) }
 
   const children: (Paragraph | Table)[] = []
 

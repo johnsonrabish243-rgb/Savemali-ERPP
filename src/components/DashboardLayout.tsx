@@ -5,13 +5,12 @@ import { useLanguage } from "@/lib/i18n"
 import { insforge } from "@/lib/supabase"
 import { ROLE_CONFIGS, WORKSPACE_TYPE_LABELS } from "@/lib/role-config"
 import { UserAvatar } from "@/components/UserAvatar"
+import { WelcomeMessage } from "@/components/WelcomeMessage"
 import { LogoIcon } from "@/components/Logo"
 import { LogOut, Menu, X, ChevronRight, Bell, Check, X as XIcon, ExternalLink } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Page } from "@/App"
 import { useNotifications } from "@/hooks/use-notifications"
-import { format } from "date-fns"
-import { fr as frLocale, enUS } from "date-fns/locale"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -330,26 +329,7 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
           </div>
         </header>
 
-        {/* Welcome Banner */}
-        <div className="border-b border-border bg-gradient-to-r from-brand/5 via-brand/[0.07] to-transparent px-4 lg:px-6 py-4">
-          <h1 className="text-lg font-bold text-foreground tracking-tight">
-            {t.dashboard.welcomeTitle.replace("{name}", user?.email?.split("@")[0] ?? "")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {(() => {
-              const wsType = workspace?.type
-              const greetings: Record<string, { fr: string; en: string }> = {
-                pharmacy: { fr: "Gérez votre pharmacie en toute sérénité", en: "Manage your pharmacy with confidence" },
-                commerce: { fr: "Gérez votre commerce facilement", en: "Manage your shop with ease" },
-                education: { fr: "Gérez votre établissement scolaire", en: "Manage your school efficiently" },
-                gestion: { fr: "Gérez votre entreprise intelligemment", en: "Manage your business smartly" },
-                hr: { fr: "Gérez vos ressources humaines", en: "Manage your human resources" },
-              }
-              const msg = wsType ? greetings[wsType] : { fr: "Bienvenue sur SaveMali", en: "Welcome to SaveMali" }
-              return msg[lang]
-            })()} — {format(new Date(), "d MMMM yyyy", { locale: fr ? frLocale : enUS })}
-          </p>
-        </div>
+        <WelcomeMessage />
 
         <main className="flex-1 overflow-y-auto">
           <div className="animate-fade-in-up">

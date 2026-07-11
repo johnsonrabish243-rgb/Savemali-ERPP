@@ -301,7 +301,7 @@ export function SignInPage({ onNavigate }: Props) {
           setShowTransition(true)
           return
         }
-      } catch {}
+      } catch (e) { console.error("Error:", e) }
       await checkAuth()
       setRedirectTarget("dashboard")
       setShowTransition(true)

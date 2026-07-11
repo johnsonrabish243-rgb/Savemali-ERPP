@@ -7,6 +7,7 @@ import { trackModuleOpen } from "@/lib/context-tracker"
 import { logAudit } from "@/lib/audit"
 import { detectInjection, logSecurityEvent } from "@/lib/security"
 import { formatCurrency } from "@/lib/currency"
+import { toast } from "sonner"
 import { UserAvatar } from "@/components/UserAvatar"
 import { PageFooter } from "@/components/PageFooter"
 import { HRPayrollEngine } from "@/components/hr/HRPayrollEngine"
@@ -215,7 +216,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
     const wid = workspace.id
     const rows = DEFAULT_DEPARTMENTS.map(d => ({ ...d, workspace_id: wid }))
     const { error } = await insforge.database.from("hr_departments").insert(rows)
-    if (error) console.error("Seed departments error:", error)
+    if (error) toast.error(fr ? "Erreur lors de la création des départements" : "Failed to seed departments")
   }
 
   async function loadData() {
@@ -265,7 +266,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
         setDepartments((retry.data as any[]) || [])
       }
     } catch (err) {
-      console.error("HR load error:", err)
+      toast.error(fr ? "Erreur lors du chargement des données RH" : "Failed to load HR data")
     }
     setLoading(false)
   }
@@ -388,7 +389,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
       })
       loadData()
     } catch (err: any) {
-      console.error("Delete error:", err)
+      toast.error(fr ? "Erreur lors de la suppression" : "Delete failed")
     }
   }
 

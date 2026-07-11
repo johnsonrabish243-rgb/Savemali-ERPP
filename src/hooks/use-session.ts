@@ -33,7 +33,7 @@ export function useSession(signOut: () => Promise<void>) {
         if (!warned.current) {
           warned.current = true
         }
-        try { await signOutRef.current() } catch {}
+        try { await signOutRef.current() } catch (e) { console.error("Error:", e) }
       }
     }, CHECK_INTERVAL)
 

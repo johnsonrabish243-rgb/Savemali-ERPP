@@ -85,7 +85,7 @@ export function SignUpPage({ onNavigate }: Props) {
       await navigator.clipboard.writeText(suggestedPw)
       setPwCopied(true)
       setTimeout(() => setPwCopied(false), 2000)
-    } catch {}
+    } catch (e) { console.error("Error:", e) }
   }, [suggestedPw])
 
   const handleUsePassword = React.useCallback(() => {
@@ -264,7 +264,7 @@ export function SignUpPage({ onNavigate }: Props) {
         try {
           const { data: userData } = await insforge.auth.getCurrentUser()
           uid = userData?.user?.id || ""
-        } catch {}
+        } catch (e) { console.error("Error:", e) }
       }
 
       if (uid) {

@@ -29,7 +29,7 @@ export function getExchangeRate(): number {
         return stored.rate
       }
     }
-  } catch {}
+  } catch (e) { console.error("Error:", e) }
   return DEFAULT_RATE
 }
 
@@ -52,7 +52,7 @@ export async function fetchExchangeRate(): Promise<number> {
       setExchangeRate(cdfRate)
       return cdfRate
     }
-  } catch {}
+  } catch (e) { console.error("Error:", e) }
   return getExchangeRate()
 }
 
