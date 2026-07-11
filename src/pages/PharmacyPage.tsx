@@ -1280,7 +1280,7 @@ export function PharmacyPage({ onNavigate, initialTab }: Props) {
                         <td className="px-4 py-3">
                           <div className="flex gap-1.5 justify-end">
                             {(role === "admin" || role === "pharmacist" || role === "stock_manager") && (
-                              <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={async () => { await insforge.database.from("pharmacy_prescriptions").delete().eq("id", p.id); setPrescriptions((prev) => prev.filter((x) => x.id !== p.id)) }}><Trash2 className="size-3.5" /></Button>
+                              <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={async () => { await insforge.database.from("pharmacy_prescriptions").delete().eq("workspace_id", workspace.id).eq("id", p.id); setPrescriptions((prev) => prev.filter((x) => x.id !== p.id)) }}><Trash2 className="size-3.5" /></Button>
                             )}
                           </div>
                         </td>
@@ -1358,7 +1358,7 @@ export function PharmacyPage({ onNavigate, initialTab }: Props) {
                         <td className="px-4 py-3 text-muted-foreground">{e.description || "—"}</td>
                         <td className="px-4 py-3">
                           {(role === "admin" || role === "pharmacist" || role === "stock_manager") && (
-                            <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={async () => { await insforge.database.from("pharmacy_accounting").delete().eq("id", e.id); setAccountingEntries((prev) => prev.filter((x) => x.id !== e.id)) }}><Trash2 className="size-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={async () => { await insforge.database.from("pharmacy_accounting").delete().eq("workspace_id", workspace.id).eq("id", e.id); setAccountingEntries((prev) => prev.filter((x) => x.id !== e.id)) }}><Trash2 className="size-3.5" /></Button>
                           )}
                         </td>
                       </tr>
@@ -1431,7 +1431,7 @@ export function PharmacyPage({ onNavigate, initialTab }: Props) {
                           <td className="px-4 py-3 text-muted-foreground">{e.description || "—"}</td>
                           <td className="px-4 py-3">
                             {(role === "admin" || role === "pharmacist" || role === "stock_manager") && (
-                              <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={async () => { await insforge.database.from("pharmacy_expenses").delete().eq("id", e.id); setExpenses((prev) => prev.filter((x) => x.id !== e.id)) }}><Trash2 className="size-3.5" /></Button>
+                              <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={async () => { await insforge.database.from("pharmacy_expenses").delete().eq("workspace_id", workspace.id).eq("id", e.id); setExpenses((prev) => prev.filter((x) => x.id !== e.id)) }}><Trash2 className="size-3.5" /></Button>
                             )}
                           </td>
                         </tr>

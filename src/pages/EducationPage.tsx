@@ -547,7 +547,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
     if (!workspace) return
     const entry = { ...scheduleForm }
     if (editScheduleId) {
-      await insforge.database.from("edu_schedule").update({ day: entry.day, time: entry.time, class_name: entry.class_name, subject: entry.subject, teacher: entry.teacher }).eq("id", editScheduleId)
+      await insforge.database.from("edu_schedule").update({ day: entry.day, time: entry.time, class_name: entry.class_name, subject: entry.subject, teacher: entry.teacher }).eq("workspace_id", workspace.id).eq("id", editScheduleId)
       setScheduleEntries((prev) => prev.map((e) => e.id === editScheduleId ? { ...e, ...entry } : e))
     } else {
       const { data, error } = await insforge.database.from("edu_schedule").insert([{ workspace_id: workspace.id, ...entry }]).select().single()
@@ -557,7 +557,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
   }
   const deleteScheduleEntry = async (id: string) => {
     if (!confirm(fr ? "Supprimer cette entrée ?" : "Delete this entry?")) return
-    await insforge.database.from("edu_schedule").delete().eq("id", id)
+    await insforge.database.from("edu_schedule").delete().eq("workspace_id", workspace.id).eq("id", id)
     setScheduleEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
@@ -566,7 +566,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
     const score = safeParseFloat(gradeForm.score) || 0
     const entry = { ...gradeForm, score, grade: getNormalizedGrade(score, 100), date: gradeForm.date || new Date().toISOString().slice(0, 10) }
     if (editGradeId) {
-      await insforge.database.from("edu_grades").update({ student_name: entry.student_name, class_name: entry.class_name, subject: entry.subject, score: entry.score, grade: entry.grade, date: entry.date }).eq("id", editGradeId)
+      await insforge.database.from("edu_grades").update({ student_name: entry.student_name, class_name: entry.class_name, subject: entry.subject, score: entry.score, grade: entry.grade, date: entry.date }).eq("workspace_id", workspace.id).eq("id", editGradeId)
       setGradeEntries((prev) => prev.map((e) => e.id === editGradeId ? { ...e, ...entry } : e))
     } else {
       const { data, error } = await insforge.database.from("edu_grades").insert([{ workspace_id: workspace.id, ...entry }]).select().single()
@@ -576,7 +576,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
   }
   const deleteGradeEntry = async (id: string) => {
     if (!confirm(fr ? "Supprimer cette note ?" : "Delete this grade?")) return
-    await insforge.database.from("edu_grades").delete().eq("id", id)
+    await insforge.database.from("edu_grades").delete().eq("workspace_id", workspace.id).eq("id", id)
     setGradeEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
@@ -584,7 +584,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
     if (!workspace) return
     const entry = { ...disciplineForm, date: disciplineForm.date || new Date().toISOString().slice(0, 10) }
     if (editDisciplineId) {
-      await insforge.database.from("edu_discipline").update({ student_name: entry.student_name, class_name: entry.class_name, date: entry.date, reason: entry.reason, action: entry.action, status: entry.status }).eq("id", editDisciplineId)
+      await insforge.database.from("edu_discipline").update({ student_name: entry.student_name, class_name: entry.class_name, date: entry.date, reason: entry.reason, action: entry.action, status: entry.status }).eq("workspace_id", workspace.id).eq("id", editDisciplineId)
       setDisciplineEntries((prev) => prev.map((e) => e.id === editDisciplineId ? { ...e, ...entry } : e))
     } else {
       const { data, error } = await insforge.database.from("edu_discipline").insert([{ workspace_id: workspace.id, ...entry }]).select().single()
@@ -594,7 +594,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
   }
   const deleteDisciplineEntry = async (id: string) => {
     if (!confirm(fr ? "Supprimer ce cas ?" : "Delete this case?")) return
-    await insforge.database.from("edu_discipline").delete().eq("id", id)
+    await insforge.database.from("edu_discipline").delete().eq("workspace_id", workspace.id).eq("id", id)
     setDisciplineEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
@@ -602,7 +602,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
     if (!workspace) return
     const entry = { ...incidentForm, date: incidentForm.date || new Date().toISOString().slice(0, 10) }
     if (editIncidentId) {
-      await insforge.database.from("edu_incidents").update({ date: entry.date, type: entry.type, description: entry.description, reported_by: entry.reported_by, status: entry.status }).eq("id", editIncidentId)
+      await insforge.database.from("edu_incidents").update({ date: entry.date, type: entry.type, description: entry.description, reported_by: entry.reported_by, status: entry.status }).eq("workspace_id", workspace.id).eq("id", editIncidentId)
       setIncidentEntries((prev) => prev.map((e) => e.id === editIncidentId ? { ...e, ...entry } : e))
     } else {
       const { data, error } = await insforge.database.from("edu_incidents").insert([{ workspace_id: workspace.id, ...entry }]).select().single()
@@ -612,7 +612,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
   }
   const deleteIncidentEntry = async (id: string) => {
     if (!confirm(fr ? "Supprimer cet incident ?" : "Delete this incident?")) return
-    await insforge.database.from("edu_incidents").delete().eq("id", id)
+    await insforge.database.from("edu_incidents").delete().eq("workspace_id", workspace.id).eq("id", id)
     setIncidentEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
@@ -622,7 +622,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
     const entryDate = accountingForm.date || new Date().toISOString().slice(0, 10)
     const payload = { workspace_id: workspace.id, type: accountingForm.type, category: accountingForm.category, amount, description: accountingForm.description, entry_date: entryDate }
     if (editAccountingId) {
-      const { error } = await insforge.database.from("edu_accounting").update(payload).eq("id", editAccountingId)
+      const { error } = await insforge.database.from("edu_accounting").update(payload).eq("workspace_id", workspace.id).eq("id", editAccountingId)
       if (error) return
       setAccountingEntries((prev) => prev.map((e) => e.id === editAccountingId ? { ...e, ...payload } : e))
     } else {
@@ -635,7 +635,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
   }
   const deleteAccountingEntry = async (id: string) => {
     if (!confirm(fr ? "Supprimer cette entrée ?" : "Delete this entry?")) return
-    await insforge.database.from("edu_accounting").delete().eq("id", id)
+    await insforge.database.from("edu_accounting").delete().eq("workspace_id", workspace.id).eq("id", id)
     setAccountingEntries((prev) => prev.filter((e) => e.id !== id))
   }
 

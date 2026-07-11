@@ -64,7 +64,7 @@ export function SignInPage({ onNavigate }: Props) {
     const type = params.get("insforge_type")
     if (status === "success" && type === "verify_email") {
       window.history.replaceState({}, "", window.location.pathname)
-      setEmailVerified(true)
+      setEmailNotVerified(false)
     }
   }, [])
 

@@ -4,6 +4,8 @@ import { useLanguage } from "@/lib/i18n"
 import { insforge, type WorkspaceType } from "@/lib/supabase"
 import { trackModuleOpen } from "@/lib/context-tracker"
 import { Logo } from "@/components/Logo"
+import { sanitizeInput, detectInjection } from "@/lib/security"
+import { toast } from "sonner"
 
 interface Props {
   onNavigate: (p: string) => void
@@ -38,13 +40,22 @@ export function CreateWorkspacePage({ onNavigate }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim() || !user) return
+    const safeName = sanitizeInput(name.trim(), 100)
+    if (detectInjection(safeName)) {
+      toast.error(fr ? "Nom d'espace invalide" : "Invalid workspace name")
+      return
+    }
+    if (safeName.length < 2) {
+      setError(fr ? "Le nom doit contenir au moins 2 caractères" : "Name must be at least 2 characters")
+      return
+    }
     setLoading(true)
     setError(null)
     try {
       // 1. Create workspace
       const { data: wsData, error: wsError } = await insforge.database
         .from("workspaces")
-        .insert([{ owner_id: user.id, name: name.trim(), type }])
+        .insert([{ owner_id: user.id, name: safeName, type }])
         .select("id")
         .single()
       if (wsError) throw wsError

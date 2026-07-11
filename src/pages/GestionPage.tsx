@@ -361,7 +361,7 @@ export function GestionPage({ onNavigate, initialTab }: Props) {
     if (!confirm(fr ? "Supprimer ce paiement ?" : "Delete this payment?")) return
     const payment = payments.find((p) => p.id === id)
     if (!payment) return
-    await insforge.database.from("gestion_payments").delete().eq("id", id)
+    await insforge.database.from("gestion_payments").delete().eq("id", id).eq("workspace_id", workspace?.id)
     setPayments((prev) => prev.filter((p) => p.id !== id))
     setHistoryEntries((prev) => [{
       id: crypto.randomUUID(),

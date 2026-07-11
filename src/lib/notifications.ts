@@ -1,5 +1,6 @@
 import { insforge } from "@/lib/supabase"
 import { formatCurrency } from "@/lib/currency"
+import { toast } from "sonner"
 
 export interface WorkspaceNotification {
   id: string
@@ -54,12 +55,14 @@ export async function publishNotification(payload: NotificationPayload): Promise
 
     if (error) {
       console.error("Failed to publish notification:", error)
+      toast.error("Échec de la publication de la notification")
       return null
     }
 
     return data as WorkspaceNotification
   } catch (err) {
     console.error("Error publishing notification:", err)
+    toast.error("Erreur lors de la publication de la notification")
     return null
   }
 }
@@ -74,6 +77,7 @@ export async function getNotifications(workspaceId: string, limit = 50): Promise
 
   if (error) {
     console.error("Failed to fetch notifications:", error)
+    toast.error("Échec du chargement des notifications")
     return []
   }
 
@@ -90,12 +94,14 @@ export async function markAsRead(notificationId: string, workspaceId: string): P
 
     if (error) {
       console.error("Failed to mark as read:", error)
+      toast.error("Échec de la mise à jour")
       return false
     }
 
     return true
   } catch (err) {
     console.error("Error marking notification as read:", err)
+    toast.error("Erreur lors de la mise à jour")
     return false
   }
 }
@@ -110,12 +116,14 @@ export async function markAllAsRead(workspaceId: string): Promise<boolean> {
 
     if (error) {
       console.error("Failed to mark all as read:", error)
+      toast.error("Échec de la mise à jour")
       return false
     }
 
     return true
   } catch (err) {
     console.error("Error marking all as read:", err)
+    toast.error("Erreur lors de la mise à jour")
     return false
   }
 }

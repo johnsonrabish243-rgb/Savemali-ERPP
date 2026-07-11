@@ -5,7 +5,7 @@ import { insforge } from "@/lib/supabase"
 import { cn } from "@/lib/utils"
 import { trackModuleOpen } from "@/lib/context-tracker"
 import { logAudit } from "@/lib/audit"
-import { detectInjection, logSecurityEvent } from "@/lib/security"
+import { sanitizeInput, detectInjection, logSecurityEvent } from "@/lib/security"
 import { formatCurrency } from "@/lib/currency"
 import { toast } from "sonner"
 import { UserAvatar } from "@/components/UserAvatar"
@@ -328,11 +328,14 @@ export function HRPage({ onNavigate, initialTab }: Props) {
 
       let fileUrl: string | null = null
       if (dialogType === "document" && selectedFile && !editingItem?.id) {
+        const safeFileName = sanitizeInput(selectedFile.name, 200)
+        if (detectInjection(safeFileName)) { toast.error(fr ? "Nom de fichier invalide" : "Invalid file name"); setSaving(false); return }
+        if (selectedFile.size > 10 * 1024 * 1024) { toast.error(fr ? "Fichier trop volumineux (max 10Mo)" : "File too large (max 10MB)"); setSaving(false); return }
         const formData = new FormData()
         formData.append("file", selectedFile)
         const baseUrl = import.meta.env.VITE_INSFORGE_URL
         const token = (insforge as any).http?.userToken || (insforge as any).tokenManager?.accessToken || ""
-        const path = `${wid}/${Date.now()}_${selectedFile.name}`
+        const path = `${wid}/${Date.now()}_${safeFileName}`
         const headers: Record<string, string> = {}
         if (token) headers["Authorization"] = `Bearer ${token}`
         const upRes = await fetch(`${baseUrl}/api/storage/buckets/hr_documents/objects/${encodeURIComponent(path)}`, {
@@ -344,7 +347,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
       }
 
       if (editingItem?.id) {
-        const { error: updErr } = await insforge.database.from(table).update(data).eq("id", editingItem.id)
+        const { error: updErr } = await insforge.database.from(table).update(data).eq("id", editingItem.id).eq("workspace_id", wid)
         if (updErr) throw updErr
       } else {
         const payload = { ...data, workspace_id: wid }
@@ -382,7 +385,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           if (path) await insforge.storage.from("hr_documents").remove(path).catch(() => {})
         }
       }
-      await insforge.database.from(table).delete().eq("id", id)
+      await insforge.database.from(table).delete().eq("id", id).eq("workspace_id", workspace.id)
       await logAudit({
         action: "delete", workspace_id: workspace.id, actor_id: user?.id,
         actor_email: user?.email, metadata: { module: "hr", type: table, deleted_id: id },
@@ -697,11 +700,11 @@ export function HRPage({ onNavigate, initialTab }: Props) {
                             {l.status === "pending" && (
                               <>
                                 <Button variant="ghost" size="sm" onClick={async () => {
-                                  await insforge.database.from("hr_leave_requests").update({ status: "approved" }).eq("id", l.id)
+                                  await insforge.database.from("hr_leave_requests").update({ status: "approved" }).eq("id", l.id).eq("workspace_id", workspace.id)
                                   loadData()
                                 }}><CheckCircle className="size-3.5 text-green-600" /></Button>
                                 <Button variant="ghost" size="sm" onClick={async () => {
-                                  await insforge.database.from("hr_leave_requests").update({ status: "rejected" }).eq("id", l.id)
+                                  await insforge.database.from("hr_leave_requests").update({ status: "rejected" }).eq("id", l.id).eq("workspace_id", workspace.id)
                                   loadData()
                                 }}><XCircle className="size-3.5 text-red-600" /></Button>
                               </>

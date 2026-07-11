@@ -479,7 +479,7 @@ export function SettingsPage({ onNavigate }: Props) {
 
   // Revoke API key
   const revokeApiKey = async (id: string) => {
-    const { error } = await insforge.database.from("api_keys").update({ is_active: false }).eq("id", id)
+    const { error } = await insforge.database.from("api_keys").update({ is_active: false }).eq("id", id).eq("workspace_id", workspace?.id)
     if (error) { toast.error(error.message); return }
     setApiKeys(prev => prev.map(k => k.id === id ? { ...k, is_active: false } : k))
     toast.success(fr ? "Clé révoquée" : "Key revoked")
@@ -487,7 +487,7 @@ export function SettingsPage({ onNavigate }: Props) {
 
   // Delete API key
   const deleteApiKey = async (id: string) => {
-    const { error } = await insforge.database.from("api_keys").delete().eq("id", id)
+    const { error } = await insforge.database.from("api_keys").delete().eq("id", id).eq("workspace_id", workspace?.id)
     if (error) { toast.error(error.message); return }
     setApiKeys(prev => prev.filter(k => k.id !== id))
     toast.success(fr ? "Clé supprimée" : "Key deleted")

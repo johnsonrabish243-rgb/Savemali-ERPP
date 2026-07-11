@@ -395,7 +395,7 @@ export function RoleDashboard() {
                         onClick={async () => {
                           setProcessingReport(report.id)
                           try {
-                            await insforge.database.from("shared_reports").update({ status: "archived" }).eq("id", report.id)
+                            await insforge.database.from("shared_reports").update({ status: "archived" }).eq("id", report.id).eq("workspace_id", workspace.id)
                             setSharedReports((prev) => prev.map((r) => r.id === report.id ? { ...r, status: "archived" } : r))
                           } catch (err) {
                             toast.error(fr ? "Échec de l'archivage du rapport" : "Failed to archive report")

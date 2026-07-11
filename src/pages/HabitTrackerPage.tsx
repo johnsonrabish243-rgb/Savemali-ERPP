@@ -119,7 +119,7 @@ export function HabitTrackerPage({ onNavigate }: Props) {
       const newStreak = prevLog
         ? (habits.find((h) => h.id === habitId)?.streak ?? 0) + 1
         : 1
-      await insforge.database.from("habits").update({ streak: newStreak }).eq("id", habitId)
+      await insforge.database.from("habits").update({ streak: newStreak }).eq("id", habitId).eq("user_id", user.id)
       setHabits((prev) => prev.map((h) => (h.id === habitId ? { ...h, streak: newStreak } : h)))
       setLogs((prev) => [...prev, { habit_id: habitId, done_date: today }])
     }
@@ -127,7 +127,7 @@ export function HabitTrackerPage({ onNavigate }: Props) {
 
   async function deleteHabit(id: string) {
     if (!user?.id) return
-    const { error } = await insforge.database.from("habits").delete().eq("id", id)
+    const { error } = await insforge.database.from("habits").delete().eq("id", id).eq("user_id", user.id)
     if (error) {
       toast.error(fr ? "Erreur de suppression" : "Delete error")
       return

@@ -34,6 +34,7 @@ export function sanitizeInput(input: string, maxLength = 2000): string {
 // ── CSRF Token ──
 // Real CSRF protection is handled by InsForge's SDK (JWT tokens, CORS headers).
 // These stubs exist for API compatibility only — the SDK provides the real protection.
+const CSRF_KEY = "savemali_csrf_token"
 
 export function generateCsrfToken(): string {
   return ""
@@ -193,17 +194,17 @@ export interface PasswordStrength {
   color: string
 }
 
-export function validatePasswordStrict(password: string): string | null {
-  if (password.length < 10) return "Minimum 10 caractères requis"
-  if (!/[A-Z]/.test(password)) return "Au moins 1 majuscule requise"
-  if (!/[a-z]/.test(password)) return "Au moins 1 minuscule requise"
-  if (!/\d/.test(password)) return "Au moins 1 chiffre requis"
-  if (!/[^A-Za-z0-9]/.test(password)) return "Au moins 1 symbole requis"
-  if (COMMON_PASSWORDS.has(password.toLowerCase())) return "Mot de passe trop commun"
+export function validatePasswordStrict(password: string, fr = true): string | null {
+  if (password.length < 10) return fr ? "Minimum 10 caractères requis" : "Minimum 10 characters required"
+  if (!/[A-Z]/.test(password)) return fr ? "Au moins 1 majuscule requise" : "At least 1 uppercase letter required"
+  if (!/[a-z]/.test(password)) return fr ? "Au moins 1 minuscule requise" : "At least 1 lowercase letter required"
+  if (!/\d/.test(password)) return fr ? "Au moins 1 chiffre requis" : "At least 1 digit required"
+  if (!/[^A-Za-z0-9]/.test(password)) return fr ? "Au moins 1 symbole requis" : "At least 1 symbol required"
+  if (COMMON_PASSWORDS.has(password.toLowerCase())) return fr ? "Mot de passe trop commun" : "Password too common"
   return null
 }
 
-export function getPasswordStrength(password: string): PasswordStrength {
+export function getPasswordStrength(password: string, fr = true): PasswordStrength {
   let score = 0
 
   if (password.length >= 10) score++
@@ -215,10 +216,10 @@ export function getPasswordStrength(password: string): PasswordStrength {
 
   if (password.length < 10) score = Math.min(score, 1)
 
-  if (score <= 1) return { score: 1, label: "Faible", color: "text-red-500" }
-  if (score <= 2) return { score: 2, label: "Moyen", color: "text-orange-500" }
-  if (score <= 3) return { score: 3, label: "Fort", color: "text-emerald-500" }
-  return { score: 4, label: "Très fort", color: "text-emerald-600" }
+  if (score <= 1) return { score: 1, label: fr ? "Faible" : "Weak", color: "text-red-500" }
+  if (score <= 2) return { score: 2, label: fr ? "Moyen" : "Medium", color: "text-orange-500" }
+  if (score <= 3) return { score: 3, label: fr ? "Fort" : "Strong", color: "text-emerald-500" }
+  return { score: 4, label: fr ? "Très fort" : "Very strong", color: "text-emerald-600" }
 }
 
 // ── Content Security Policy ──

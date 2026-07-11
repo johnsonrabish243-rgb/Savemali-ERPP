@@ -65,7 +65,7 @@ const STATUS_CONFIG: Record<string, { fr: string; en: string; icon: React.ReactN
 
 export function ReportPreviewModal({ open, onClose, report, onStatusChange }: ReportPreviewModalProps) {
   const { lang } = useLanguage()
-  const { user } = useAuth()
+  const { user, workspace } = useAuth()
   const fr = lang === "fr"
   const [generating, setGenerating] = React.useState<"pdf" | "docx" | "xlsx" | null>(null)
   const [processing, setProcessing] = React.useState(false)
@@ -112,7 +112,7 @@ export function ReportPreviewModal({ open, onClose, report, onStatusChange }: Re
         reviewed_by: user?.id,
         reviewed_at: new Date().toISOString(),
         admin_comment: comment || null,
-      }).eq("id", report.id)
+      }).eq("id", report.id).eq("workspace_id", workspace?.id)
       onStatusChange(report.id, "accepted", comment || undefined)
       toast.success(fr ? "Rapport accepté" : "Report accepted")
       setComment("")
@@ -136,7 +136,7 @@ export function ReportPreviewModal({ open, onClose, report, onStatusChange }: Re
         reviewed_by: user?.id,
         reviewed_at: new Date().toISOString(),
         admin_comment: comment,
-      }).eq("id", report.id)
+      }).eq("id", report.id).eq("workspace_id", workspace?.id)
       onStatusChange(report.id, "rejected", comment)
       toast.success(fr ? "Rapport refusé" : "Report rejected")
       setComment("")
