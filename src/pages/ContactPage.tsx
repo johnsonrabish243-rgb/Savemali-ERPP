@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import { useAuth } from "@/hooks/use-auth"
 import { createSupportTicket } from "@/lib/support"
 import { sanitizeStrict, detectInjection } from "@/lib/security"
@@ -104,6 +105,7 @@ export function ContactPage({ onNavigate }: Props) {
 
   return (
     <div ref={ref} className="flex flex-col">
+      <SeoHead page="contact" lang={lang} />
       <section className="contact-hero relative overflow-hidden bg-[#09090b] pb-16 pt-20 sm:pb-20 sm:pt-28">
         <div className="ag-hero-glow absolute inset-0" />
         <div className="ag-container relative z-10 text-center">

@@ -1,6 +1,7 @@
 import * as React from "react"
 import { FlaskConical, Package, AlertTriangle, ShoppingCart, BarChart3, TrendingUp, ShieldCheck } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import { Logo } from "@/components/Logo"
 import { SpiralButton } from "@/components/SpiralButton"
 
@@ -22,6 +23,7 @@ export function PharmacyLandingPage({ onNavigate }: Props) {
 
   return (
     <div className="flex flex-col min-h-svh bg-background">
+      <SeoHead page="landing-pharmacy" lang={lang} />
 
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-600 to-green-700 pb-16 pt-20 sm:pb-20 sm:pt-28 lg:pb-28 lg:pt-36">

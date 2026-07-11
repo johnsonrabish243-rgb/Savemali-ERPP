@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import { useAuth } from "@/hooks/use-auth"
 import { insforge } from "@/lib/supabase"
 import { sendEmail } from "@/lib/email"
@@ -544,6 +545,7 @@ export function ContactRdvPage({ onNavigate }: Props) {
 
   return (
     <div className="min-h-svh bg-background">
+      <SeoHead page="contact-rdv" lang={lang} />
       {/* ── Hero ── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 pb-20 pt-24 sm:pb-28 sm:pt-32">
         <div className="absolute inset-0 overflow-hidden">

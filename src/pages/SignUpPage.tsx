@@ -14,6 +14,7 @@ import { Logo } from "@/components/Logo"
 import { PasswordStrengthMeter } from "@/components/PasswordStrength"
 import { validatePasswordStrict } from "@/lib/security"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import { insforge, type WorkspaceType } from "@/lib/supabase"
 import { useAuth } from "@/hooks/use-auth"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -440,6 +441,7 @@ export function SignUpPage({ onNavigate }: Props) {
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-background px-4 py-4">
+      <SeoHead page="signup" lang={lang} />
       <div className="absolute right-4 top-4"><ModeToggle /></div>
       <div className="mb-4"><button onClick={() => onNavigate("home")}><Logo size="lg" /></button></div>
 

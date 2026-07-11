@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Logo } from "@/components/Logo"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import { insforge } from "@/lib/supabase"
 import { useAuth } from "@/hooks/use-auth"
 import { trackLoginAttempt, getLoginAttempts, detectInjection, logSecurityEvent } from "@/lib/security"
@@ -352,6 +353,7 @@ export function SignInPage({ onNavigate }: Props) {
 
   return (
     <div ref={containerRef} className="flex min-h-svh flex-col items-center justify-center bg-background px-4 py-4">
+      <SeoHead page="signin" lang={lang} />
       <div className="absolute right-4 top-4">
         <ModeToggle />
       </div>

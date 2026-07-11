@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /#/signin
+Disallow: /#/signup
+Disallow: /#/reset-password
+
+Sitemap: https://www.savemali.online/sitemap.xml

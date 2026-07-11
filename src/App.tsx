@@ -12,6 +12,7 @@ import { LoadingScreen } from "@/components/LoadingScreen"
 import { isUserLockedOut } from "@/hooks/use-security"
 import { useAbuseProtection } from "@/hooks/use-abuse-protection"
 import { SecurityBlockPage } from "@/pages/SecurityBlockPage"
+import { SeoHead, OrganizationSchema, WebSiteSchema, SoftwareApplicationSchema } from "@/lib/seo"
 
 const HomePage = React.lazy(() => import("@/pages/HomePage").then(m => ({ default: m.HomePage })))
 const EducationPage = React.lazy(() => import("@/pages/EducationPage").then(m => ({ default: m.EducationPage })))
@@ -72,6 +73,10 @@ function AppContent() {
     if (params.get("verify_email")) {
       return "signin"
     }
+    const hash = window.location.hash.replace(/^#\//, "").replace(/^#/, "")
+    if (hash && ["home", "about", "contact", "contact-rdv", "privacy", "terms", "signin", "signup", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion", "landing-hr"].includes(hash)) {
+      return hash as Page
+    }
     const saved = localStorage.getItem("savemali_current_page")
     if (saved && (saved as Page)) return saved as Page
     return "home"
@@ -96,6 +101,19 @@ function AppContent() {
     fetchExchangeRate().catch(() => {})
   }, [])
 
+  // Sync hash back to page state on browser back/forward
+  React.useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash.replace(/^#\//, "").replace(/^#/, "")
+      if (hash && hash !== page) {
+        setPage(hash as Page)
+        setCurrentPage(hash as Page)
+      }
+    }
+    window.addEventListener("hashchange", onHashChange)
+    return () => window.removeEventListener("hashchange", onHashChange)
+  }, [page, setCurrentPage])
+
   const handleNavigate = React.useCallback((target: Page) => {
     // Workspace isolation: block access to other workspace module pages
     if (workspace && user) {
@@ -112,6 +130,7 @@ function AppContent() {
     setPage(target)
     setCurrentPage(target)
     trackPageView(target)
+    window.location.hash = target === "home" ? "#/" : `#/${target}`
     window.scrollTo({ top: 0, behavior: "smooth" })
   }, [setCurrentPage, workspace, user])
 
@@ -210,6 +229,18 @@ function AppContent() {
 
   return (
     <div className="min-h-svh bg-background text-foreground">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-brand focus:text-white focus:rounded-lg focus:outline-none">
+        {lang === "fr" ? "Aller au contenu principal" : "Skip to main content"}
+      </a>
+      <SeoHead
+        title="SaveMali"
+        description={lang === "fr"
+          ? "SaveMali — Logiciel de gestion tout-en-un pour l'éducation, pharmacie, commerce, gestion et RH au Mali"
+          : "SaveMali — All-in-one management software for education, pharmacy, commerce, management and HR in Mali"}
+      />
+      <OrganizationSchema />
+      <WebSiteSchema />
+      <SoftwareApplicationSchema />
       {showNav && <Navbar currentPage={page} onNavigate={handleNavigate} />}
       {showNav && <PredictiveBar onNavigate={handleNavigate} />}
       <React.Suspense fallback={
@@ -225,7 +256,7 @@ function AppContent() {
           </div>
         </div>
       }>
-        <div key={page} className="animate-fade-in-up">
+        <div key={page} id="main-content" className="animate-fade-in-up">
           {page === "home" && <HomePage onNavigate={handleNavigate} />}
         {page === "education" && <EducationPage onNavigate={handleNavigate} />}
         {page === "pharmacy" && <PharmacyProvider><PharmacyPage onNavigate={handleNavigate} /></PharmacyProvider>}

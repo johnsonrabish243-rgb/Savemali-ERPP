@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://www.savemali.online/</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.savemali.online/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.savemali.online/" />
+  </url>
+  <url>
+    <loc>https://www.savemali.online/#/about</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.savemali.online/#/about" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.savemali.online/#/about" />
+  </url>
+  <url>
+    <loc>https://www.savemali.online/#/contact</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.savemali.online/#/contact" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.savemali.online/#/contact" />
+  </url>
+  <url>
+    <loc>https://www.savemali.online/#/contact-rdv</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.savemali.online/#/contact-rdv" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.savemali.online/#/contact-rdv" />
+  </url>
+  <url>
+    <loc>https://www.savemali.online/#/privacy</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.savemali.online/#/privacy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.savemali.online/#/privacy" />
+  </url>
+  <url>
+    <loc>https://www.savemali.online/#/terms</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.savemali.online/#/terms" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.savemali.online/#/terms" />
+  </url>
+  <url>
+    <loc>https://www.savemali.online/#/landing-education</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.savemali.online/#/landing-education" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.savemali.online/#/landing-education" />
+  </url>
+  <url>
+    <loc>https://www.savemali.online/#/landing-pharmacy</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.savemali.online/#/landing-pharmacy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.savemali.online/#/landing-pharmacy" />
+  </url>
+  <url>
+    <loc>https://www.savemali.online/#/landing-commerce</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.savemali.online/#/landing-commerce" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.savemali.online/#/landing-commerce" />
+  </url>
+  <url>
+    <loc>https://www.savemali.online/#/landing-gestion</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.savemali.online/#/landing-gestion" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.savemali.online/#/landing-gestion" />
+  </url>
+  <url>
+    <loc>https://www.savemali.online/#/landing-hr</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.savemali.online/#/landing-hr" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.savemali.online/#/landing-hr" />
+  </url>
+</urlset>

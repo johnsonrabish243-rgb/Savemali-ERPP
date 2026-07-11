@@ -1,6 +1,7 @@
 import * as React from "react"
 import { GraduationCap, BookOpen, Users, ClipboardCheck, Calendar, ClipboardList, MessageSquare } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import { Logo } from "@/components/Logo"
 import { SpiralButton } from "@/components/SpiralButton"
 
@@ -22,6 +23,7 @@ export function EducationLandingPage({ onNavigate }: Props) {
 
   return (
     <div className="flex flex-col min-h-svh bg-background">
+      <SeoHead page="landing-education" lang={lang} />
 
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 pb-16 pt-20 sm:pb-20 sm:pt-28 lg:pb-28 lg:pt-36">

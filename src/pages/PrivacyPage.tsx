@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import { usePageEntrance } from "@/hooks/use-page-entrance"
 import { useAuth } from "@/hooks/use-auth"
 import { createDpoRequest } from "@/lib/support"
@@ -206,6 +207,7 @@ export function PrivacyPage({ onNavigate }: Props) {
 
   return (
     <div ref={rootRef} className="min-h-svh bg-background">
+      <SeoHead page="privacy" lang={lang} />
       <div className="page-header bg-gradient-to-br from-brand to-brand/70 px-6 py-12 text-white">
         <div className="mx-auto max-w-3xl">
           <Button variant="ghost" size="sm" className="text-white/70 hover:text-white mb-4 -ml-2" onClick={() => onNavigate("home")}>

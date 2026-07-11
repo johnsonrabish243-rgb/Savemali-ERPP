@@ -1,6 +1,7 @@
 import * as React from "react"
 import { BarChart3, Calculator, Users, PieChart, Briefcase, TrendingUp, FileText } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import { Logo } from "@/components/Logo"
 import { SpiralButton } from "@/components/SpiralButton"
 
@@ -22,6 +23,7 @@ export function GestionLandingPage({ onNavigate }: Props) {
 
   return (
     <div className="flex flex-col min-h-svh bg-background">
+      <SeoHead page="landing-gestion" lang={lang} />
 
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative overflow-hidden bg-gradient-to-br from-purple via-purple/90 to-indigo-600 pb-16 pt-20 sm:pb-20 sm:pt-28 lg:pb-28 lg:pt-36">

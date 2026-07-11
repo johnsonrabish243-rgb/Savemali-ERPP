@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Logo } from "@/components/Logo"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import { insforge } from "@/lib/supabase"
 import { detectInjection, logSecurityEvent } from "@/lib/security"
 import { getPasswordStrength } from "@/lib/security"
@@ -137,6 +138,7 @@ export function ResetPasswordPage({ onNavigate }: Props) {
 
   return (
     <div ref={containerRef} className="flex min-h-svh flex-col items-center justify-center bg-background px-4">
+      <SeoHead page="reset-password" lang={lang} />
       <div data-reset-logo className="mb-6">
         <Logo size="lg" />
       </div>

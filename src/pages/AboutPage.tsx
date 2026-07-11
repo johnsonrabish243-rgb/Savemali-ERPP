@@ -3,6 +3,7 @@ import { gsap } from "gsap"
 import { Building2, Target, Users, Shield, ArrowRight } from "lucide-react"
 import { Logo } from "@/components/Logo"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import type { Page } from "@/App"
 
 interface Props { onNavigate: (page: Page) => void }
@@ -28,6 +29,7 @@ export function AboutPage({ onNavigate }: Props) {
 
   return (
     <div ref={ref} className="flex flex-col">
+      <SeoHead page="about" lang={lang} />
       {/* ═══════════ HERO ═══════════ */}
       <section className="about-hero relative overflow-hidden bg-[#09090b] pb-16 pt-20 sm:pb-20 sm:pt-28">
         <div className="ag-hero-glow absolute inset-0" />

@@ -3,6 +3,7 @@ import { FileText, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import { usePageEntrance } from "@/hooks/use-page-entrance"
 
 type Page = "home" | "education" | "pharmacy" | "commerce" | "gestion" | "dashboard" | "signin" | "signup" | "members" | "reports" | "privacy" | "terms"
@@ -151,6 +152,7 @@ export function TermsPage({ onNavigate }: Props) {
 
   return (
     <div ref={rootRef} className="min-h-svh bg-background">
+      <SeoHead page="terms" lang={lang} />
       <div className="page-header bg-gradient-to-br from-brand to-brand/70 px-6 py-12 text-white">
         <div className="mx-auto max-w-3xl">
           <Button variant="ghost" size="sm" className="text-white/70 hover:text-white mb-4 -ml-2" onClick={() => onNavigate("home")}>

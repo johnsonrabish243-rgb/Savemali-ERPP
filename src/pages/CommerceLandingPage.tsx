@@ -1,6 +1,7 @@
 import * as React from "react"
 import { ShoppingCart, CreditCard, Package, BarChart3, Star, Users, Receipt } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import { Logo } from "@/components/Logo"
 import { SpiralButton } from "@/components/SpiralButton"
 
@@ -22,6 +23,7 @@ export function CommerceLandingPage({ onNavigate }: Props) {
 
   return (
     <div className="flex flex-col min-h-svh bg-background">
+      <SeoHead page="landing-commerce" lang={lang} />
 
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative overflow-hidden bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 pb-16 pt-20 sm:pb-20 sm:pt-28 lg:pb-28 lg:pt-36">

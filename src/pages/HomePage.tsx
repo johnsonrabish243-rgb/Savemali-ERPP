@@ -5,6 +5,7 @@ import {
   ArrowRight, ChevronDown, Star, Building2, TrendingUp, Zap, ChevronRight, ChevronLeft
 } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
+import { SeoHead } from "@/lib/seo"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/Logo"
 
@@ -106,6 +107,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
 
   return (
     <div className="flex flex-col">
+      <SeoHead page="home" lang={lang} />
 
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative overflow-hidden pb-16 pt-20 sm:pb-20 sm:pt-28 lg:pb-28 lg:pt-36">
