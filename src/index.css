@@ -80,19 +80,19 @@
 
 /* ── Light Mode ── */
 :root {
-  --background: #f0f2f5;
-  --foreground: #0f172a;
+  --background: #f1f4f9;
+  --foreground: #0b1426;
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #0b1426;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #4b5563;
+  --popover-foreground: #0b1426;
+  --muted: #eef2f6;
+  --muted-foreground: #526377;
   --accent: #f97316;
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --input: #d1d5db;
+  --input: #cad1db;
   --ring: #f97316;
 
   --brand: #f97316;
@@ -107,11 +107,11 @@
   --border: #d1d5db;
 
   --surface: #ffffff;
-  --surface-alt: #f8fafc;
+  --surface-alt: #f4f7fb;
 
-  --text-heading: #0f172a;
-  --text-body: #334155;
-  --text-subtle: #6b7280;
+  --text-heading: #0b1426;
+  --text-body: #2d3e57;
+  --text-subtle: #64758b;
 
   --border-subtle: #e5e7eb;
 
@@ -132,18 +132,18 @@
 
 /* ── Dark Mode ── */
 .dark {
-  --background: #070c18;
-  --foreground: #f1f5f9;
-  --card: #111b2e;
-  --card-foreground: #f1f5f9;
-  --popover: #111b2e;
-  --popover-foreground: #f1f5f9;
-  --muted: #182234;
-  --muted-foreground: #b0c0d4;
+  --background: #080e1a;
+  --foreground: #edf2f9;
+  --card: #121c30;
+  --card-foreground: #edf2f9;
+  --popover: #121c30;
+  --popover-foreground: #edf2f9;
+  --muted: #192437;
+  --muted-foreground: #b8c9df;
   --accent: #fb923c;
   --accent-foreground: #0f172a;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
+  --destructive: #f87171;
+  --destructive-foreground: #0f172a;
   --input: #1e2d48;
   --ring: #fb923c;
   --border: #1e2d48;
@@ -158,19 +158,18 @@
   --secondary: #1e2d48;
   --secondary-foreground: #e2e8f0;
 
-  --surface: #111b2e;
-  --surface-alt: #162236;
-  --surface-dark: #070c18;
+  --surface: #121c30;
+  --surface-alt: #172237;
 
-  --text-heading: #f1f5f9;
-  --text-body: #b0c0d4;
-  --text-subtle: #6b82a0;
+  --text-heading: #edf2f9;
+  --text-body: #b8c9df;
+  --text-subtle: #748bb0;
 
-  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-subtle: rgba(255, 255, 255, 0.06);
 
   --sidebar-bg: #040810;
   --sidebar-fg: #e2e8f0;
-  --sidebar-muted: #6b82a0;
+  --sidebar-muted: #748bb0;
   --sidebar-active: #fb923c;
   --sidebar-active-bg: rgba(251, 146, 60, 0.12);
   --sidebar-hover: rgba(255, 255, 255, 0.05);
@@ -183,16 +182,27 @@
   --chart-5: #f87171;
 }
 
-/* ── Base ── */
-* {
+/* ── Smooth theme transitions ── */
+*, *::before, *::after {
   border-color: var(--border);
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+html.disable-transitions *, html.disable-transitions *::before, html.disable-transitions *::after {
+  transition: none !important;
 }
 
+/* ── Base ── */
 html {
   font-size: calc(16px * var(--font-size-scale, 1));
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
 }
 html[data-font-size="small"] { --font-size-scale: 0.875; }
 html[data-font-size="medium"] { --font-size-scale: 1; }
@@ -219,9 +229,13 @@ body {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
+  max-width: 100%;
 }
 .table-scroll::-webkit-scrollbar {
   height: 4px;
+}
+.table-scroll table {
+  min-width: max(100%, 600px);
 }
 
 /* ── Responsive utilities ── */
@@ -230,9 +244,13 @@ body {
   .responsive-grid { grid-template-columns: 1fr !important; }
   .responsive-pad { padding-left: 12px !important; padding-right: 12px !important; }
   .responsive-gap { gap: 0.5rem !important; }
+  .responsive-stack { flex-direction: column !important; }
+  .responsive-text-sm { font-size: 13px !important; }
+  .responsive-full { width: 100% !important; }
 }
 @media (min-width: 641px) and (max-width: 1024px) {
   .hide-on-tablet { display: none !important; }
+  .responsive-tablet-grid-2 { grid-template-columns: repeat(2, 1fr) !important; }
 }
 
 /* ── Focus ring ── */

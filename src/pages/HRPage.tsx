@@ -562,7 +562,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {filteredEmployees.length === 0 ? (
             <EmptyState icon={Users} title={t("Aucun employé", "No employees")} desc={t("Ajoutez votre premier employé", "Add your first employee")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -621,7 +621,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {recruitments.length === 0 ? (
             <EmptyState icon={UserPlus} title={t("Aucune offre", "No postings")} desc={t("Créez une offre d'emploi", "Create a job posting")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -667,7 +667,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {leaves.length === 0 ? (
             <EmptyState icon={Plane} title={t("Aucun congé", "No leave requests")} desc={t("Les demandes apparaîtront ici", "Requests will appear here")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -727,7 +727,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {absences.length === 0 ? (
             <EmptyState icon={FileWarning} title={t("Aucune absence", "No absences")} desc={t("Enregistrez les absences des employés", "Record employee absences")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
@@ -772,7 +772,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {contracts.length === 0 ? (
             <EmptyState icon={FileCheck} title={t("Aucun contrat", "No contracts")} desc={t("Créez un contrat", "Create a contract")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -852,7 +852,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {attendanceList.length === 0 ? (
             <EmptyState icon={ClipboardCheck} title={t("Aucune présence", "No attendance records")} desc={t("Enregistrez les présences des employés", "Record employee attendance")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
@@ -922,7 +922,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {trainings.length === 0 ? (
             <EmptyState icon={GraduationCap} title={t("Aucune formation", "No trainings")} desc={t("Planifiez une formation", "Schedule a training")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -970,7 +970,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {evaluations.length === 0 ? (
             <EmptyState icon={Star} title={t("Aucune évaluation", "No evaluations")} desc={t("Évaluez les performances", "Evaluate performance")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -1019,7 +1019,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {skills.length === 0 ? (
             <EmptyState icon={Zap} title={t("Aucune compétence", "No skills")} desc={t("Évaluez et suivez les compétences", "Track and evaluate skills")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
@@ -1062,7 +1062,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {promotions.length === 0 ? (
             <EmptyState icon={ArrowUpRight} title={t("Aucune promotion", "No promotions")} desc={t("Historique des promotions", "Promotion history")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
@@ -1105,7 +1105,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {disciplines.length === 0 ? (
             <EmptyState icon={Shield} title={t("Aucun incident", "No incidents")} desc={t("Gestion disciplinaire", "Disciplinary management")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>{fr ? "Employé" : "Employee"}</TableHead>
@@ -1148,7 +1148,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {healthIncidents.length === 0 ? (
             <EmptyState icon={Heart} title={t("Aucun incident", "No incidents")} desc={t("Incidents et mesures de sécurité", "Incidents and safety measures")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>{fr ? "Type" : "Type"}</TableHead>
@@ -1190,7 +1190,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {documents.length === 0 ? (
             <EmptyState icon={FolderOpen} title={t("Aucun document", "No documents")} desc={t("Uploadez des documents RH", "Upload HR documents")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>{fr ? "Titre" : "Title"}</TableHead>
@@ -1234,7 +1234,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {communications.length === 0 ? (
             <EmptyState icon={MessageSquare} title={t("Aucun message", "No messages")} desc={t("Communiquez avec l'équipe", "Communicate with the team")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>{fr ? "Titre" : "Title"}</TableHead>
@@ -1306,7 +1306,7 @@ export function HRPage({ onNavigate, initialTab }: Props) {
           {auditLogs.length === 0 ? (
             <EmptyState icon={Clipboard} title={t("Aucune activité", "No activity")} desc={t("Les actions seront enregistrées ici", "Actions will be recorded here")} />
           ) : (
-            <div className="rounded-lg border overflow-hidden">
+            <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader><TableRow>
                   <TableHead>{fr ? "Action" : "Action"}</TableHead>

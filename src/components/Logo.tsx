@@ -20,16 +20,22 @@ function LogoSvg({ w }: { w: number }) {
     <svg width={w} height={w} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id={`lg-${w}`} x1="0" y1="0" x2="64" y2="64">
-          <stop offset="0%" stopColor="#f97316" />
+          <stop offset="0%" stopColor="#fb923c" />
           <stop offset="100%" stopColor="#c2410c" />
         </linearGradient>
+        <radialGradient id={`lg-shine-${w}`} cx="28%" cy="28%">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
+          <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+        </radialGradient>
         <filter id={`ls-${w}`}>
-          <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="rgba(0,0,0,0.2)" />
+          <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="rgba(0,0,0,0.25)" />
         </filter>
       </defs>
       <rect x="0" y="0" width="64" height="64" rx="16" fill={`url(#lg-${w})`} filter={`url(#ls-${w})`} />
-      <rect x="3" y="3" width="58" height="58" rx="14" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
-      <text x="32" y="44" textAnchor="middle" fill="white" fontSize="34" fontWeight="800" fontFamily="system-ui, sans-serif">S</text>
+      <rect x="0" y="0" width="64" height="64" rx="16" fill={`url(#lg-shine-${w})`} />
+      <rect x="3" y="3" width="58" height="58" rx="13" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="1.5" />
+      <rect x="6" y="6" width="52" height="52" rx="10" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+      <text x="32" y="45" textAnchor="middle" fill="white" fontSize="36" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-1">S</text>
     </svg>
   )
 }
