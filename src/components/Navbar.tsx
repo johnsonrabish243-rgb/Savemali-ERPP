@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Menu, Globe, LogOut, LayoutDashboard, Settings } from "lucide-react"
+import { Menu, Globe, LogOut, LayoutDashboard, Settings, ShieldCheck } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
 import { insforge } from "@/lib/supabase"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -9,6 +9,7 @@ import { UserAvatar } from "@/components/UserAvatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/use-auth"
+import { usePlatformAdmin } from "@/lib/platform-admin"
 import { cn } from "@/lib/utils"
 import type { Page } from "@/App"
 
@@ -25,6 +26,7 @@ export function Navbar({ currentPage, onNavigate }: NavProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null)
   const isPublic = PUBLIC_PAGES.includes(currentPage)
+  const { isPlatformAdmin } = usePlatformAdmin()
 
   React.useEffect(() => {
     if (!user || !workspace) return
@@ -114,6 +116,12 @@ export function Navbar({ currentPage, onNavigate }: NavProps) {
                     <LayoutDashboard className="size-4" />
                     {lang === "fr" ? "Tableau de bord" : "Dashboard"}
                   </DropdownMenuItem>
+                  {isPlatformAdmin && (
+                    <DropdownMenuItem onClick={() => handleNav("platform")} className="gap-2">
+                      <ShieldCheck className="size-4" />
+                      {lang === "fr" ? "Administration" : "Platform Admin"}
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => handleNav("settings")} className="gap-2">
                     <Settings className="size-4" />
                     {lang === "fr" ? "Paramètres" : "Settings"}
@@ -185,6 +193,12 @@ export function Navbar({ currentPage, onNavigate }: NavProps) {
                         <LayoutDashboard className="size-4" />
                         {lang === "fr" ? "Tableau de bord" : "Dashboard"}
                       </Button>
+                      {isPlatformAdmin && (
+                        <Button variant="ghost" className="w-full justify-start text-purple-400 hover:text-purple-300 hover:bg-purple-500/10" onClick={() => handleNav("platform")}>
+                          <ShieldCheck className="size-4" />
+                          {lang === "fr" ? "Administration" : "Platform Admin"}
+                        </Button>
+                      )}
                       <Button variant="ghost" className="w-full justify-start text-white/60 hover:text-white hover:bg-white/[0.06]" onClick={() => handleNav("settings")}>
                         <Settings className="size-4" />
                         {lang === "fr" ? "Paramètres" : "Settings"}
