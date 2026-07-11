@@ -279,7 +279,7 @@ export function SavemaliWidget() {
           ? "Erreur réseau. Vérifiez votre connexion et réessayez."
           : "Network error. Check your connection and try again."
       } else {
-        msg = fr ? `Erreur: ${err?.message || "inconnue"}` : `Error: ${err?.message || "unknown"}`
+        msg = fr ? "Une erreur est survenue. Veuillez réessayer." : "An error occurred. Please try again."
       }
       setMessages((prev) => [
         ...prev,

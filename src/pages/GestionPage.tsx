@@ -429,7 +429,7 @@ export function GestionPage({ onNavigate, initialTab }: Props) {
   </div>
 </body></html>`
 
-    const printWindow = window.open("", "_blank", "width=350,height=600")
+    const printWindow = window.open("", "_blank", "width=350,height=600,noopener")
     if (printWindow) {
       printWindow.document.write(html)
       printWindow.document.close()

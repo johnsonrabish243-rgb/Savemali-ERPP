@@ -6,7 +6,7 @@ disable_signup = false
 allowed_redirect_urls = ["https://www.savemali.online", "https://www.savemali.online/signin", "https://savemali.online", "https://savemali.online/signin", "http://localhost:5173", "http://localhost:5173/signin"]
 
 [auth.password]
-min_length = 6
+min_length = 8
 require_number = false
 require_lowercase = false
 require_uppercase = false

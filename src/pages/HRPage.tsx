@@ -701,10 +701,12 @@ export function HRPage({ onNavigate, initialTab }: Props) {
                               <>
                                 <Button variant="ghost" size="sm" onClick={async () => {
                                   await insforge.database.from("hr_leave_requests").update({ status: "approved" }).eq("id", l.id).eq("workspace_id", workspace.id)
+                                  logAudit({ action: "leave_approved", workspace_id: workspace.id, actor_id: user?.id, actor_email: user?.email, target_id: l.id, target_type: "hr_leave_request", metadata: { leave_type: l.leave_type, employee_id: l.employee_id } })
                                   loadData()
                                 }}><CheckCircle className="size-3.5 text-green-600" /></Button>
                                 <Button variant="ghost" size="sm" onClick={async () => {
                                   await insforge.database.from("hr_leave_requests").update({ status: "rejected" }).eq("id", l.id).eq("workspace_id", workspace.id)
+                                  logAudit({ action: "leave_rejected", workspace_id: workspace.id, actor_id: user?.id, actor_email: user?.email, target_id: l.id, target_type: "hr_leave_request", metadata: { leave_type: l.leave_type, employee_id: l.employee_id } })
                                   loadData()
                                 }}><XCircle className="size-3.5 text-red-600" /></Button>
                               </>

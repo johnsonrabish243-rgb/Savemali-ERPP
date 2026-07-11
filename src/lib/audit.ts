@@ -9,6 +9,8 @@ export type AuditAction =
   | "settings_changed" | "workspace_updated"
   | "member_added" | "member_removed" | "member_role_changed"
   | "backup_created" | "session_revoked"
+  | "leave_approved" | "leave_rejected"
+  | "support_ticket_created" | "dpo_request_created"
 
 interface AuditEntry {
   action: AuditAction

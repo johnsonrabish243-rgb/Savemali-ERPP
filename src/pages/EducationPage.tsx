@@ -29,6 +29,7 @@ import { validateFields, hasErrors } from "@/lib/validation"
 import { studentRules, teacherRules, classRules, examRules, feePaymentRules } from "@/lib/rules"
 import { publishNotification, createPaymentNotification, createGradeNotification, createAttendanceNotification } from "@/lib/notifications"
 import { detectInjection, logSecurityEvent } from "@/lib/security"
+import { logActivity } from "@/lib/activity"
 import { toast } from "sonner"
 
 type Page = "home" | "education" | "pharmacy" | "commerce" | "gestion" | "dashboard" | "signin" | "signup" | "members" | "reports" | "privacy" | "terms"
@@ -230,6 +231,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
       : await insforge.database.from("students").insert([payload])
     if (e) { setError(e.message); setSaving(false); return }
     if (!editStudent) import("@/lib/stats").then(({ invalidateStatsCache }) => invalidateStatsCache())
+    logActivity({ workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user?.id ?? "", actorEmail: user?.email ?? "", actorName: user?.email ?? "", actionType: editStudent ? "student_edit" : "student_add", module: "education", description: `${studentForm.first_name} ${studentForm.last_name}`, referenceId: null })
     setShowStudentDlg(false); setEditStudent(null); fetchData(); setSaving(false)
   }
   const deleteStudent = async (id: string) => {
@@ -239,6 +241,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
     await insforge.database.from("fee_payments").delete().eq("student_id", id).eq("workspace_id", workspace.id)
     const { error } = await insforge.database.from("students").delete().eq("id", id).eq("workspace_id", workspace.id)
     if (error) { alert(fr ? "Erreur lors de la suppression" : "Delete error"); return }
+    logActivity({ workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user?.id ?? "", actorEmail: user?.email ?? "", actorName: user?.email ?? "", actionType: "student_delete", module: "education", description: `Deleted student ${id}`, referenceId: id })
     fetchData()
   }
 
@@ -275,12 +278,14 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
       : await insforge.database.from("teachers").insert([payload])
     if (e) { setError(e.message); setSaving(false); return }
     if (!editTeacher) import("@/lib/stats").then(({ invalidateStatsCache }) => invalidateStatsCache())
+    logActivity({ workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user?.id ?? "", actorEmail: user?.email ?? "", actorName: user?.email ?? "", actionType: editTeacher ? "teacher_edit" : "teacher_add", module: "education", description: `${teacherForm.first_name} ${teacherForm.last_name}`, referenceId: null })
     setShowTeacherDlg(false); setEditTeacher(null); fetchData(); setSaving(false)
   }
   const deleteTeacher = async (id: string) => {
     if (!confirm(fr ? "Supprimer cet enseignant ?" : "Delete this teacher?")) return
     const { error } = await insforge.database.from("teachers").delete().eq("id", id).eq("workspace_id", workspace.id)
     if (error) { alert(fr ? "Erreur lors de la suppression" : "Delete error"); return }
+    logActivity({ workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user?.id ?? "", actorEmail: user?.email ?? "", actorName: user?.email ?? "", actionType: "teacher_delete", module: "education", description: `Deleted teacher ${id}`, referenceId: id })
     fetchData()
   }
 
@@ -312,6 +317,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
       ? await insforge.database.from("classes").update(payload).eq("id", editClass.id).eq("workspace_id", workspace.id)
       : await insforge.database.from("classes").insert([payload])
     if (e) { setError(e.message); setSaving(false); return }
+    logActivity({ workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user?.id ?? "", actorEmail: user?.email ?? "", actorName: user?.email ?? "", actionType: editClass ? "class_edit" : "class_add", module: "education", description: classForm.name, referenceId: null })
     setShowClassDlg(false); setEditClass(null); fetchData(); setSaving(false)
   }
   const deleteClass = async (id: string) => {
@@ -321,6 +327,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
     await insforge.database.from("students").update({ class_name: null }).eq("class_name", classes.find((c) => c.id === id)?.name ?? "").eq("workspace_id", workspace.id)
     const { error } = await insforge.database.from("classes").delete().eq("id", id).eq("workspace_id", workspace.id)
     if (error) { alert(fr ? "Erreur lors de la suppression" : "Delete error"); return }
+    logActivity({ workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user?.id ?? "", actorEmail: user?.email ?? "", actorName: user?.email ?? "", actionType: "class_delete", module: "education", description: `Deleted class ${id}`, referenceId: id })
     fetchData()
   }
 
@@ -348,6 +355,7 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
     const { error: e } = await insforge.database.from("fee_payments").insert([{ workspace_id: workspace.id, student_id: payForm.student_id, amount_usd: amountUsd, description: payForm.description || null }])
     if (e) { setError(e.message); setSaving(false); return }
     publishNotification(createPaymentNotification(workspace.id, user?.email?.split("@")[0] ?? "École", amountUsd, "FC", "education", "payments"))
+    logActivity({ workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user?.id ?? "", actorEmail: user?.email ?? "", actorName: user?.email ?? "", actionType: "payment_add", module: "education", description: `Paiement ${formatCurrency(amountUsd)}`, amountUsd, referenceId: null })
     setShowPayDlg(false); fetchData(); setSaving(false)
   }
 
@@ -459,12 +467,14 @@ export function EducationPage({ onNavigate, initialTab }: Props) {
       ? await insforge.database.from("exams").update(payload).eq("id", editExam.id).eq("workspace_id", workspace.id)
       : await insforge.database.from("exams").insert([payload])
     if (e) { setError(e.message); setSaving(false); return }
+    logActivity({ workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user?.id ?? "", actorEmail: user?.email ?? "", actorName: user?.email ?? "", actionType: editExam ? "exam_edit" : "exam_add", module: "education", description: examForm.name, referenceId: null })
     setShowExamDlg(false); setEditExam(null); fetchData(); setSaving(false)
   }
   const deleteExam = async (id: string) => {
     if (!confirm(fr ? "Supprimer cet examen ?" : "Delete this exam?")) return
     const { error } = await insforge.database.from("exams").delete().eq("id", id).eq("workspace_id", workspace.id)
     if (error) { alert(fr ? "Erreur lors de la suppression" : "Delete error"); return }
+    logActivity({ workspaceId: workspace.id, ownerId: workspace.owner_id, actorUserId: user?.id ?? "", actorEmail: user?.email ?? "", actorName: user?.email ?? "", actionType: "exam_delete", module: "education", description: `Deleted exam ${id}`, referenceId: id })
     fetchData()
   }
 

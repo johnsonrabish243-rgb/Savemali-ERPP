@@ -9,7 +9,8 @@ import {
   Webhook, Sliders, Hash, Calendar, Menu, Package, Wallet,
   BarChart3, Zap, Gift, HelpCircle, Sparkles, BadgeCheck,
   Users, CircleUser, Paintbrush, Activity, Radio, HardDrive,
-  ShieldAlert, FileJson, Laptop
+  ShieldAlert, FileJson, Laptop, MessageSquare, ClipboardList,
+  Bug, UserCog, TicketCheck, Filter, ArrowUpDown
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
@@ -30,6 +31,9 @@ import { insforge } from "@/lib/supabase"
 import type { Page } from "@/App"
 import { toast } from "sonner"
 import { PageFooter } from "@/components/PageFooter"
+import { createSupportTicket } from "@/lib/support"
+import { logAudit } from "@/lib/audit"
+import { sanitizeStrict, detectInjection, checkApiRateLimit } from "@/lib/security"
 import { SettingsSection, SettingsRow, SettingsDivider } from "@/components/settings/SettingsSection"
 
 interface MemberData {
@@ -175,6 +179,13 @@ const sidebarGroups = (fr: boolean, role: string, isOwner: boolean) => {
         { id: "api", label: "API & Intégrations", icon: KeyRound, roles: ["admin"] },
         { id: "backups", label: fr ? "Sauvegardes" : "Backups", icon: Database, roles: ["admin", "manager"] },
         { id: "billing", label: fr ? "Facturation" : "Billing", icon: CreditCard, roles: isOwner ? ["admin"] : [] },
+      ],
+    },
+    {
+      label: fr ? "Support" : "Support",
+      items: [
+        { id: "tickets", label: fr ? "Tickets" : "Tickets", icon: MessageSquare, roles: ["admin", "manager"] },
+        { id: "dpo", label: "DPO", icon: Shield, roles: ["admin", "manager"] },
       ],
     },
     {
@@ -1349,7 +1360,7 @@ export function SettingsPage({ onNavigate }: Props) {
                       </div>
                     </div>
                     <Badge variant="secondary" className="text-[10px]">
-                      {fr ? "1 appareil" : "1 device"}
+                      {fr ? "Session active" : "Active session"}
                     </Badge>
                   </div>
                 </div>
@@ -1428,6 +1439,28 @@ export function SettingsPage({ onNavigate }: Props) {
             </SettingsSection>
           )}
 
+          {/* ===== SUPPORT TICKETS ===== */}
+          {activeSection === "tickets" && (
+            <SettingsSection
+              title={fr ? "Tickets de support" : "Support Tickets"}
+              description={fr ? "Gerer les demandes d'assistance" : "Manage support requests"}
+              icon={<MessageSquare className="size-4" />}
+            >
+              <SupportTicketsView fr={fr} workspace={workspace} />
+            </SettingsSection>
+          )}
+
+          {/* ===== DPO REQUESTS ===== */}
+          {activeSection === "dpo" && (
+            <SettingsSection
+              title={fr ? "Demandes DPO" : "DPO Requests"}
+              description={fr ? "Gerer les demandes de protection des donnees" : "Manage data protection requests"}
+              icon={<Shield className="size-4" />}
+            >
+              <DpoRequestsView fr={fr} workspace={workspace} />
+            </SettingsSection>
+          )}
+
         </div>
       </div>
       <PageFooter onNavigate={onNavigate} />
@@ -1441,6 +1474,269 @@ export function SettingsPage({ onNavigate }: Props) {
         onOpenChange={setAvatarOpen}
         onAvatarChange={setAvatarUrl}
       />
+    </div>
+  )
+}
+
+// ── Support Tickets Admin View ──
+function SupportTicketsView({ fr, workspace }: { fr: boolean; workspace: any }) {
+  const [tickets, setTickets] = React.useState<any[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [filter, setFilter] = React.useState("all")
+  const [selected, setSelected] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    if (!workspace) return
+    setLoading(true)
+    insforge.database
+      .from("support_tickets")
+      .select("*")
+      .eq("workspace_id", workspace.id)
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .then(({ data }) => { setTickets((data as any[]) ?? []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [workspace])
+
+  const statusColors: Record<string, string> = {
+    open: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    in_progress: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    waiting_on_customer: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+    resolved: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    closed: "bg-muted text-muted-foreground",
+  }
+  const statusLabels: Record<string, string> = {
+    open: fr ? "Ouvert" : "Open",
+    in_progress: fr ? "En cours" : "In Progress",
+    waiting_on_customer: fr ? "En attente" : "Waiting",
+    resolved: fr ? "Resolu" : "Resolved",
+    closed: fr ? "Ferme" : "Closed",
+  }
+  const priorityColors: Record<string, string> = {
+    low: "bg-muted text-muted-foreground",
+    normal: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    high: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+    urgent: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  }
+
+  const filtered = filter === "all" ? tickets : tickets.filter((t) => t.status === filter)
+
+  if (loading) return <div className="flex items-center justify-center py-12"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>
+
+  if (selected) {
+    return (
+      <div className="pt-2">
+        <Button variant="ghost" size="sm" onClick={() => setSelected(null)} className="mb-4 gap-1.5">
+          <ChevronLeft className="size-4" />{fr ? "Retour" : "Back"}
+        </Button>
+        <div className="rounded-lg border border-border/60 p-4 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <p className="text-xs text-muted-foreground">{fr ? "Ticket" : "Ticket"}</p>
+              <p className="text-sm font-mono font-bold text-foreground">{selected.ticket_number}</p>
+            </div>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium ${statusColors[selected.status] || ""}`}>{statusLabels[selected.status] || selected.status}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div><p className="text-xs text-muted-foreground">{fr ? "Auteur" : "Author"}</p><p className="font-medium">{selected.created_by_name || "—"}</p></div>
+            <div><p className="text-xs text-muted-foreground">Email</p><p className="font-medium">{selected.created_by_email || "—"}</p></div>
+            <div><p className="text-xs text-muted-foreground">{fr ? "Categorie" : "Category"}</p><p className="font-medium capitalize">{selected.category}</p></div>
+            <div><p className="text-xs text-muted-foreground">{fr ? "Priorite" : "Priority"}</p><span className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${priorityColors[selected.priority] || ""}`}>{selected.priority}</span></div>
+            <div className="col-span-2"><p className="text-xs text-muted-foreground">{fr ? "Date" : "Date"}</p><p className="font-medium">{new Date(selected.created_at).toLocaleString(fr ? "fr-FR" : "en-US")}</p></div>
+          </div>
+          <div className="pt-2 border-t border-border/40">
+            <p className="text-xs text-muted-foreground mb-1">{fr ? "Sujet" : "Subject"}</p>
+            <p className="text-sm font-medium text-foreground mb-2">{selected.subject}</p>
+            <p className="text-xs text-muted-foreground mb-1">{fr ? "Message" : "Message"}</p>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selected.message}</p>
+          </div>
+          <div className="flex gap-2 pt-2 border-t border-border/40">
+            {selected.status !== "resolved" && (
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={async () => {
+                await insforge.database.from("support_tickets").update({ status: "resolved", resolved_at: new Date().toISOString() }).eq("id", selected.id)
+                logAudit({ action: "support_ticket_resolved", target_id: selected.ticket_number, target_type: "support_ticket", metadata: { status: "resolved" } })
+                setSelected((p: any) => ({ ...p, status: "resolved" }))
+              }}>
+                <Check className="size-3.5" />{fr ? "Marquer resolu" : "Mark resolved"}
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" className="gap-1.5 text-xs" onClick={async () => {
+              await insforge.database.from("support_tickets").update({ status: "closed" }).eq("id", selected.id)
+              logAudit({ action: "support_ticket_closed", target_id: selected.ticket_number, target_type: "support_ticket" })
+              setSelected((p: any) => ({ ...p, status: "closed" }))
+            }}>
+              <X className="size-3.5" />{fr ? "Fermer" : "Close"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="pt-2 space-y-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        {["all", "open", "in_progress", "resolved", "closed"].map((s) => (
+          <button key={s} onClick={() => setFilter(s)} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${filter === s ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+            {s === "all" ? (fr ? "Tous" : "All") : statusLabels[s] || s}
+          </button>
+        ))}
+      </div>
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center py-8 text-center">
+          <MessageSquare className="size-8 text-muted-foreground/50 mb-2" />
+          <p className="text-sm text-muted-foreground">{fr ? "Aucun ticket" : "No tickets"}</p>
+        </div>
+      ) : (
+        filtered.map((t) => (
+          <div key={t.id} className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3 hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => setSelected(t)}>
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                <MessageSquare className="size-3.5 text-muted-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{t.subject}</p>
+                <p className="text-xs text-muted-foreground">{t.ticket_number} · {t.created_by_name || t.created_by_email}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {t.priority === "urgent" && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">{fr ? "Urgent" : "Urgent"}</span>}
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${statusColors[t.status] || ""}`}>{statusLabels[t.status] || t.status}</span>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  )
+}
+
+// ── DPO Requests Admin View ──
+function DpoRequestsView({ fr, workspace }: { fr: boolean; workspace: any }) {
+  const [requests, setRequests] = React.useState<any[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [filter, setFilter] = React.useState("all")
+  const [selected, setSelected] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    if (!workspace) return
+    setLoading(true)
+    insforge.database
+      .from("dpo_requests")
+      .select("*")
+      .eq("workspace_id", workspace.id)
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .then(({ data }) => { setRequests((data as any[]) ?? []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [workspace])
+
+  const statusColors: Record<string, string> = {
+    pending: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    in_review: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    approved: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    rejected: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    completed: "bg-muted text-muted-foreground",
+  }
+  const statusLabels: Record<string, string> = {
+    pending: fr ? "En attente" : "Pending",
+    in_review: fr ? "En examen" : "In Review",
+    approved: fr ? "Approuve" : "Approved",
+    rejected: fr ? "Refuse" : "Rejected",
+    completed: fr ? "Termine" : "Completed",
+  }
+  const typeLabels: Record<string, string> = {
+    access: fr ? "Acces" : "Access",
+    rectification: fr ? "Rectification" : "Rectification",
+    erasure: fr ? "Effacement" : "Erasure",
+    restriction: fr ? "Limitation" : "Restriction",
+    objection: fr ? "Opposition" : "Objection",
+    portability: fr ? "Portabilite" : "Portability",
+    withdraw_consent: fr ? "Retrait consentement" : "Withdraw consent",
+    complaint: fr ? "Reclamation" : "Complaint",
+    other: fr ? "Autre" : "Other",
+  }
+
+  const filtered = filter === "all" ? requests : requests.filter((r) => r.status === filter)
+
+  if (loading) return <div className="flex items-center justify-center py-12"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>
+
+  if (selected) {
+    return (
+      <div className="pt-2">
+        <Button variant="ghost" size="sm" onClick={() => setSelected(null)} className="mb-4 gap-1.5">
+          <ChevronLeft className="size-4" />{fr ? "Retour" : "Back"}
+        </Button>
+        <div className="rounded-lg border border-border/60 p-4 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <p className="text-xs text-muted-foreground">{fr ? "Requete" : "Request"}</p>
+              <p className="text-sm font-mono font-bold text-foreground">{selected.request_number}</p>
+            </div>
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium ${statusColors[selected.status] || ""}`}>{statusLabels[selected.status] || selected.status}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div><p className="text-xs text-muted-foreground">{fr ? "Auteur" : "Author"}</p><p className="font-medium">{selected.created_by_name || "—"}</p></div>
+            <div><p className="text-xs text-muted-foreground">Email</p><p className="font-medium">{selected.created_by_email || "—"}</p></div>
+            <div><p className="text-xs text-muted-foreground">{fr ? "Type" : "Type"}</p><p className="font-medium capitalize">{typeLabels[selected.request_type] || selected.request_type}</p></div>
+            <div><p className="text-xs text-muted-foreground">{fr ? "Date" : "Date"}</p><p className="font-medium">{new Date(selected.created_at).toLocaleString(fr ? "fr-FR" : "en-US")}</p></div>
+          </div>
+          <div className="pt-2 border-t border-border/40">
+            <p className="text-xs text-muted-foreground mb-1">{fr ? "Sujet" : "Subject"}</p>
+            <p className="text-sm font-medium text-foreground mb-2">{selected.subject}</p>
+            <p className="text-xs text-muted-foreground mb-1">{fr ? "Description" : "Description"}</p>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selected.description}</p>
+          </div>
+          <div className="flex gap-2 pt-2 border-t border-border/40">
+            <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={async () => {
+              await insforge.database.from("dpo_requests").update({ status: "in_review" }).eq("id", selected.id)
+              logAudit({ action: "dpo_request_reviewed", target_id: selected.request_number, target_type: "dpo_request", metadata: { status: "in_review" } })
+              setSelected((p: any) => ({ ...p, status: "in_review" }))
+            }}>
+              {fr ? "Prendre en charge" : "Take in charge"}
+            </Button>
+            <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={async () => {
+              await insforge.database.from("dpo_requests").update({ status: "completed" }).eq("id", selected.id)
+              logAudit({ action: "dpo_request_completed", target_id: selected.request_number, target_type: "dpo_request", metadata: { status: "completed" } })
+              setSelected((p: any) => ({ ...p, status: "completed" }))
+            }}>
+              <Check className="size-3.5" />{fr ? "Marquer termine" : "Mark completed"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="pt-2 space-y-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        {["all", "pending", "in_review", "approved", "rejected", "completed"].map((s) => (
+          <button key={s} onClick={() => setFilter(s)} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${filter === s ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+            {s === "all" ? (fr ? "Tous" : "All") : statusLabels[s] || s}
+          </button>
+        ))}
+      </div>
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center py-8 text-center">
+          <Shield className="size-8 text-muted-foreground/50 mb-2" />
+          <p className="text-sm text-muted-foreground">{fr ? "Aucune demande" : "No requests"}</p>
+        </div>
+      ) : (
+        filtered.map((r) => (
+          <div key={r.id} className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3 hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => setSelected(r)}>
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                <Shield className="size-3.5 text-muted-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{r.subject}</p>
+                <p className="text-xs text-muted-foreground">{r.request_number} · {typeLabels[r.request_type] || r.request_type}</p>
+              </div>
+            </div>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${statusColors[r.status] || ""}`}>{statusLabels[r.status] || r.status}</span>
+          </div>
+        ))
+      )}
     </div>
   )
 }

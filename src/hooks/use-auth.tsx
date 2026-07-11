@@ -3,7 +3,6 @@ import { insforge, type Workspace } from "@/lib/supabase"
 import { useSession } from "@/hooks/use-session"
 import { logAudit } from "@/lib/audit"
 import { getDeviceInfo, initSession, clearSession, startActivityTracking, isSessionExpired, getSession } from "@/lib/security"
-import { clearAbuseLogs, clearAbuseLockout } from "@/lib/abuse-protection"
 
 interface AuthUser {
   id: string
@@ -143,9 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const user = data.user as AuthUser
         const emailVerified = (user as any).email_verified !== false && (user as any).email_confirmed_at != null
         setState({ user, workspace: result.workspace, loading: false, isOwner: result.isOwner, emailVerified })
-
-        // Clear any stale abuse protection data from testing
-        try { clearAbuseLogs(); clearAbuseLockout() } catch (e) { console.error("Error:", e) }
 
         initSession()
 

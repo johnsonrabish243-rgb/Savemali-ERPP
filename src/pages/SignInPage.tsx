@@ -157,6 +157,7 @@ export function SignInPage({ onNavigate }: Props) {
       if (msg.includes("email") && (msg.includes("verified") || msg.includes("confirm"))) {
         setEmailNotVerified(true)
       }
+      logAudit({ action: "login_failed", actor_email: email, metadata: { error: err?.message?.slice(0, 200) } })
       const result = trackLoginAttempt(false)
       if (result.blocked) {
         setError(fr ? "Trop de tentatives. Réessayez dans 15 min." : "Too many attempts. Retry in 15 min.")

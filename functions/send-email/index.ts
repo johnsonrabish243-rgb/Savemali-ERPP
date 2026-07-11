@@ -39,6 +39,11 @@ function cors(origin: string | null): Record<string, string> {
   return { "Access-Control-Allow-Origin": a, "Access-Control-Allow-Methods": "POST,OPTIONS", "Access-Control-Allow-Headers": "Content-Type,Authorization" }
 }
 
+function esc(s: string): string {
+  const m: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }
+  return s.replace(/[&<>"']/g, (c) => m[c])
+}
+
 function page(title: string, body: string): string {
   return [
     '<!DOCTYPE html>',
@@ -168,16 +173,16 @@ function tplWelcome(name: string) {
 
 function tplContact(d: { name: string; email: string; phone?: string; address?: string; message: string }) {
   var rows = ''
-  rows += '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Nom</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + d.name + '</p></td></tr>'
-  rows += '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Email</p><p style="margin:0;color:#7c3aed;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + d.email + '</p></td></tr>'
-  if (d.phone) rows += '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Telephone</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + d.phone + '</p></td></tr>'
-  if (d.address) rows += '<tr><td style="padding:14px 18px"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Adresse</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + d.address + '</p></td></tr>'
+  rows += '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Nom</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.name) + '</p></td></tr>'
+  rows += '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Email</p><p style="margin:0;color:#7c3aed;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.email) + '</p></td></tr>'
+  if (d.phone) rows += '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Telephone</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.phone) + '</p></td></tr>'
+  if (d.address) rows += '<tr><td style="padding:14px 18px"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Adresse</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.address) + '</p></td></tr>'
   return {
     subject: 'Nouveau message - ' + d.name,
     html: page('Message de contact', [
       heading('Nouveau message de contact'),
       '<tr><td style="padding-bottom:20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;border:1px solid #f4f4f5">' + rows + '</table></td></tr>',
-      '<tr><td><div style="border-left:3px solid #7c3aed;padding:18px 22px;background:#f9fafb;border-radius:0 12px 12px 0"><p style="margin:0 0 5px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Message</p><p style="margin:0;color:#18181b;font-size:14px;line-height:1.7;white-space:pre-wrap;font-family:Arial,Helvetica,sans-serif">' + d.message + '</p></div></td></tr>',
+      '<tr><td><div style="border-left:3px solid #7c3aed;padding:18px 22px;background:#f9fafb;border-radius:0 12px 12px 0"><p style="margin:0 0 5px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Message</p><p style="margin:0;color:#18181b;font-size:14px;line-height:1.7;white-space:pre-wrap;font-family:Arial,Helvetica,sans-serif">' + esc(d.message) + '</p></div></td></tr>',
     ].join('')),
   }
 }
@@ -237,6 +242,71 @@ function tplMemberJoined(d: { memberName: string; workspaceName: string; role: s
   }
 }
 
+function tplSupportNewTicket(d: { ticketNumber: string; name: string; email: string; category: string; subject: string; message: string; priority: string }) {
+  return {
+    subject: '[Ticket ' + d.ticketNumber + '] ' + d.subject,
+    html: page('Nouveau ticket support', [
+      iconCircle('&#128172;', 'linear-gradient(135deg,#7c3aed,#a855f7)'),
+      heading('Nouveau ticket de support'),
+      '<tr><td style="padding-bottom:20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;border:1px solid #f4f4f5">'
+        + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Ticket</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.ticketNumber) + '</p></td></tr>'
+        + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">De</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.name) + ' (' + esc(d.email) + ')</p></td></tr>'
+        + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Categorie</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.category) + '</p></td></tr>'
+        + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Priorite</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.priority) + '</p></td></tr>'
+        + '<tr><td style="padding:14px 18px"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Sujet</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.subject) + '</p></td></tr>'
+        + '</table></td></tr>',
+      '<tr><td><div style="border-left:3px solid #7c3aed;padding:18px 22px;background:#f9fafb;border-radius:0 12px 12px 0"><p style="margin:0 0 5px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Message</p><p style="margin:0;color:#18181b;font-size:14px;line-height:1.7;white-space:pre-wrap;font-family:Arial,Helvetica,sans-serif">' + esc(d.message) + '</p></div></td></tr>',
+    ].join('')),
+  }
+}
+
+function tplSupportAutoReply(d: { ticketNumber: string; name: string; subject: string }) {
+  return {
+    subject: 'Re: [Ticket ' + d.ticketNumber + '] ' + d.subject,
+    html: page('Accuse de reception', [
+      iconCircle('&#10003;', 'linear-gradient(135deg,#22c55e,#16a34a)'),
+      heading('Accuse de reception'),
+      paragraph('Bonjour <strong style="color:#18181b">' + esc(d.name) + '</strong>,'),
+      paragraph('Nous avons bien recu votre demande et un ticket a ete cree avec le numero <strong style="color:#7c3aed">' + esc(d.ticketNumber) + '</strong>.'),
+      paragraph('Notre equipe va traiter votre demande dans les plus brefs delais. Vous recevrez une notification des qu\'une mise a jour sera effectuee.'),
+      '<tr><td><div style="background:#f9fafb;border-radius:12px;padding:18px 22px;border:1px solid #f4f4f5"><p style="margin:0 0 6px;color:#18181b;font-size:13px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Informations utiles</p><p style="margin:0;color:#52525b;font-size:12px;line-height:1.6;font-family:Arial,Helvetica,sans-serif">Conservez votre numero de ticket pour toute communication future.<br>Horaires d\'assistance : Lundi-Vendredi 8h00-18h00 (heure de Kalemie).</p></div></td></tr>',
+      paragraph('Cordialement,<br>L\'equipe SaveMali'),
+    ].join('')),
+  }
+}
+
+function tplDpoNewRequest(d: { requestNumber: string; name: string; email: string; requestType: string; subject: string; description: string }) {
+  return {
+    subject: '[DPO ' + d.requestNumber + '] ' + d.subject,
+    html: page('Nouvelle demande DPO', [
+      iconCircle('&#128737;', 'linear-gradient(135deg,#f59e0b,#f97316)'),
+      heading('Nouvelle demande de protection des donnees'),
+      '<tr><td style="padding-bottom:20px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;border:1px solid #f4f4f5">'
+        + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Requete</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.requestNumber) + '</p></td></tr>'
+        + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">De</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.name) + ' (' + esc(d.email) + ')</p></td></tr>'
+        + '<tr><td style="padding:14px 18px;border-bottom:1px solid #f4f4f5"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Type</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.requestType) + '</p></td></tr>'
+        + '<tr><td style="padding:14px 18px"><p style="margin:0 0 3px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Sujet</p><p style="margin:0;color:#18181b;font-size:14px;font-weight:500;font-family:Arial,Helvetica,sans-serif">' + esc(d.subject) + '</p></td></tr>'
+        + '</table></td></tr>',
+      '<tr><td><div style="border-left:3px solid #f59e0b;padding:18px 22px;background:#f9fafb;border-radius:0 12px 12px 0"><p style="margin:0 0 5px;color:#a1a1aa;font-size:9px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Description</p><p style="margin:0;color:#18181b;font-size:14px;line-height:1.7;white-space:pre-wrap;font-family:Arial,Helvetica,sans-serif">' + esc(d.description) + '</p></div></td></tr>',
+    ].join('')),
+  }
+}
+
+function tplDpoAutoReply(d: { requestNumber: string; name: string; subject: string }) {
+  return {
+    subject: 'Re: [DPO ' + d.requestNumber + '] ' + d.subject,
+    html: page('Accuse de reception DPO', [
+      iconCircle('&#10003;', 'linear-gradient(135deg,#22c55e,#16a34a)'),
+      heading('Accuse de reception'),
+      paragraph('Bonjour <strong style="color:#18181b">' + esc(d.name) + '</strong>,'),
+      paragraph('Nous avons bien recu votre demande relative a la protection des donnees personnelles. Elle a ete enregistree sous la reference <strong style="color:#f59e0b">' + esc(d.requestNumber) + '</strong>.'),
+      paragraph('Conformement a la reglementation en vigueur, notre Delegue a la Protection des Donnees (DPO) traitera votre demande sous 30 jours maximum. Vous serez informe(e) de l\'avancement par email.'),
+      '<tr><td><div style="background:#f9fafb;border-radius:12px;padding:18px 22px;border:1px solid #f4f4f5"><p style="margin:0 0 6px;color:#18181b;font-size:13px;font-weight:600;font-family:Arial,Helvetica,sans-serif">Delai legal</p><p style="margin:0;color:#52525b;font-size:12px;line-height:1.6;font-family:Arial,Helvetica,sans-serif">Conformement a la Loi n° 23-010 du 5 juillet 2023 et au RGPD, nous traitons les demandes dans un delai maximum de 30 jours.</p></div></td></tr>',
+      paragraph('Cordialement,<br>Le Delegue a la Protection des Donnees<br>SaveMali SARL'),
+    ].join('')),
+  }
+}
+
 const TEMPLATES: Record<string, (d: any) => { subject: string; html: string }> = {
   'verification-code': (d) => tplVerificationCode(d.code, d.link),
   'verification-link': (d) => tplVerificationLink(d.link),
@@ -246,6 +316,10 @@ const TEMPLATES: Record<string, (d: any) => { subject: string; html: string }> =
   'password-reset-link': (d) => tplPasswordResetLink(d.link),
   'invite': (d) => tplInvite(d),
   'member-joined': (d) => tplMemberJoined(d),
+  'support-ticket': (d) => tplSupportNewTicket(d),
+  'support-auto-reply': (d) => tplSupportAutoReply(d),
+  'dpo-request': (d) => tplDpoNewRequest(d),
+  'dpo-auto-reply': (d) => tplDpoAutoReply(d),
 }
 
 export default async function handler(req: Request): Promise<Response> {

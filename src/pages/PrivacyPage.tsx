@@ -1,9 +1,15 @@
 import * as React from "react"
-import { Shield, ArrowLeft } from "lucide-react"
+import { Shield, ArrowLeft, Send, Loader2, CheckCircle, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { useLanguage } from "@/lib/i18n"
 import { usePageEntrance } from "@/hooks/use-page-entrance"
+import { useAuth } from "@/hooks/use-auth"
+import { createDpoRequest } from "@/lib/support"
+import { sanitizeStrict, detectInjection, checkApiRateLimit } from "@/lib/security"
+import { toast } from "sonner"
 
 type Page = "home" | "education" | "pharmacy" | "commerce" | "gestion" | "dashboard" | "signin" | "signup" | "members" | "reports" | "privacy" | "terms"
 interface Props { onNavigate: (p: Page) => void }
@@ -134,11 +140,69 @@ const sections: Record<string, { title: string; content: string }[]> = {
   ],
 }
 
+const DPO_REQUEST_TYPES = [
+  { value: "access", fr: "Droits d'acces (acceder a mes donnees)", en: "Right of access (access my data)" },
+  { value: "rectification", fr: "Droit de rectification (corriger mes donnees)", en: "Right to rectification (correct my data)" },
+  { value: "erasure", fr: "Droit a l'effacement (supprimer mes donnees)", en: "Right to erasure (delete my data)" },
+  { value: "restriction", fr: "Droit a la limitation du traitement", en: "Right to restriction of processing" },
+  { value: "objection", fr: "Droit d'opposition", en: "Right to object" },
+  { value: "portability", fr: "Droit a la portabilite", en: "Right to data portability" },
+  { value: "withdraw_consent", fr: "Retrait de consentement", en: "Withdraw consent" },
+  { value: "complaint", fr: "Reclamation", en: "Complaint" },
+  { value: "other", fr: "Autre demande", en: "Other request" },
+]
+
 export function PrivacyPage({ onNavigate }: Props) {
   const { lang } = useLanguage()
+  const { user } = useAuth()
   const fr = lang === "fr"
   const rootRef = usePageEntrance([])
   const s = sections[lang]
+  const [showForm, setShowForm] = React.useState(false)
+  const [form, setForm] = React.useState({ name: "", email: "", request_type: "access", subject: "", description: "" })
+  const [sending, setSending] = React.useState(false)
+  const [sent, setSent] = React.useState(false)
+  const [requestNum, setRequestNum] = React.useState("")
+  const [error, setError] = React.useState("")
+
+  React.useEffect(() => {
+    if (user?.email) setForm((p) => ({ ...p, email: user.email ?? "", name: user.email?.split("@")[0] ?? "" }))
+  }, [user])
+
+  const handleDpoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    const name = sanitizeStrict(form.name, 100)
+    const email = sanitizeStrict(form.email, 200)
+    const subject = sanitizeStrict(form.subject, 200)
+    const description = sanitizeStrict(form.description, 5000)
+    if (!name || !email || !subject || !description) {
+      setError(fr ? "Veuillez remplir tous les champs obligatoires." : "Please fill in all required fields.")
+      return
+    }
+    if (detectInjection(name) || detectInjection(subject) || detectInjection(description)) {
+      setError(fr ? "Entree suspectee." : "Suspicious input detected.")
+      return
+    }
+    const rateCheck = checkApiRateLimit("dpo-form", 3, 60000)
+    if (!rateCheck.allowed) {
+      setError(fr ? "Trop de demandes. Veuillez patienter." : "Too many requests. Please wait.")
+      return
+    }
+    setSending(true)
+    const result = await createDpoRequest({
+      request_type: form.request_type as any,
+      subject,
+      description,
+      created_by_email: email,
+      created_by_name: name,
+    })
+    if (result.error) { setError(result.error); setSending(false); return }
+    setRequestNum(result.requestNumber || "")
+    setSent(true)
+    setSending(false)
+    toast.success(fr ? "Demande envoyee avec succes!" : "Request sent successfully!")
+  }
 
   return (
     <div ref={rootRef} className="min-h-svh bg-background">
@@ -167,6 +231,90 @@ export function PrivacyPage({ onNavigate }: Props) {
               {i < s.length - 1 && <Separator className="mt-6" />}
             </div>
           ))}
+        </div>
+
+        {/* DPO Request Form */}
+        <Separator className="my-12" />
+        <div className="rounded-2xl border border-border/60 bg-card p-6 sm:p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex size-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+              <Shield className="size-5 text-amber-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-foreground">{fr ? "Exercer mes droits" : "Exercise my rights"}</h2>
+              <p className="text-sm text-muted-foreground">{fr ? "Conformement a la Loi n° 23-010 et au RGPD" : "Under Law No. 23-010 and GDPR"}</p>
+            </div>
+          </div>
+
+          {!showForm && !sent && (
+            <div className="text-center py-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                {fr ? "Vous pouvez exercer vos droits sur vos donnees personnelles en soumettant une demande via notre formulaire dedie. Notre Delegue a la Protection des Donnees (DPO) traitera votre demande sous 30 jours maximum." : "You can exercise your data protection rights by submitting a request through our dedicated form. Our Data Protection Officer (DPO) will process your request within a maximum of 30 days."}
+              </p>
+              <Button onClick={() => setShowForm(true)} className="gap-2">
+                <Send className="size-4" />{fr ? "Faire une demande" : "Submit a request"}
+              </Button>
+            </div>
+          )}
+
+          {sent && (
+            <div className="flex flex-col items-center py-6 text-center">
+              <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                <CheckCircle className="size-8 text-green-600" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground mb-2">{fr ? "Demande envoyee avec succes !" : "Request sent successfully!"}</h3>
+              <p className="text-sm text-muted-foreground mb-1">{fr ? "Votre reference :" : "Your reference:"}</p>
+              <p className="text-lg font-mono font-bold text-brand mb-4">{requestNum}</p>
+              <p className="text-sm text-muted-foreground mb-6">{fr ? "Vous recevrez une reponse sous 30 jours maximum." : "You will receive a response within a maximum of 30 days."}</p>
+              <Button variant="outline" onClick={() => { setSent(false); setShowForm(false); setForm({ name: "", email: "", request_type: "access", subject: "", description: "" }) }}>
+                {fr ? "Nouvelle demande" : "New request"}
+              </Button>
+            </div>
+          )}
+
+          {showForm && !sent && (
+            <form onSubmit={handleDpoSubmit} className="space-y-4">
+              {error && (
+                <div className="flex items-start gap-2.5 rounded-lg bg-destructive/10 p-3.5 text-sm text-destructive">
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="dpo-name">{fr ? "Nom complet" : "Full name"} *</Label>
+                  <Input id="dpo-name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder={fr ? "Votre nom" : "Your name"} required className="h-10 rounded-lg" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="dpo-email">Email *</Label>
+                  <Input id="dpo-email" type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder="votre@email.com" required className="h-10 rounded-lg" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="dpo-type">{fr ? "Type de demande" : "Request type"} *</Label>
+                <select id="dpo-type" value={form.request_type} onChange={(e) => setForm((p) => ({ ...p, request_type: e.target.value }))} className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                  {DPO_REQUEST_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>{fr ? t.fr : t.en}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="dpo-subject">{fr ? "Objet" : "Subject"} *</Label>
+                <Input id="dpo-subject" value={form.subject} onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))} placeholder={fr ? "Resume de votre demande" : "Summary of your request"} required className="h-10 rounded-lg" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="dpo-desc">{fr ? "Description details" : "Detailed description"} *</Label>
+                <textarea id="dpo-desc" rows={4} value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder={fr ? "Decrivez votre demande en details..." : "Describe your request in detail..."} required className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y min-h-[100px]" />
+              </div>
+              <div className="flex gap-3">
+                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>{fr ? "Annuler" : "Cancel"}</Button>
+                <Button type="submit" disabled={sending} className="gap-2">
+                  {sending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                  {sending ? (fr ? "Envoi..." : "Sending...") : (fr ? "Envoyer la demande" : "Submit request")}
+                </Button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </div>
