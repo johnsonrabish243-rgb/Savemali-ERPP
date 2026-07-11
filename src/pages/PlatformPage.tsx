@@ -23,6 +23,7 @@ import {
   fetchAllWorkspaces, fetchPlatformSettings,
   updatePlatformSetting, suspendUser, reactivateUser,
   suspendWorkspace, reactivateWorkspace, platformGetAuditLogs,
+  fetchPlatformAdmins, addPlatformAdmin, removePlatformAdmin,
 } from "@/lib/platform-admin"
 import type { PlatformDashboardStats, PlatformSetting } from "@/lib/platform-admin"
 
@@ -231,14 +232,21 @@ function UsersSection() {
   const { lang } = useLanguage()
   const fr = lang === "fr"
   const [users, setUsers] = React.useState<any[]>([])
+  const [admins, setAdmins] = React.useState<Set<string>>(new Set())
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState("all")
   const [page, setPage] = React.useState(0)
+  const [promoting, setPromoting] = React.useState<string | null>(null)
 
-  React.useEffect(() => {
-    fetchAllUsers().then((d) => { setUsers(d); setLoading(false) })
+  const loadData = React.useCallback(async () => {
+    const [u, a] = await Promise.all([fetchAllUsers(), fetchPlatformAdmins()])
+    setUsers(u)
+    setAdmins(new Set(a.map((x) => x.user_id)))
+    setLoading(false)
   }, [])
+
+  React.useEffect(() => { loadData() }, [loadData])
 
   const filtered = React.useMemo(() => {
     let result = users
@@ -273,6 +281,30 @@ function UsersSection() {
       setUsers((prev) => prev.map((u: any) => u.id === id ? { ...u, status: "active" } : u))
       toast.success(fr ? "Utilisateur réactivé" : "User reactivated")
     } catch { toast.error(fr ? "Erreur" : "Error") }
+  }
+
+  const handlePromote = async (userId: string) => {
+    setPromoting(userId)
+    const result = await addPlatformAdmin(userId)
+    setPromoting(null)
+    if (result.success) {
+      setAdmins((prev) => new Set(prev).add(userId))
+      toast.success(fr ? "Administrateur platforme ajouté" : "Platform admin added")
+    } else {
+      toast.error(result.error || (fr ? "Erreur" : "Error"))
+    }
+  }
+
+  const handleDemote = async (userId: string) => {
+    setPromoting(userId)
+    const result = await removePlatformAdmin(userId)
+    setPromoting(null)
+    if (result.success) {
+      setAdmins((prev) => { const n = new Set(prev); n.delete(userId); return n })
+      toast.success(fr ? "Administrateur platforme retiré" : "Platform admin removed")
+    } else {
+      toast.error(result.error || (fr ? "Erreur" : "Error"))
+    }
   }
 
   if (loading) return <LoadingSpinner />
@@ -313,6 +345,7 @@ function UsersSection() {
             <TableRow className="border-white/[0.06] hover:bg-transparent">
               <TableHead className="text-white/40 font-medium">{fr ? "Nom" : "Name"}</TableHead>
               <TableHead className="text-white/40 font-medium">Email</TableHead>
+              <TableHead className="text-white/40 font-medium">{fr ? "Admin" : "Admin"}</TableHead>
               <TableHead className="text-white/40 font-medium">{fr ? "Espace" : "Workspace"}</TableHead>
               <TableHead className="text-white/40 font-medium">{fr ? "Rôle" : "Role"}</TableHead>
               <TableHead className="text-white/40 font-medium">{fr ? "Statut" : "Status"}</TableHead>
@@ -322,7 +355,7 @@ function UsersSection() {
           <TableBody>
             {paged.length === 0 ? (
               <TableRow className="border-white/[0.06]">
-                <TableCell colSpan={6} className="text-center text-white/30 py-8">
+                <TableCell colSpan={7} className="text-center text-white/30 py-8">
                   {fr ? "Aucun utilisateur trouvé" : "No users found"}
                 </TableCell>
               </TableRow>
@@ -330,19 +363,39 @@ function UsersSection() {
               <TableRow key={u.id} className="border-white/[0.06] hover:bg-white/[0.02]">
                 <TableCell className="text-white font-medium">{u.display_name ?? "-"}</TableCell>
                 <TableCell className="text-white/60">{u.email ?? "-"}</TableCell>
-                <TableCell className="text-white/60">{u.workspaces?.name ?? "-"}</TableCell>
+                <TableCell>
+                  {admins.has(u.user_id) ? (
+                    <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">
+                      {fr ? "Oui" : "Yes"}
+                    </Badge>
+                  ) : (
+                    <span className="text-white/20 text-xs">-</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-white/60">{u.workspace_name ?? "-"}</TableCell>
                 <TableCell><RoleBadge role={u.role} /></TableCell>
                 <TableCell><StatusBadge status={u.status} /></TableCell>
                 <TableCell className="text-right">
-                  {u.status === "active" || u.status === "pending" ? (
-                    <Button size="sm" variant="ghost" onClick={() => handleSuspend(u.id)} className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
-                      {fr ? "Suspendre" : "Suspend"}
-                    </Button>
-                  ) : (
-                    <Button size="sm" variant="ghost" onClick={() => handleReactivate(u.id)} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
-                      {fr ? "Réactiver" : "Reactivate"}
-                    </Button>
-                  )}
+                  <div className="flex items-center justify-end gap-1">
+                    {admins.has(u.user_id) ? (
+                      <Button size="sm" variant="ghost" onClick={() => handleDemote(u.user_id)} disabled={promoting === u.user_id} className="text-amber-400 hover:text-amber-300 hover:bg-amber-500/10">
+                        {promoting === u.user_id ? <Loader2 className="size-3 animate-spin" /> : fr ? "Rétrograder" : "Demote"}
+                      </Button>
+                    ) : u.user_id ? (
+                      <Button size="sm" variant="ghost" onClick={() => handlePromote(u.user_id)} disabled={promoting === u.user_id} className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10">
+                        {promoting === u.user_id ? <Loader2 className="size-3 animate-spin" /> : fr ? "Promouvoir" : "Promote"}
+                      </Button>
+                    ) : null}
+                    {u.status === "active" || u.status === "pending" ? (
+                      <Button size="sm" variant="ghost" onClick={() => handleSuspend(u.id)} className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                        {fr ? "Suspendre" : "Suspend"}
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="ghost" onClick={() => handleReactivate(u.id)} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
+                        {fr ? "Réactiver" : "Reactivate"}
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

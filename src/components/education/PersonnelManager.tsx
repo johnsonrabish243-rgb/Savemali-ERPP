@@ -171,17 +171,13 @@ export default function PersonnelManager({ workspace }: Props) {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
 
-      let res: Response;
+      let userId: string | null = null;
       try {
-        res = await fetch(`${import.meta.env.VITE_INSFORGE_URL}/api/auth/users`, {
+        const res = await fetch(`${import.meta.env.VITE_INSFORGE_URL}/functions/create-auth-user`, {
           method: "POST",
-          headers: {
-            apikey: import.meta.env.VITE_INSFORGE_ANON_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_INSFORGE_ANON_KEY}`,
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: payload.email,
             password,
@@ -189,6 +185,18 @@ export default function PersonnelManager({ workspace }: Props) {
           }),
           signal: controller.signal,
         });
+        clearTimeout(timeoutId);
+        const json = await res.json().catch(() => null);
+        if (!res.ok) {
+          const msg = json?.error || `HTTP ${res.status}`;
+          if (msg.includes("already") || msg.includes("existe")) {
+            toast.error(frLang ? "Un compte avec cet email existe déjà" : "An account with this email already exists");
+          } else {
+            toast.error(msg);
+          }
+          return;
+        }
+        userId = json?.userId ?? null;
       } catch (fetchErr: any) {
         clearTimeout(timeoutId);
         if (fetchErr.name === "AbortError") {
@@ -198,21 +206,7 @@ export default function PersonnelManager({ workspace }: Props) {
         }
         return;
       }
-      clearTimeout(timeoutId);
 
-      const json = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        const msg = json?.msg || json?.message || json?.error_description || json?.error || `HTTP ${res.status}`;
-        if (msg.includes("already")) {
-          toast.error(frLang ? "Un compte avec cet email existe déjà" : "An account with this email already exists");
-        } else {
-          toast.error(msg);
-        }
-        return;
-      }
-
-      const userId = json?.user?.id ?? json?.id ?? null;
       if (!userId) {
         toast.error(frLang ? "Réponse invalide du serveur" : "Invalid server response");
         return;

@@ -159,17 +159,13 @@ export function WorkspaceMembersPage({ onNavigate }: Props) {
         const password = form.password.trim() || generatePassword(form.display_name)
 
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 15000)
+        const timeoutId = setTimeout(() => controller.abort(), 20000)
 
-        let res: Response
+        let userId: string | null = null
         try {
-          res = await fetch(`${import.meta.env.VITE_INSFORGE_URL}/api/auth/users`, {
+          const res = await fetch(`${import.meta.env.VITE_INSFORGE_URL}/functions/create-auth-user`, {
             method: "POST",
-            headers: {
-              apikey: import.meta.env.VITE_INSFORGE_ANON_KEY,
-              Authorization: `Bearer ${import.meta.env.VITE_INSFORGE_ANON_KEY}`,
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               email: form.email.trim().toLowerCase(),
               password,
@@ -177,6 +173,19 @@ export function WorkspaceMembersPage({ onNavigate }: Props) {
             }),
             signal: controller.signal,
           })
+          clearTimeout(timeoutId)
+          const json = await res.json().catch(() => null)
+          if (!res.ok) {
+            const msg = json?.error || `HTTP ${res.status}`
+            if (msg.includes("already") || msg.includes("existe")) {
+              setError(fr ? "Un compte avec cet email existe déjà" : "An account with this email already exists")
+            } else {
+              setError(msg)
+            }
+            setSaving(false)
+            return
+          }
+          userId = json?.userId ?? null
         } catch (fetchErr: any) {
           clearTimeout(timeoutId)
           if (fetchErr.name === "AbortError") {
@@ -187,22 +196,6 @@ export function WorkspaceMembersPage({ onNavigate }: Props) {
           setSaving(false)
           return
         }
-        clearTimeout(timeoutId)
-
-        const json = await res.json().catch(() => null)
-
-        if (!res.ok) {
-          const msg = json?.msg || json?.message || json?.error_description || json?.error || `HTTP ${res.status}`
-          if (msg.includes("already")) {
-            setError(fr ? "Un compte avec cet email existe déjà" : "An account with this email already exists")
-          } else {
-            setError(msg)
-          }
-          setSaving(false)
-          return
-        }
-
-        const userId = json?.user?.id ?? json?.id ?? null
 
         if (!userId) {
           setError(fr ? "Réponse invalide du serveur d'authentification" : "Invalid response from auth server")

@@ -230,6 +230,43 @@ export async function reactivateUser(memberId: string): Promise<void> {
   } catch {}
 }
 
+// ── Platform admin management ──
+
+export interface PlatformAdmin {
+  user_id: string
+  email: string | null
+  created_at: string
+}
+
+export async function fetchPlatformAdmins(): Promise<PlatformAdmin[]> {
+  try {
+    const { data } = await insforge.database.rpc("list_platform_admins")
+    return (data ?? []) as PlatformAdmin[]
+  } catch {
+    return []
+  }
+}
+
+export async function addPlatformAdmin(userId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { data, error } = await insforge.database.rpc("add_platform_admin", { p_user_id: userId })
+    if (error) return { success: false, error: error.message }
+    return { success: data === true }
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to add platform admin" }
+  }
+}
+
+export async function removePlatformAdmin(userId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { data, error } = await insforge.database.rpc("remove_platform_admin", { p_user_id: userId })
+    if (error) return { success: false, error: error.message }
+    return { success: data === true }
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to remove platform admin" }
+  }
+}
+
 // ── Platform audit logs ──
 
 export async function platformGetAuditLogs(limit = 50, offset = 0) {
