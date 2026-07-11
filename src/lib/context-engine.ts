@@ -156,8 +156,8 @@ function generateSuggestions(
   for (const pattern of timeRelevant.slice(0, 2)) {
     const moduleLabel = pattern.module
       ? fr
-        ? { pharmacy: "Pharmacie", commerce: "Commerce", education: "Éducation", gestion: "Gestion" }[pattern.module] ?? pattern.module
-        : { pharmacy: "Pharmacy", commerce: "Commerce", education: "Education", gestion: "Management" }[pattern.module] ?? pattern.module
+        ? { pharmacy: "Pharmacie", commerce: "Commerce", education: "Éducation", gestion: "Gestion", hr: "Ressources Humaines" }[pattern.module] ?? pattern.module
+        : { pharmacy: "Pharmacy", commerce: "Commerce", education: "Education", gestion: "Management", hr: "Human Resources" }[pattern.module] ?? pattern.module
       : ""
 
     suggestions.push({

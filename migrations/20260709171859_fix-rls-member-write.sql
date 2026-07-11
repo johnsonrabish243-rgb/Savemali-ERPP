@@ -472,11 +472,7 @@ CREATE POLICY audit_logs_member_insert ON audit_logs
   WITH CHECK (is_workspace_member(workspace_id));
 
 -- ── SHARED REPORTS ──────────────────────────────────────────
-
-DROP POLICY IF EXISTS shared_reports_member_delete ON shared_reports;
-CREATE POLICY shared_reports_member_delete ON shared_reports
-  FOR DELETE TO public
-  USING (is_workspace_member(workspace_id) AND sender_id = auth.uid());
+-- Skipped: shared_reports is owned by postgres, not project_admin
 
 -- ── HR: Fix owner_all missing WITH CHECK on tables ──────────
 -- Drop and recreate owner_all with proper WITH CHECK

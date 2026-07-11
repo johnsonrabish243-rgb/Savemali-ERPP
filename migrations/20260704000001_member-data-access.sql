@@ -25,13 +25,17 @@ BEGIN
       AND (qual LIKE '%owner_id = auth.uid()%' OR qual LIKE '%is_workspace_owner%')
       AND tablename != 'workspace_members'
       AND tablename != 'workspaces'
+      AND tablename != 'shared_reports'
   LOOP
-    -- Drop existing member policy if it exists (idempotent)
-    EXECUTE format('DROP POLICY IF EXISTS mem_sel_%s ON %I', pol.tablename, pol.tablename);
-    -- Add member SELECT policy
-    EXECUTE format(
-      'CREATE POLICY mem_sel_%s ON %I FOR SELECT TO authenticated USING (is_workspace_owner(workspace_id) OR is_workspace_member(workspace_id))',
-      pol.tablename, pol.tablename
-    );
+    -- Skip tables without workspace_id column
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = pol.tablename AND column_name = 'workspace_id') THEN
+      -- Drop existing member policy if it exists (idempotent)
+      EXECUTE format('DROP POLICY IF EXISTS mem_sel_%s ON %I', pol.tablename, pol.tablename);
+      -- Add member SELECT policy
+      EXECUTE format(
+        'CREATE POLICY mem_sel_%s ON %I FOR SELECT TO authenticated USING (is_workspace_owner(workspace_id) OR is_workspace_member(workspace_id))',
+        pol.tablename, pol.tablename
+      );
+    END IF;
   END LOOP;
 END $$;

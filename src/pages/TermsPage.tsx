@@ -20,7 +20,7 @@ const sections: Record<string, { title: string; content: string }[]> = {
     },
     {
       title: "3. Description des Services",
-      content: "SaveMali est une plateforme ERP (Enterprise Resource Planning) tout-en-un proposant des modules de gestion pour les secteurs de la pharmacie, du commerce, de l'education et de la gestion d'entreprise. Les services comprennent : la gestion des stocks et inventaires, la gestion des ventes et achats, la comptabilite, la gestion des ressources humaines, la gestion scolaire, le reporting et l'analyse, et tout autre service que SaveMali pourra ajouter ulterieurement. Nous nous reservons le droit de modifier, suspendre ou interrompre tout ou partie de nos services a tout moment, moyennant preavis raisonnable.",
+      content: "SaveMali est une plateforme ERP (Enterprise Resource Planning) tout-en-un proposant des modules de gestion pour les secteurs de la pharmacie, du commerce, de l'education, de la gestion d'entreprise et des ressources humaines. Les services comprennent : la gestion des stocks et inventaires, la gestion des ventes et achats, la comptabilite, la gestion des ressources humaines, la gestion scolaire, le reporting et l'analyse, et tout autre service que SaveMali pourra ajouter ulterieurement. Nous nous reservons le droit de modifier, suspendre ou interrompre tout ou partie de nos services a tout moment, moyennant preavis raisonnable.",
     },
     {
       title: "4. Inscription et Compte Utilisateur",
@@ -86,7 +86,7 @@ const sections: Record<string, { title: string; content: string }[]> = {
     },
     {
       title: "3. Service Description",
-      content: "SaveMali is an all-in-one ERP (Enterprise Resource Planning) platform offering management modules for the pharmacy, commerce, education, and business management sectors. Services include: inventory and stock management, sales and purchasing management, accounting, human resources management, school management, reporting and analytics, and any other service that SaveMali may add later. We reserve the right to modify, suspend, or discontinue any or all of our services at any time, with reasonable notice.",
+      content: "SaveMali is an all-in-one ERP (Enterprise Resource Planning) platform offering management modules for the pharmacy, commerce, education, business management, and human resources sectors. Services include: inventory and stock management, sales and purchasing management, accounting, human resources management, school management, reporting and analytics, and any other service that SaveMali may add later. We reserve the right to modify, suspend, or discontinue any or all of our services at any time, with reasonable notice.",
     },
     {
       title: "4. Registration and User Account",

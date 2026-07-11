@@ -22,7 +22,7 @@ export const translations = {
     },
     modules: {
       title: "Une plateforme. Tous vos besoins.",
-      subtitle: "SaveMali regroupe quatre modules puissants pour répondre à tous les besoins de gestion modernes en Afrique centrale.",
+      subtitle: "SaveMali regroupe cinq modules puissants pour répondre à tous les besoins de gestion modernes en Afrique centrale.",
       education: {
         title: "Éducation",
         description: "Gérez vos établissements scolaires, inscriptions, notes, emplois du temps et communications avec les parents.",
@@ -307,7 +307,7 @@ export const translations = {
     },
     modules: {
       title: "One platform. All your needs.",
-      subtitle: "SaveMali brings together four powerful modules to address all modern management needs in Central Africa.",
+      subtitle: "SaveMali brings together five powerful modules to address all modern management needs in Central Africa.",
       education: {
         title: "Education",
         description: "Manage your schools, enrollments, grades, schedules and parent communications.",

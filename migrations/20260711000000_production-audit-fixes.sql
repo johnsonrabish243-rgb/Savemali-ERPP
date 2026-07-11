@@ -283,7 +283,7 @@ BEGIN
   ) THEN
     ALTER TABLE workspace_notifications
       ADD CONSTRAINT workspace_notifications_workspace_id_fkey
-      FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE;
+      FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE NOT VALID;
   END IF;
 END $$;
 
@@ -339,7 +339,6 @@ DECLARE
     'gestion_payments',
     'pharmacy_prescriptions','pharmacy_expenses','pharmacy_accounting',
     'pharmacies','pharmacy_members',
-    'shared_reports',
     'hr_attendance','hr_absences','hr_skills','hr_promotions','hr_discipline',
     'hr_health_safety','hr_documents','hr_communication'
   ];
