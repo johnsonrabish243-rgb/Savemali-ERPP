@@ -102,17 +102,21 @@ function AppContent() {
   }, [])
 
   // Sync hash back to page state on browser back/forward
+  const pageRef = React.useRef(page)
+  pageRef.current = page
+
   React.useEffect(() => {
+    const VALID_HASH_PAGES: Page[] = ["home", "about", "contact", "contact-rdv", "privacy", "terms", "signin", "signup", "reset-password", "landing-education", "landing-pharmacy", "landing-commerce", "landing-gestion", "landing-hr"]
     const onHashChange = () => {
       const hash = window.location.hash.replace(/^#\//, "").replace(/^#/, "")
-      if (hash && hash !== page) {
+      if (hash && VALID_HASH_PAGES.includes(hash as Page) && hash !== pageRef.current) {
         setPage(hash as Page)
         setCurrentPage(hash as Page)
       }
     }
     window.addEventListener("hashchange", onHashChange)
     return () => window.removeEventListener("hashchange", onHashChange)
-  }, [page, setCurrentPage])
+  }, [setCurrentPage])
 
   const handleNavigate = React.useCallback((target: Page) => {
     // Workspace isolation: block access to other workspace module pages
@@ -232,12 +236,7 @@ function AppContent() {
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-brand focus:text-white focus:rounded-lg focus:outline-none">
         {lang === "fr" ? "Aller au contenu principal" : "Skip to main content"}
       </a>
-      <SeoHead
-        title="SaveMali"
-        description={lang === "fr"
-          ? "SaveMali — Logiciel de gestion tout-en-un pour l'éducation, pharmacie, commerce, gestion et RH au Mali"
-          : "SaveMali — All-in-one management software for education, pharmacy, commerce, management and HR in Mali"}
-      />
+      <SeoHead page={page} lang={lang} />
       <OrganizationSchema />
       <WebSiteSchema />
       <SoftwareApplicationSchema />
