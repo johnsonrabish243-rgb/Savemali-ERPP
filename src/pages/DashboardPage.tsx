@@ -7,6 +7,7 @@ import { trackModuleOpen } from "@/lib/context-tracker"
 import { DashboardLayout } from "@/components/DashboardLayout"
 import { RoleDashboard } from "@/components/RoleDashboard"
 import { EmployeeDashboard } from "@/components/EmployeeDashboard"
+import { SuperAdminDashboard } from "@/components/SuperAdminDashboard"
 import { PageFooter } from "@/components/PageFooter"
 import { PharmacyProvider } from "@/hooks/use-pharmacy"
 import { ReportsPage } from "@/pages/ReportsPage"
@@ -38,6 +39,7 @@ export function DashboardPage({ onNavigate }: Props) {
   const [activeTab, setActiveTab] = React.useState("dashboard")
 
   const isAdmin = role.role === "admin"
+  const isSuperAdmin = user?.email === "johnmoket5@gmail.com"
 
   React.useEffect(() => {
     if (!workspace) return
@@ -99,6 +101,7 @@ export function DashboardPage({ onNavigate }: Props) {
     <div className="flex min-h-svh flex-col">
       <DashboardLayout onNavigate={onNavigate} activeTab={activeTab} setActiveTab={setActiveTab}>
         {activeTab === "dashboard" && (
+          isSuperAdmin ? <SuperAdminDashboard onNavigate={onNavigate} /> :
           isAdmin ? <RoleDashboard /> : <EmployeeDashboard workspaceType={workspace?.type ?? "gestion"} role={role.role} onNavigateToTab={setActiveTab} />
         )}
         {isReportsTab && (

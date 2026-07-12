@@ -7,7 +7,7 @@ import { ROLE_CONFIGS, WORKSPACE_TYPE_LABELS } from "@/lib/role-config"
 import { UserAvatar } from "@/components/UserAvatar"
 import { WelcomeMessage } from "@/components/WelcomeMessage"
 import { LogoIcon } from "@/components/Logo"
-import { LogOut, Menu, X, ChevronRight, Bell, Check, X as XIcon, ExternalLink } from "lucide-react"
+import { LogOut, Menu, X, ChevronRight, Bell, Check, X as XIcon, ExternalLink, Shield } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Page } from "@/App"
 import { useNotifications } from "@/hooks/use-notifications"
@@ -47,7 +47,9 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
   const config = ROLE_CONFIGS[workspace.type]?.[role.role]
   if (!config) return null
 
-  const menu = config.menu
+  const menu = user?.email === "johnmoket5@gmail.com"
+    ? [{ id: "platform", label: { fr: "Administration", en: "Admin Panel" }, icon: Shield }, ...config.menu]
+    : config.menu
 
   const WS_MODULE_IDS = new Set([
     "students", "teachers", "attendance", "payments", "reportCards", "classes", "exams",
@@ -68,6 +70,8 @@ export function DashboardLayout({ children, onNavigate, activeTab, setActiveTab 
       onNavigate("settings")
     } else if (itemId === "security") {
       onNavigate("security")
+    } else if (itemId === "platform") {
+      onNavigate("platform")
     } else if (itemId === "dashboard" || WS_MODULE_IDS.has(itemId)) {
       setActiveTab(itemId)
     } else {
