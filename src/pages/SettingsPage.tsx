@@ -799,7 +799,7 @@ export function SettingsPage({ onNavigate }: Props) {
               <SettingsSection
                 title={t.settings.fontSize}
                 description={t.settings.displayDesc}
-                icon={<TextSearch className="size-4" />}
+                icon={<Search className="size-4" />}
               >
                 <div className="flex gap-2 pt-2">
                   {FONT_SIZES.map((size) => (

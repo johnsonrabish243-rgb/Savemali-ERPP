@@ -64,49 +64,49 @@ export function SuperAdminDashboard({ onNavigate }: Props) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Shield className="size-6 text-brand" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <Shield className="size-5 sm:size-6 text-brand shrink-0" />
             {fr ? "Super Administration" : "Super Administration"}
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             {fr ? "Contrôle global de la plateforme" : "Global platform control"}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={loadData} className="gap-1.5">
             <RefreshCw className={cn("size-3.5", loading && "animate-spin")} />
-            {fr ? "Actualiser" : "Refresh"}
+            <span className="hidden sm:inline">{fr ? "Actualiser" : "Refresh"}</span>
           </Button>
           <Button variant="default" size="sm" onClick={() => onNavigate("platform")} className="gap-1.5">
             <Settings className="size-3.5" />
-            {fr ? "Panneau d'administration" : "Admin Panel"}
+            <span className="hidden sm:inline">{fr ? "Panneau d'administration" : "Admin Panel"}</span>
           </Button>
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         {kpiCards.map((card, i) => (
           <div
             key={i}
             className={cn(
-              "relative overflow-hidden rounded-xl p-5 text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5",
+              "relative overflow-hidden rounded-xl p-4 sm:p-5 text-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5",
               card.color,
               "animate-kpi-enter"
             )}
             style={{ animationDelay: `${i * 80}ms` }}
           >
-            <div className="absolute top-0 right-0 w-32 h-32 translate-x-8 -translate-y-8 bg-white/5 rounded-full blur-xl" />
+            <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 translate-x-8 -translate-y-8 bg-white/5 rounded-full blur-xl" />
             <div className="relative z-10">
               <div className="flex items-start justify-between">
-                <div className="flex size-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm shadow-inner">
+                <div className="flex size-8 sm:size-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm shadow-inner">
                   {card.icon}
                 </div>
               </div>
-              <p className="mt-4 text-2xl font-bold">{loading ? "..." : card.value}</p>
-              <p className="text-sm text-white/80 mt-0.5">{card.label}</p>
+              <p className="mt-3 sm:mt-4 text-xl sm:text-2xl font-bold">{loading ? "..." : card.value}</p>
+              <p className="text-xs sm:text-sm text-white/80 mt-0.5">{card.label}</p>
             </div>
           </div>
         ))}
@@ -121,7 +121,7 @@ export function SuperAdminDashboard({ onNavigate }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-2 sm:gap-3 grid-cols-2 lg:grid-cols-4">
             {QUICK_ACTIONS.map((action) => {
               const Icon = action.icon
               return (
@@ -129,14 +129,14 @@ export function SuperAdminDashboard({ onNavigate }: Props) {
                   key={action.id}
                   onClick={() => onNavigate("platform")}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg border border-border p-4 transition-all duration-200",
-                    "hover:shadow-md hover:-translate-y-0.5 bg-card text-left"
+                    "flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3 rounded-lg border border-border p-3 sm:p-4 transition-all duration-200",
+                    "hover:shadow-md hover:-translate-y-0.5 bg-card text-center sm:text-left"
                   )}
                 >
-                  <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg", action.color)}>
-                    <Icon className="size-5 text-white" />
+                  <div className={cn("flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-lg", action.color)}>
+                    <Icon className="size-4 sm:size-5 text-white" />
                   </div>
-                  <span className="text-sm font-medium text-foreground">{action.label[lang]}</span>
+                  <span className="text-xs sm:text-sm font-medium text-foreground leading-tight">{action.label[lang]}</span>
                 </button>
               )
             })}
